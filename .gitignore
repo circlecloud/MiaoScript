@@ -1,0 +1,38 @@
+# Eclipse stuff
+/.settings
+
+# netbeans
+/nbproject
+
+# we use maven!
+/build.xml
+
+# maven
+/target
+/repo
+
+# vim
+.*.sw[a-p]
+
+# various other potential build files
+/build
+/bin
+/dist
+/manifest.mf
+
+/world
+
+# Mac filesystem dust
+*.DS_Store
+
+# intellij
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Project Stuff
+/src/main/resources/Soulbound
+
+# Atlassian Stuff
+/atlassian-ide-plugin.xml
