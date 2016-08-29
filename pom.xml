@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pw.yumc</groupId>
 	<artifactId>MiaoScript</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 	<build>
 		<finalName>${project.name}</finalName>
 		<resources>
@@ -63,7 +63,7 @@
 	<properties>
 		<update.description></update.description>
 		<update.changes></update.changes>
-		<env.GIT_COMMIT>DEBUG</env.GIT_COMMIT>
+		<env.GIT_COMMIT>开发版本</env.GIT_COMMIT>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<repositories>

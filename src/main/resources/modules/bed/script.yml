@@ -1,0 +1,8 @@
+#脚本名称
+bed:
+  #脚本表达式
+  expression: 'file: bed.js'
+  #脚本绑定命令
+  commands:
+  - gobed
+  - setbed

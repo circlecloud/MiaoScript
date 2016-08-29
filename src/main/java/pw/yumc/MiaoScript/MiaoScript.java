@@ -1,6 +1,11 @@
 package pw.yumc.MiaoScript;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
@@ -8,19 +13,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import pw.yumc.MiaoScript.commands.MSCommands;
-import pw.yumc.MiaoScript.data.DataManager;
-import pw.yumc.MiaoScript.event.EventManager;
-import pw.yumc.MiaoScript.middleware.EventMiddleware;
-import pw.yumc.MiaoScript.script.ScriptManager;
+import pw.yumc.MiaoScript.javascript.MiaoScriptEngine;
 import pw.yumc.MiaoScript.script.ScriptPlaceholder;
 import pw.yumc.YumCore.config.FileConfig;
 
+/**
+ * 喵式脚本
+ *
+ * @author 喵♂呜
+ * @since 2016年8月29日 上午7:50:39
+ */
 public class MiaoScript extends JavaPlugin {
     private FileConfig config;
-    private DataManager dataManager;
-    private EventManager eventManager;
-    private EventMiddleware eventMiddleware;
-    private ScriptManager scriptManager;
+    private ManagerCenter managerCenter;
 
     @Override
     public FileConfiguration getConfig() {
@@ -28,62 +33,34 @@ public class MiaoScript extends JavaPlugin {
     }
 
     /**
-     * @return 数据管理
+     * @return 管理中心
      */
-    public DataManager getDataManager() {
-        return dataManager;
+    public ManagerCenter getManagerCenter() {
+        return managerCenter;
     }
 
     /**
-     * @return 事件管理
+     * 全局载入
      */
-    public EventManager getEventManager() {
-        return eventManager;
-    }
-
-    /**
-     * @return 事件中间件
-     */
-    public EventMiddleware getEventMiddleware() {
-        return eventMiddleware;
-    }
-
-    /**
-     * @return 脚本管理
-     */
-    public ScriptManager getScriptManager() {
-        return scriptManager;
-    }
-
-    /**
-     * 载入数据与配置
-     */
-    public void loadConfig() {
-        dataManager = new DataManager(new FileConfig("data.yml"));
-        eventManager = new EventManager(new FileConfig("event.yml"));
-        scriptManager = new ScriptManager(new FileConfig("script.yml"));
-    }
-
-    /**
-     * 注册事件
-     */
-    public void loadEvents() {
-        eventManager.registerAll();
+    public void load() {
+        loadConfig();
+        loadManager();
+        loadScript();
+        loadEvents();
+        loadModules();
     }
 
     @Override
     public void onEnable() {
-        new MSCommands();
-        loadConfig();
-        loadEvents();
+        load();
         register();
+        new MSCommands();
+        MiaoScriptEngine.getDefault();
     }
 
     @Override
     public void onLoad() {
         saveDefault();
-        config = new FileConfig();
-        eventMiddleware = new EventMiddleware();
     }
 
     /**
@@ -100,17 +77,49 @@ public class MiaoScript extends JavaPlugin {
     public void reload() {
         HandlerList.unregisterAll(this);
         onLoad();
-        loadConfig();
-        loadEvents();
+        load();
+    }
+
+    private void loadConfig() {
+        config = new FileConfig();
+    }
+
+    /**
+     * 注册事件
+     */
+    private void loadEvents() {
+        getManagerCenter().getEventManager().registerAll();
+    }
+
+    /**
+     * 初始管理中心
+     */
+    private void loadManager() {
+        managerCenter = new ManagerCenter();
+    }
+
+    /**
+     * 载入模块
+     */
+    private void loadModules() {
+        getManagerCenter().getModuleManager().loadModules();
+    }
+
+    /**
+     * 载入脚本
+     */
+    private void loadScript() {
+        getManagerCenter().getScriptManager().registerAll();
     }
 
     /**
      * 保存默认文件
      */
     private void saveDefault() {
-        saveJs("bed.js");
-        saveJs("welcome.js");
-        saveJs("checkchat.js");
+        try {
+            saveFile("js", "module");
+        } catch (final IOException e) {
+        }
     }
 
     /**
@@ -118,10 +127,28 @@ public class MiaoScript extends JavaPlugin {
      *
      * @param name
      *            JS文件名称
+     * @throws IOException
      */
-    private void saveJs(final String name) {
-        if (!new File(getDataFolder(), "js" + File.separatorChar + name).exists()) {
-            saveResource("js" + File.separatorChar + name, false);
+    private void saveFile(final String... dirs) throws IOException {
+        final URL url = getClassLoader().getResource("plugin.yml");
+        final String upath = url.getFile().substring(url.getFile().indexOf("/") + 1);
+        final String jarPath = upath.substring(0, upath.indexOf('!'));
+        JarFile jar = null;
+        jar = new JarFile(jarPath);
+        final Enumeration<JarEntry> jes = jar.entries();
+        while (jes.hasMoreElements()) {
+            final JarEntry je = jes.nextElement();
+            if (!je.isDirectory()) {
+                for (final String dir : dirs) {
+                    if (je.getName().startsWith(dir)) {
+                        if (!new File(getDataFolder(), je.getName()).exists()) {
+                            saveResource(je.getName(), false);
+                        }
+
+                    }
+                }
+            }
         }
+        jar.close();
     }
 }

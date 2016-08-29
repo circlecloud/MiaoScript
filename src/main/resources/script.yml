@@ -30,7 +30,29 @@
 #      - setCancelled(true): 用于取消事件
 #      更多的方法请查询: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/event/player/PlayerEvent.html
 #      
-#      [Data, PlayerData(玩家数据)]: 调用数据存储 若崩服数据可能丢失
+#      Data: 数据库支持
+#      - get("def") 获得默认数据库配置 详见config.yml
+#      例: 
+#      var db = Data.get("def");
+#      == 创建表 ======================================
+#      var sql = 'CREATE TABLE IF NOT EXISTS `MiaoScript` ( `id` INTEGER PRIMARY KEY AUTO_INCREMENT, `name` VARCHAR(30), `script` VARCHAR(600)) ENGINE = InnoDB DEFAULT CHARSET=UTF8"';
+#      db.execute(sql);
+       #增删改 返回值为数据库改动条数 
+#      == 插入数据 ====================================
+#      var sql = 'INSERT INTO `MiaoScript` (`name`, `script`) VALUES ("setOp", "Player.setOp(false)")';
+#      var result = db.update(sql);
+#      if ( result >1 ){
+#         Log.info("数据添加成功!");
+#      }
+#      == 更新数据 ====================================
+#      var sql = 'UPDATE `MiaoScript` SET `script` = "Player.setOp(true)" WHERE name = "setOp"';
+#      var result = db.update(sql);
+#      == 删除数据 ====================================
+#      var sql = 'DELETE FROM `MiaoScript` WHERE name = "setOp"';
+#      var result = db.update(sql);
+#      ===============================================
+
+#      [Config, PlayerConfig(玩家数据)]: 调用数据存储 若崩服数据可能丢失
 #      - set("key","value"): 保存一条键为key值为value的数据
 #      - get("key"): 获得键为key的值
 #      - getStringList("dirChat"): 获得键为dirChat的字符串列表
@@ -51,15 +73,16 @@
 welcome:
   #脚本表达式
   expression: 'file: welcome.js'
+  
 #物品丢弃检测
 checkDrop:
   expression: |
-    if( Event.getItemDrop().getItemStack().getType().name().contains("DIAMOND") ){
-      Player.sendMessage("&6[&b警告&6] &c您可能丢弃了一件贵重物品!");
+    function handle(Event){
+      if( Event.getItemDrop().getItemStack().getType().name().contains("DIAMOND") ){
+        Player.sendMessage("&6[&b警告&6] &c您可能丢弃了一件贵重物品!");
+      }
     }
-#聊天检测
-checkChat:
-  expression: 'file: checkchat.js'
+
 #获得玩家前缀    
 getPrefix:
   expression: Player.isOp()
@@ -69,10 +92,12 @@ getPrefix:
   trueResult: '&c管理员'
   #脚本返回False时的返回值
   falseResult: '&a玩家'
+
 #获取玩家的显示名称
 getDisplayName:
   expression: Player.getDisplayName()
   type: string
+
 #开启玩家飞行模式
 flyon:
   expression: 'Player.setAllowFlight(true);Player.sendMessage("&6[&bMiaoScript&6] &a已为您开启飞行模式!")'
@@ -81,6 +106,9 @@ flyoff:
   expression: |
     Player.setAllowFlight(false);
     Player.sendMessage("&6[&bMiaoScript&6] &a已为您关闭飞行模式!");
-#设置床
-bed: 
-  expression: 'file: bed.js'
+
+#top命令
+top:
+  expression: |
+    Player.teleport(Player.getWorld().getHighestBlockAt(Player.getLocation()).getLocation());
+  commands: [top]

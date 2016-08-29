@@ -1,21 +1,18 @@
 package pw.yumc.MiaoScript.script;
 
-import java.util.WeakHashMap;
-
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
+import pw.yumc.MiaoScript.ManagerCenter;
 import pw.yumc.MiaoScript.MiaoScript;
+import pw.yumc.MiaoScript.javascript.MiaoScriptEngine;
+import pw.yumc.MiaoScript.misc.MLog;
 import pw.yumc.YumCore.bukkit.Log;
 import pw.yumc.YumCore.bukkit.P;
-import pw.yumc.YumCore.config.PlayerConfig;
 
 /**
  * 脚本执行
@@ -27,47 +24,26 @@ public class ScriptPlaceholder extends PlaceholderHook {
     private static String invalid = "无效的脚本: %s";
     private static String typeError = "脚本 %s 返回值错误";
     private static String EMPTY = "";
+
     private final MiaoScript plugin = P.getPlugin();
-    private ScriptEngine engine;
-    private final WeakHashMap<String, PlayerConfig> playerdatas = new WeakHashMap<>();
+    private final ManagerCenter mCenter = plugin.getManagerCenter();
 
-    public ScriptPlaceholder() {
-        this("javascript");
-    }
-
-    public ScriptPlaceholder(final String engineType) {
-        try {
-            engine = new ScriptEngineManager().getEngineByName(engineType);
-        } catch (final NullPointerException ex) {
-            Log.warning("无效的解析引擎! 已设为默认值 'javascript'");
-            engine = new ScriptEngineManager().getEngineByName("javascript");
-        }
-        engine.put("Bukkit", Bukkit.getServer());
-        engine.put("Server", Bukkit.getServer());
-        engine.put("Data", plugin.getDataManager().getData());
-        engine.put("Prefix", Log.getPrefix());
-        engine.put("Log", P.getLogger());
-    }
+    private final ScriptEngine engine = MiaoScriptEngine.getDefault();
 
     @Override
     public String onPlaceholderRequest(final Player p, final String key) {
-        final ScriptInfo script = plugin.getScriptManager().getScript(key);
+        final ScriptInfo script = mCenter.getScriptManager().getScript(key);
         if (script == null) {
             return EMPTY;
         }
-        String expression = script.getExpression();
-        expression = PlaceholderAPI.setPlaceholders(p, expression);
+        final String expression = script.getExpression(p);
         try {
             engine.put("Player", p);
-            if (!playerdatas.containsKey(p.getName())) {
-                playerdatas.put(p.getName(), new PlayerConfig(p));
-            }
-            engine.put("PlayerData", playerdatas.get(p.getName()));
-            final Event event = plugin.getEventMiddleware().get(p);
-            if (event != null) {
-                engine.put("Event", event);
-            }
+            MLog.debug(String.format("执行脚本 %s 表达式如下: ", key));
             Object result = engine.eval(expression);
+            engine.put("Event", null);
+            engine.put("Player", null);
+            engine.put("PlayerConfig", mCenter.getConfigManager());
             if (result == null) {
                 return EMPTY;
             }
@@ -81,9 +57,11 @@ public class ScriptPlaceholder extends PlaceholderHook {
                     result = script.getFalseResult();
                 }
             }
-            return PlaceholderAPI.setPlaceholders(p, String.valueOf(result));
+            result = PlaceholderAPI.setPlaceholders(p, String.valueOf(result));
+            MLog.debug(String.format("返回值: %s", result.toString()));
+            return result.toString();
         } catch (final ScriptException ex) {
-            Log.warning(String.format("脚本 %s 格式错误...", key));
+            Log.warning(String.format(invalid, key));
             ex.printStackTrace();
             return String.format(invalid, key);
         }

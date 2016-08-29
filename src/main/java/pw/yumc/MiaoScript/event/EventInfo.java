@@ -5,8 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
+import pw.yumc.MiaoScript.module.ModuleInfo;
+import pw.yumc.MiaoScript.script.ScriptInfo;
 import pw.yumc.YumCore.config.ConfigNode;
 import pw.yumc.YumCore.config.InjectConfigurationSection;
 
@@ -18,7 +21,8 @@ import pw.yumc.YumCore.config.InjectConfigurationSection;
  */
 public class EventInfo extends InjectConfigurationSection {
     private transient String name;
-    @ConfigNode(path = "class")
+    private transient ModuleInfo module;
+    @ConfigNode("class")
     private String clazz;
     private String priority;
     private List<String> scripts;
@@ -54,6 +58,13 @@ public class EventInfo extends InjectConfigurationSection {
     }
 
     /**
+     * @return 获得上层Module 可能为Null
+     */
+    public ModuleInfo getModule() {
+        return module;
+    }
+
+    /**
      * @return 事件显示名称
      */
     public String getName() {
@@ -72,5 +83,29 @@ public class EventInfo extends InjectConfigurationSection {
      */
     public List<String> getScripts() {
         return scripts;
+    }
+
+    /**
+     * 发送事件信息
+     *
+     * @param sender
+     *            命令发送者
+     */
+    public void send(final CommandSender sender) {
+        sender.sendMessage(String.format("§6名称: §a%s §6事件: §a%s §6优先级: §a%s", getName(), getClazz().substring(getClazz().lastIndexOf(".") + 1), getPriority()));
+        sender.sendMessage("§6脚本列表: ");
+        for (final String script : getScripts()) {
+            sender.sendMessage(String.format("§6- §e%s", script));
+        }
+    }
+
+    /**
+     * @param module
+     *            设置上层Module
+     * @return {@link ScriptInfo}
+     */
+    public EventInfo setModule(final ModuleInfo module) {
+        this.module = module;
+        return this;
     }
 }

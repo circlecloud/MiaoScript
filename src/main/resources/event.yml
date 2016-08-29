@@ -5,7 +5,7 @@ PlayerJoin:
   priority: LOWEST
   #Script List
   scripts:
-  - '%ms_welcome%'
+  - 'welcome'
 PlayerDrop:
   #Event Class Full Name
   class: org.bukkit.event.player.PlayerDropItemEvent
@@ -13,20 +13,4 @@ PlayerDrop:
   priority: LOWEST
   #Script List
   scripts:
-  - '%ms_checkDrop%'
-PlayerChat:
-  #Event Class Full Name
-  class: org.bukkit.event.player.AsyncPlayerChatEvent
-  #EventPriority Allow Value: LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR
-  priority: LOWEST
-  #Script List
-  scripts:
-  - '%ms_checkChat%'
-PlayerCommandPreprocess:
-  #Event Class Full Name
-  class: org.bukkit.event.player.PlayerCommandPreprocessEvent
-  #EventPriority Allow Value: LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR
-  priority: LOWEST
-  #Script List
-  scripts:
-  - '%ms_bed%'
+  - 'checkDrop'

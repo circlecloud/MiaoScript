@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.ScriptException;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventPriority;
@@ -14,21 +17,28 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.plugin.EventExecutor;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import pw.yumc.MiaoScript.MiaoScript;
+import pw.yumc.MiaoScript.data.ConfigManager;
+import pw.yumc.MiaoScript.javascript.MiaoScriptEngine;
+import pw.yumc.MiaoScript.misc.MLog;
+import pw.yumc.MiaoScript.script.ScriptInfo;
 import pw.yumc.YumCore.bukkit.Log;
 import pw.yumc.YumCore.bukkit.P;
 
 /**
- * 脚本管理
+ * 事件管理
  *
  * @author 喵♂呜
  * @since 2016年8月24日 下午12:51:48
  */
 public class EventManager implements Listener {
-    public static boolean debug = false;
+    private static final String EVENT_FUNCTION = "handle";
+    private static final String PROCESS_NOT_FOUND = "事件脚本 %s 脚本未包含 hanlde(Event) 函数!";
+    private static final String INVIDE_SCRIPT = "事件脚本 %s 语法错误: %s";
     private static String identifier = "%s_%s";
     private final MiaoScript plugin = P.getPlugin();
+    private final ConfigurationSection config;
+
     /**
      * 未处理的数据
      */
@@ -39,19 +49,7 @@ public class EventManager implements Listener {
     private final Map<String, EventInfo> events = new HashMap<>();
 
     public EventManager(final ConfigurationSection config) {
-        for (final String event : config.getKeys(false)) {
-            final ConfigurationSection e = config.getConfigurationSection(event);
-            if (e == null) {
-                continue;
-            }
-            eventInfos.add(new EventInfo(event, e));
-        }
-    }
-
-    public void debug(final String msg) {
-        if (debug) {
-            Log.info(msg);
-        }
+        this.config = config;
     }
 
     /**
@@ -105,8 +103,8 @@ public class EventManager implements Listener {
      *            事件信息
      */
     public void printInfo(final EventInfo ei) {
-        debug(String.format("名称: %s 事件: %s 优先级: %s", ei.getName(), ei.getClazz().substring(ei.getClazz().lastIndexOf(".") + 1), ei.getPriority()));
-        debug("脚本列表: ");
+        MLog.debug(String.format("名称: %s 事件: %s 优先级: %s", ei.getName(), ei.getClazz().substring(ei.getClazz().lastIndexOf(".") + 1), ei.getPriority()));
+        MLog.debug("脚本列表: ");
     }
 
     /**
@@ -115,33 +113,63 @@ public class EventManager implements Listener {
      * @param eventInfo
      *            事件信息
      */
-    @SuppressWarnings("unchecked")
     public boolean register(final EventInfo eventInfo) {
+        return register(eventInfo, this);
+    }
+
+    /**
+     * 注册事件
+     *
+     * @param eventInfo
+     *            事件信息
+     * @param listener
+     *            监听器
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public boolean register(final EventInfo eventInfo, final Listener listener) {
         try {
             final Class<? extends Event> clazz = (Class<? extends Event>) Class.forName(eventInfo.getClazz());
             final EventPriority priority = EventPriority.valueOf(eventInfo.getPriority());
             events.put(getIdentifier(clazz, priority), eventInfo);
-            Bukkit.getPluginManager().registerEvent(clazz, this, priority, new EventExecutor() {
+            Log.debug(String.format("监听器 %s 注册事件 %s 等级 %s", listener.getClass().getSimpleName(), eventInfo.getClazz(), eventInfo.getPriority()));
+            Bukkit.getPluginManager().registerEvent(clazz, listener, priority, new EventExecutor() {
                 @Override
                 public void execute(final Listener listener, final Event event) throws EventException {
-                    final EventInfo ei = plugin.getEventManager().getEvent(event, priority);
+                    final EventInfo ei = plugin.getManagerCenter().getEventManager().getEvent(event, priority);
                     if (ei == null) {
                         Log.debug(String.format("事件 %s_%s 未找到对应处理脚本!", event.getEventName(), priority.name()));
                         return;
                     }
-                    debug("========== MiaoScript Debug ==========");
+                    MLog.debug("========== MiaoScript Debug ==========");
                     printInfo(ei);
+                    Player player = null;
+                    final ConfigManager cfgmgr = ei.getModule() != null ? ei.getModule().getConfigManager() : plugin.getManagerCenter().getConfigManager();
                     if (event instanceof PlayerEvent) {
-                        final PlayerEvent pe = (PlayerEvent) event;
-                        for (final String script : ei.getScripts()) {
-                            final String result = PlaceholderAPI.setPlaceholders(plugin.getEventMiddleware().generate(pe), script);
-                            debug(String.format("- %s 返回值: %s", script, result));
-                        }
-
-                    } else {
-                        Log.debug(String.format("事件 %s 未继承 PlayerEvent 可能无法正常调用!", event.getEventName()));
+                        player = ((PlayerEvent) event).getPlayer();
                     }
-                    debug("========== MiaoScript Debug ==========");
+                    final MiaoScriptEngine engine = MiaoScriptEngine.getDefault();
+                    engine.put("Event", event);
+                    engine.put("Player", player);
+                    engine.put("Config", cfgmgr.get());
+                    engine.put("PlayerConfig", cfgmgr);
+                    for (final String scriptname : ei.getScripts()) {
+                        final ScriptInfo script = plugin.getManagerCenter().getScriptManager().getScript(scriptname);
+                        if (script == null) {
+                            Log.debug(String.format("事件 %s_%s 未找到 %s 脚本!", event.getEventName(), priority.name(), scriptname));
+                        }
+                        Object result = null;
+                        try {
+                            engine.eval(script.getExpression(player));
+                            result = engine.invokeFunction(EVENT_FUNCTION, new Object[] { event });
+                        } catch (final NoSuchMethodException e1) {
+                            Log.warning(String.format(PROCESS_NOT_FOUND, scriptname));
+                        } catch (final ScriptException e1) {
+                            Log.warning(String.format(INVIDE_SCRIPT, scriptname, e1.getMessage()));
+                        }
+                        MLog.debug(String.format("- %s 返回值: %s", scriptname, result));
+                    }
+                    MLog.debug("======================================");
                 }
             }, plugin);
             return true;
@@ -157,12 +185,20 @@ public class EventManager implements Listener {
      * 注册所有事件
      */
     public void registerAll() {
+        eventInfos.clear();
+        for (final String event : config.getKeys(false)) {
+            final ConfigurationSection e = config.getConfigurationSection(event);
+            if (e == null) {
+                continue;
+            }
+            eventInfos.add(new EventInfo(event, e));
+        }
         int count = 0;
         for (final EventInfo ei : eventInfos) {
             if (!ei.getScripts().isEmpty() && register(ei)) {
                 count++;
             }
         }
-        Log.info(String.format("已注册 %s 个事件...", count));
+        Log.info(String.format("已注册全局事件 %s 个...", count));
     }
 }

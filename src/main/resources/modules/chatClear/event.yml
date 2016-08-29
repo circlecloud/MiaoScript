@@ -1,0 +1,8 @@
+PlayerChat:
+  #Event Class Full Name
+  class: org.bukkit.event.player.AsyncPlayerChatEvent
+  #EventPriority Allow Value: LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR
+  priority: LOWEST
+  #Script List
+  scripts:
+  - 'checkChat'
