@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.WeakHashMap;
 
 import pw.yumc.YumCore.config.FileConfig;
-import pw.yumc.YumCore.config.PlayerConfig;
 
 /**
  * 配置管理
@@ -14,7 +13,7 @@ import pw.yumc.YumCore.config.PlayerConfig;
  */
 public class ConfigManager {
     private final File dir;
-    private final WeakHashMap<String, PlayerConfig> playerconfigs = new WeakHashMap<>();
+    private final WeakHashMap<String, FileConfig> playerconfigs = new WeakHashMap<>();
 
     private FileConfig config = null;
 
@@ -38,7 +37,7 @@ public class ConfigManager {
      */
     public FileConfig get(final String name) {
         if (!playerconfigs.containsKey(name)) {
-            playerconfigs.put(name, new PlayerConfig(dir, name));
+            playerconfigs.put(name, new FileConfig(dir, name));
         }
         return playerconfigs.get(name);
     }
