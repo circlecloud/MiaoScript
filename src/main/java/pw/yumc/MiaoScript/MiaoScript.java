@@ -1,21 +1,21 @@
 package pw.yumc.MiaoScript;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
 
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.HandlerList;
+import javax.script.ScriptEngineManager;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
-import me.clip.placeholderapi.PlaceholderAPI;
-import pw.yumc.MiaoScript.commands.MSCommands;
-import pw.yumc.MiaoScript.javascript.MiaoScriptEngine;
-import pw.yumc.MiaoScript.script.ScriptPlaceholder;
-import pw.yumc.YumCore.config.FileConfig;
+import pw.yumc.YumCore.annotation.NotProguard;
+import pw.yumc.YumCore.bukkit.Log;
+import pw.yumc.YumCore.bukkit.P;
+import pw.yumc.YumCore.bukkit.compatible.C;
+import pw.yumc.YumCore.engine.MiaoScriptEngine;
+import pw.yumc.YumCore.mc.MinecraftTools;
 
 /**
  * 喵式脚本
@@ -24,131 +24,76 @@ import pw.yumc.YumCore.config.FileConfig;
  * @since 2016年8月29日 上午7:50:39
  */
 public class MiaoScript extends JavaPlugin {
-    private FileConfig config;
-    private ManagerCenter managerCenter;
-
-    @Override
-    public FileConfiguration getConfig() {
-        return config;
-    }
-
-    /**
-     * @return 管理中心
-     */
-    public ManagerCenter getManagerCenter() {
-        return managerCenter;
-    }
-
-    /**
-     * 全局载入
-     */
-    public void load() {
-        loadConfig();
-        loadManager();
-        loadScript();
-        loadEvents();
-        loadModules();
-    }
+    private MiaoScriptEngine engine;
 
     @Override
     public void onEnable() {
-        load();
-        register();
-        new MSCommands();
-        MiaoScriptEngine.getDefault();
+        saveScript();
+        loadEngine();
     }
 
-    @Override
-    public void onLoad() {
-        saveDefault();
+    private void saveScript() {
+        P.saveFile("modules");
     }
 
-    /**
-     * 注册变量
-     */
-    public void register() {
-        PlaceholderAPI.registerPlaceholderHook("miaoscript", new ScriptPlaceholder());
-        PlaceholderAPI.registerPlaceholderHook("ms", new ScriptPlaceholder());
-    }
-
-    /**
-     * 重新载入
-     */
-    public void reload() {
-        HandlerList.unregisterAll(this);
-        onLoad();
-        load();
-    }
-
-    private void loadConfig() {
-        config = new FileConfig();
-    }
-
-    /**
-     * 注册事件
-     */
-    private void loadEvents() {
-        getManagerCenter().getEventManager().registerAll();
-    }
-
-    /**
-     * 初始管理中心
-     */
-    private void loadManager() {
-        managerCenter = new ManagerCenter();
-    }
-
-    /**
-     * 载入模块
-     */
-    private void loadModules() {
-        getManagerCenter().getModuleManager().loadModules();
-    }
-
-    /**
-     * 载入脚本
-     */
-    private void loadScript() {
-        getManagerCenter().getScriptManager().registerAll();
-    }
-
-    /**
-     * 保存默认文件
-     */
-    private void saveDefault() {
+    private void loadEngine() {
+        Thread currentThread = Thread.currentThread();
+        ClassLoader previousClassLoader = currentThread.getContextClassLoader();
+        currentThread.setContextClassLoader(getClassLoader());
         try {
-            saveFile("js", "module");
-        } catch (final IOException e) {
+            ScriptEngineManager manager = new ScriptEngineManager();
+            this.engine = new MiaoScriptEngine(manager);
+            this.engine.put("base", new Base());
+            this.engine.eval(new InputStreamReader(this.getResource("bios.js")));
+            engine.invokeFunction("boot", this, engine);
+        } catch (Exception e) {
+            Log.w("脚本引擎初始化失败! %s:%s", e.getClass().getName(), e.getMessage());
+        } finally {
+            currentThread.setContextClassLoader(previousClassLoader);
         }
     }
 
-    /**
-     * 保存案例
-     *
-     * @param name
-     *            JS文件名称
-     * @throws IOException
-     */
-    private void saveFile(final String... dirs) throws IOException {
-        final URL url = getClassLoader().getResource("plugin.yml");
-        final String upath = url.getFile().substring(url.getFile().indexOf("/") + 1);
-        final String jarPath = upath.substring(0, upath.indexOf('!'));
-        JarFile jar = null;
-        jar = new JarFile(jarPath);
-        final Enumeration<JarEntry> jes = jar.entries();
-        while (jes.hasMoreElements()) {
-            final JarEntry je = jes.nextElement();
-            if (!je.isDirectory()) {
-                for (final String dir : dirs) {
-                    if (je.getName().startsWith(dir)) {
-                        if (!new File(getDataFolder(), je.getName()).exists()) {
-                            saveResource(je.getName(), false);
-                        }
-
-                    }
-                }
-            }
+    @NotProguard
+    public static class Base {
+        public Class getClass(String name) throws ClassNotFoundException {
+            return Class.forName(name);
         }
-        jar.close();
+
+        public Class getLog() {
+            return Log.class;
+        }
+
+        public String read(String path) throws IOException {
+            Log.d("读取文件 %s ...", path);
+            return new String(Files.readAllBytes(new File(path).toPath()), "UTF-8");
+        }
+
+        public void save(String path, String content) throws IOException {
+            Log.d("保存文件 %s ...", path);
+            File file = new File(path);
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(content.getBytes("UTF-8"));
+            fos.close();
+        }
+
+        public Class getActionBar() {
+            return C.ActionBar.class;
+        }
+
+        public Class getTitle() {
+            return C.Title.class;
+        }
+
+        public Class getPlayer() {
+            return C.Player.class;
+        }
+
+        public Class getTools() {
+            return MinecraftTools.class;
+        }
     }
 }
