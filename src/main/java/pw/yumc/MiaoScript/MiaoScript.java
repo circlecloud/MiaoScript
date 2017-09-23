@@ -1,12 +1,12 @@
 package pw.yumc.MiaoScript;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -32,8 +32,18 @@ public class MiaoScript extends JavaPlugin {
         loadEngine();
     }
 
+    @Override
+    public void onDisable() {
+        try {
+            engine.invokeFunction("disable");
+        } catch (ScriptException | NoSuchMethodException e) {
+            Log.w("脚本引擎关闭失败! %s:%s", e.getClass().getName(), e.getMessage());
+            Log.d(e);
+        }
+    }
+
     private void saveScript() {
-        P.saveFile("modules");
+        P.saveFile(true, "core", "modules", "plugins");
     }
 
     private void loadEngine() {
@@ -45,9 +55,10 @@ public class MiaoScript extends JavaPlugin {
             this.engine = new MiaoScriptEngine(manager);
             this.engine.put("base", new Base());
             this.engine.eval(new InputStreamReader(this.getResource("bios.js")));
-            engine.invokeFunction("boot", this, engine);
+            engine.invokeFunction("boot", this);
         } catch (Exception e) {
             Log.w("脚本引擎初始化失败! %s:%s", e.getClass().getName(), e.getMessage());
+            Log.d(e);
         } finally {
             currentThread.setContextClassLoader(previousClassLoader);
         }
@@ -70,14 +81,7 @@ public class MiaoScript extends JavaPlugin {
 
         public void save(String path, String content) throws IOException {
             Log.d("保存文件 %s ...", path);
-            File file = new File(path);
-            if (!file.exists()) {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-            }
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(content.getBytes("UTF-8"));
-            fos.close();
+            Files.write(new File(path).toPath(), content.getBytes("UTF-8"));
         }
 
         public Class getActionBar() {

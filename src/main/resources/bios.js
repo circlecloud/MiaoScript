@@ -1,12 +1,19 @@
+'use strict';
 var boot;
+var disable;
 /**
  * 初始化框架引擎
  */
 (function () {
-    boot = function (plugin, engine) {
-        engine.put('root', plugin.getDataFolder());
-        engine.put('rootDir', plugin.getDataFolder().getCanonicalPath());
-        load(rootDir + '/modules/init.js');
-        init(plugin, engine);
-    }
+    boot = function (plugin) {
+        // 开发环境下初始化
+        var root = "src/main/resources";
+        if (plugin !== null) {
+            // noinspection JSUnresolvedVariable
+            root = plugin.dataFolder.canonicalPath;
+        }
+        load(root + '/core/init.js');
+        init(root, plugin);
+        disable = disablePlugins
+    };
 })();
