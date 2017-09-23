@@ -13,7 +13,12 @@ var disable;
             root = plugin.dataFolder.canonicalPath;
         }
         load(root + '/core/init.js');
-        init(root, plugin);
+        try {
+            init(root, plugin);
+        } catch (ex) {
+            log.w("MiaoScript 初始化失败! %s", ex);
+            throw ex;
+        }
         disable = disablePlugins
     };
 })();

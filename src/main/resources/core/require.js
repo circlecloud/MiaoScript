@@ -8,6 +8,7 @@
     var File = Java.type("java.io.File");
     var Files = Java.type("java.nio.file.Files");
     var String = Java.type("java.lang.String");
+    var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
 
     /**
      * 解析模块名称为文件
@@ -49,25 +50,19 @@
     }
 
     /**
-     * 使用NIO读取文件内容
-     * @param file 文件
-     * @private
-     */
-    function _readFile(file) {
-        // noinspection JSPrimitiveTypeWrapperUsage
-        return new String(Files.readAllBytes(file.toPath()), "UTF-8");
-    }
-
-    /**
      * 预编译模块
+     * @param name
      * @param src
      * @returns {Object}
      */
-    function compileJs(src) {
+    function compileJs(name, src) {
         var head = "(function (module, exports, require) {\n";
         var tail = "\n});";
         var fulljs = head + src + tail;
-        return eval(fulljs);
+        var cacheFile = cacheDir + "/" + name + ".js";
+        log.d(cacheFile);
+        base.save(cacheFile, fulljs);
+        return load(cacheFile);
     }
 
     /**
@@ -104,16 +99,17 @@
             exports: {},
             require: exports(file.parentFile)
         };
-        var src = _readFile(file);
+        var src = base.read(file);
         try {
             // 预编译模块
-            var compiledWrapper = compileJs(src);
+            var compiledWrapper = compileJs(name, src);
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require
             ]);
         } catch (ex) {
             log.w("模块 %s 编译失败!", name);
-            log.w(ex);
+            log.d(ex);
+            return;
         }
         log.d('模块 %s 编译成功!', name);
         module.loaded = true;
@@ -131,6 +127,8 @@
             return _require(path, parent).exports;
         };
     }
+
+    var cacheDir = parent + "/cache";
 
     // 等于 undefined 说明 parent 是一个字符串 需要转成File
     // 可能更加准确的方案

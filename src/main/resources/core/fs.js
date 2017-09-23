@@ -13,6 +13,9 @@ var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
  * @returns {*}
  */
 exports.file = function () {
+    if (!arguments[0]) {
+        log.w("文件名称不得为 undefined 或者 null !");
+    }
     if (exports.canonical(arguments[0])) {
         return arguments[0];
     }
@@ -28,7 +31,8 @@ exports.file = function () {
  * @param file
  */
 exports.mkdirs = function (file) {
-    file.getParentFile().mkdirs();
+    // noinspection JSUnresolvedVariable
+    file.parentFile.mkdirs();
 };
 /**
  * 创建文件

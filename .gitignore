@@ -36,3 +36,5 @@
 
 # Atlassian Stuff
 /atlassian-ide-plugin.xml
+
+/src/main/resources/cache/

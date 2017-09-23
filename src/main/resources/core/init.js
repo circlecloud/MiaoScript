@@ -47,8 +47,10 @@ function loadPlugins(plugin) {
     // 初始化本体插件
     var self = require('modules/plugin');
     self.init(plugin, plugins_dir);
-    self.load();
-    self.enable();
+    if (!self.$) {
+        self.load();
+        self.enable();
+    }
 }
 
 // noinspection JSUnusedLocalSymbols

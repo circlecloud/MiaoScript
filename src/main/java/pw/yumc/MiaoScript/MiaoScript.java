@@ -57,7 +57,6 @@ public class MiaoScript extends JavaPlugin {
             this.engine.eval(new InputStreamReader(this.getResource("bios.js")));
             engine.invokeFunction("boot", this);
         } catch (Exception e) {
-            Log.w("脚本引擎初始化失败! %s:%s", e.getClass().getName(), e.getMessage());
             Log.d(e);
         } finally {
             currentThread.setContextClassLoader(previousClassLoader);

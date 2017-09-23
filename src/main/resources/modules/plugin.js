@@ -11,7 +11,7 @@ var fs = require('core/fs');
 function loadPlugins(path) {
     path = fs.file(path);
     log.i("开始扫描 %s 下的插件...", path);
-    updatePlugins();
+    updatePlugins(path);
     var files = [];
     fs.list(path).forEach(function (file) {
         files.push(file.toFile());
@@ -54,7 +54,6 @@ function loadJsPlugin(files) {
         return file.name.endsWith(".js")
     }).forEach(function (file) {
         var p = require(file);
-        log.d(JSON.stringify(p));
         if (!p.description || !p.description.name) {
             log.w("文件 %s 不存在 description 描述信息 无法加载插件!");
         } else {
