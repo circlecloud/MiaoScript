@@ -1,6 +1,3 @@
-/**
- *
- */
 'use strict';
 
 /*global Java, base, module, exports, require, __FILE__*/

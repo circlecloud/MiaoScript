@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Collectors;
 
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import lombok.val;
 import pw.yumc.YumCore.annotation.NotProguard;
 import pw.yumc.YumCore.bukkit.Log;
 import pw.yumc.YumCore.bukkit.P;
@@ -80,7 +83,25 @@ public class MiaoScript extends JavaPlugin {
 
         public void save(String path, String content) throws IOException {
             Log.d("保存文件 %s ...", path);
-            Files.write(new File(path).toPath(), content.getBytes("UTF-8"));
+            File file = new File(path);
+            file.getParentFile().mkdirs();
+            Files.write(file.toPath(), content.getBytes("UTF-8"));
+        }
+
+        public void delete(String path) throws IOException {
+            delete(new File(path).toPath());
+        }
+
+        public void delete(Path path) throws IOException {
+            val file = path.toFile();
+            if (!file.exists()) { return; }
+            Log.d("删除文件 %s ...", path);
+            if (file.isDirectory()) {
+                for (Path f : Files.list(file.toPath()).collect(Collectors.toList())) {
+                    delete(f);
+                }
+            }
+            Files.delete(path);
         }
 
         public Class getActionBar() {

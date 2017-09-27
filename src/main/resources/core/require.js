@@ -6,9 +6,6 @@
 (function (parent, core_dir, miao_module_dir) {
     'use strict';
     var File = Java.type("java.io.File");
-    var Files = Java.type("java.nio.file.Files");
-    var String = Java.type("java.lang.String");
-    var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
 
     /**
      * 解析模块名称为文件
@@ -51,18 +48,15 @@
 
     /**
      * 预编译模块
-     * @param name
-     * @param src
+     * @param file
      * @returns {Object}
      */
-    function compileJs(name, src) {
-        var head = "(function (module, exports, require) {\n";
-        var tail = "\n});";
-        var fulljs = head + src + tail;
-        var cacheFile = cacheDir + "/" + name + ".js";
-        log.d(cacheFile);
-        base.save(cacheFile, fulljs);
-        return load(cacheFile);
+    function compileJs(file) {
+        var cacheFile = _cacheFile(file);
+        base.save(cacheFile, "(function (module, exports, require) {" + base.read(file) + "});");
+        var obj = load(cacheFile);
+        base.delete(cacheFile);
+        return obj;
     }
 
     /**
@@ -74,6 +68,10 @@
     function _canonical(file) {
         // noinspection JSUnresolvedVariable
         return file.canonicalPath;
+    }
+
+    function _cacheFile(file) {
+        return cacheDir + "/" + file.name;
     }
 
     /**
@@ -99,20 +97,18 @@
             exports: {},
             require: exports(file.parentFile)
         };
-        var src = base.read(file);
         try {
             // 预编译模块
-            var compiledWrapper = compileJs(name, src);
+            var compiledWrapper = compileJs(file);
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require
             ]);
+            log.d('模块 %s 编译成功!', name);
+            module.loaded = true;
         } catch (ex) {
             log.w("模块 %s 编译失败!", name);
             log.d(ex);
-            return;
         }
-        log.d('模块 %s 编译成功!', name);
-        module.loaded = true;
         cacheModules[id] = module;
         return cacheModules[id];
     }
@@ -131,7 +127,7 @@
     var cacheDir = parent + "/cache";
 
     // 等于 undefined 说明 parent 是一个字符串 需要转成File
-    // 可能更加准确的方案
+    // 可能有更加准确的方案
     if (_canonical(parent) === undefined) {
         parent = new File(parent);
     }

@@ -1,5 +1,7 @@
 'use strict';
-
+/**
+ * Bukkit 事件相关类
+ */
 /*global Java, base, module, exports, require, __FILE__*/
 var Thread = Java.type("java.lang.Thread");
 var Bukkit = Java.type("org.bukkit.Bukkit");
@@ -37,7 +39,7 @@ function mapEventName() {
                         if (isVaildEvent(clz)) {
                             // noinspection JSUnresolvedVariable
                             var simpleName = clz.simpleName.toLowerCase();
-                            log.d("Mapping Event [%s] => %s", clz.name, simpleName);
+                            log.fd("Mapping Event [%s] => %s", clz.name, simpleName);
                             mapEvent[simpleName] = clz;
                         }
                     } catch (ex) {
@@ -77,7 +79,6 @@ function listen(event, exec, priority, ignoreCancel) {
     if (ignoreCancel === undefined) {
         ignoreCancel = false;
     }
-    var listener = new Java.extend(Listener, {});
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param event Event type to register
@@ -89,7 +90,7 @@ function listen(event, exec, priority, ignoreCancel) {
      */
     Bukkit.getPluginManager().registerEvent(
         eventCls,
-        listener,
+        new Listener({}),
         EventPriority[priority],
         new Java.extend(EventExecutor, {
             execute: function (listener, event) {

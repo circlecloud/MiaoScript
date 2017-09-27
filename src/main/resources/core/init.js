@@ -45,11 +45,12 @@ function loadRequire() {
  */
 function loadPlugins(plugin) {
     // 初始化本体插件
-    var self = require('modules/plugin');
-    self.init(plugin, plugins_dir);
-    if (!self.$) {
-        self.load();
-        self.enable();
+    global.pluginManager = require('modules/plugin');
+    pluginManager.init(plugin, plugins_dir);
+    // 只有当在正式环境运行的时候才加载
+    if (pluginManager.$) {
+        pluginManager.load();
+        pluginManager.enable();
     }
 }
 
@@ -58,5 +59,7 @@ function loadPlugins(plugin) {
  * 关闭插件Hook
  */
 function disablePlugins() {
-    require('modules/plugin').disable();
+    if (pluginManager.$) {
+        pluginManager.disable();
+    }
 }

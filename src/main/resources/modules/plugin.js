@@ -1,5 +1,7 @@
 'use strict';
-
+/**
+ * MiaoScript脚本插件加载类
+ */
 /*global Java, base, module, exports, require, __FILE__*/
 var zip = require("core/zip");
 var fs = require('core/fs');
@@ -25,9 +27,9 @@ function loadPlugins(path) {
  * @param path
  */
 function updatePlugins(path) {
-    var dir = fs.file(path, "update");
-    fs.list(dir).forEach(function (file) {
-
+    var update = fs.file(path, "update");
+    fs.list(update).forEach(function (file) {
+        fs.move(fs.file(update, file.name), fs.file(path, file.name), true);
     })
 }
 
@@ -66,6 +68,7 @@ exports.$ = undefined;
 exports.plugins = [];
 exports.init = function (plugin, path) {
     if (plugin !== null) {
+        // 如果过plugin不等于null 则代表是正式环境
         exports.$ = plugin;
         log.i("Init MiaoScript Engine Version: %s", plugin.description.version);
         require('./event');

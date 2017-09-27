@@ -1,3 +1,4 @@
+/*global Java, base, module, exports, require, __FILE__*/
 /**
  * 菜单基础扩展脚本
  * Created by 蒋天蓓 on 2017/2/8 0008.

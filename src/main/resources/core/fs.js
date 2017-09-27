@@ -83,7 +83,9 @@ exports.read = function (file) {
  * @param override 是否覆盖
  */
 exports.save = function (path, content, override) {
-    Files.write(new File(path).toPath(), content.getBytes("UTF-8"), StandardCopyOption[override ? 'REPLACE_EXISTING' : 'ATOMIC_MOVE']);
+    Files.write(new File(path).toPath(),
+        content.getBytes("UTF-8"),
+        override ? StandardCopyOption['REPLACE_EXISTING'] : StandardCopyOption['ATOMIC_MOVE']);
 };
 /**
  * 列出目录文件
@@ -96,4 +98,15 @@ exports.list = function (path) {
     }
     log.w("路径 %s 不是一个目录 返回空数组!");
     return [];
+};
+/**
+ * 移动文件
+ * @param src 原始目录
+ * @param des 目标目录
+ * @param override 是否覆盖
+ */
+exports.move = function (src, des, override) {
+    Files.move(exports.file(src).toPath(),
+        exports.file(des).toPath(),
+        override ? StandardCopyOption['REPLACE_EXISTING'] : StandardCopyOption['ATOMIC_MOVE'])
 };
