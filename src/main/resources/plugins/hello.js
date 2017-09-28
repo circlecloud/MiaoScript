@@ -5,7 +5,7 @@
 
 var papi = require("modules/ext/papi");
 var event = require('modules/event');
-var joinCancel;
+var join;
 /*global Java, base, module, exports, require*/
 var description = {
     name: 'HelloWorld',
@@ -18,15 +18,15 @@ function load() {
 
 function enable() {
     log.i('启用 Hello Wrold 测试插件!');
-    joinCancel = event.on('playerloginevent', function (event) {
+    join = event.on('playerloginevent', function (event) {
         // noinspection JSUnresolvedVariable
-        event.player.sendMessage('§a欢迎来到 §bMiaoScript §a的世界!');
+        event.player.sendMessage(papi.$(event.player, "§a欢迎来到 §bMiaoScript §a的世界! 当前在线: %server_onlone%"));
     });
 }
 
 function disable() {
     log.i('卸载 Hello Wrold 测试插件!');
-    event.off(joinCancel);
+    event.off(join);
 }
 
 exports = {

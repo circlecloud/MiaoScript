@@ -6,13 +6,30 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 var Bukkit = Java.type("org.bukkit.Bukkit");
+// noinspection JSUnresolvedVariable
 var PluginManager = Bukkit.pluginManager;
-
+/**
+ * 插件管理
+ * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
+ */
 exports.plugin = {
+    /**
+     * 插件管理工具
+     */
     manager: PluginManager,
+    /**
+     * 获得插件实例
+     * @param name 插件名称
+     * @returns {*}
+     */
     get: function (name) {
         return PluginManager.getPlugin(name);
     },
+    /**
+     * 载入插件 并且返回结果
+     * @param name 插件名称
+     * @returns {*}
+     */
     load: function (name) {
         var plugin = this.get(name);
         if (ext.notNull(plugin) && !plugin.isEnabled()) {
@@ -21,6 +38,10 @@ exports.plugin = {
         return PluginManager.isPluginEnabled(name);
     }
 };
+/**
+ * 公告
+ * @param message 消息
+ */
 exports.broadcast = function (message) {
     Bukkit.broadcastMessage(message);
 };
