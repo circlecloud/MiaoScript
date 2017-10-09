@@ -6,9 +6,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 
+import org.bukkit.plugin.Plugin;
+
 import lombok.val;
 import pw.yumc.YumCore.annotation.NotProguard;
 import pw.yumc.YumCore.bukkit.Log;
+import pw.yumc.YumCore.bukkit.P;
 import pw.yumc.YumCore.bukkit.compatible.C;
 import pw.yumc.YumCore.mc.MinecraftTools;
 
@@ -20,6 +23,10 @@ import pw.yumc.YumCore.mc.MinecraftTools;
  */
 @NotProguard
 public class Base {
+    public Plugin getPlugin() {
+        return P.instance;
+    }
+
     public Class getClass(String name) throws ClassNotFoundException {
         return Class.forName(name);
     }

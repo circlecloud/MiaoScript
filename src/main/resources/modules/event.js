@@ -12,7 +12,7 @@ var EventPriority = Java.type("org.bukkit.event.EventPriority");
 var EventExecutor = Java.type("org.bukkit.plugin.EventExecutor");
 var IllegalStateException = Java.type("java.lang.IllegalStateException");
 
-var mapEvent = [];
+var plugin = base.plugin;
 
 /**
  * 扫描包 org.bukkit.event 下的所有事件
@@ -109,7 +109,7 @@ function listen(event, exec, priority, ignoreCancel) {
                 exec(event);
             }
         }),
-        require('plugin').$,
+        plugin,
         ignoreCancel);
     // noinspection JSUnresolvedVariable
     log.d('注册事件 %s 方法 %s', eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
@@ -132,9 +132,10 @@ function unlisten(listener) {
     log.d('注销事件 %s', eventCls.simpleName);
 }
 
+var mapEvent = [];
 // 映射事件名称
 mapEventName();
-log.i('Bukkit 事件映射完毕 共计 %s 个事件!', mapEvent.length);
+// log.i('Bukkit 事件映射完毕 共计 %s 个事件!', mapEvent.length);
 
 module.exports = {
     on: listen,

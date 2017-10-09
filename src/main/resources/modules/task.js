@@ -4,7 +4,7 @@
  * 任务计划
  * Created by 蒋天蓓 on 2017/2/9 0009.
  */
-var plugin = require('modules/plugin').$;
+var plugin = base.plugin;
 var BukkitRunnable = Java.type("org.bukkit.scheduler.BukkitRunnable");
 /**
  * 创建任务对象
