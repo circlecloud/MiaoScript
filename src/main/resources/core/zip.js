@@ -2,20 +2,8 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 
-var File = Java.type("java.io.File");
 var ZipFile = Java.type("java.util.zip.ZipFile");
 var fs = require('fs');
-
-/**
- * 获取文件真实名称
- *
- * @param name
- *            名称
- * @return string 文件名称
- */
-function getRealName(name) {
-    return new File(name).name;
-}
 
 /**
  * 解压文件
@@ -28,10 +16,11 @@ function unzip(zipFile, target) {
         return;
     }
     if (target === undefined) {
+        var fname = zipFile.name;
         // noinspection JSUnresolvedVariable
-        target = new File(zipFile.parentFile.canonicalPath, zipFile.name.split(".")[0]);
+        target = fs.file(zipFile.parentFile.canonicalPath, fname.substring(0, fname.length() - 4));
     }
-    log.d("解压文件 %s => %s", zipFile.canonicalPath, target);
+    log.d("解压文件 %s 到目录 %s", zipFile.canonicalPath, target);
     var zipObj = new ZipFile(zipFile);
     var e = zipObj.entries();
     while (e.hasMoreElements()) {
@@ -39,8 +28,8 @@ function unzip(zipFile, target) {
         if (entry.isDirectory()) {
             continue;
         }
-        var destinationFilePath = new File(target, getRealName(entry.name));
-        destinationFilePath.getParentFile().mkdirs();
+        var destinationFilePath = fs.file(target, entry.name);
+        destinationFilePath.parentFile.mkdirs();
         fs.copy(zipObj.getInputStream(entry), destinationFilePath, true);
     }
     zipObj.close();

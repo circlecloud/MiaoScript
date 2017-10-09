@@ -16,11 +16,11 @@ exports.file = function () {
     if (!arguments[0]) {
         log.w("文件名称不得为 undefined 或者 null !");
     }
-    if (exports.canonical(arguments[0])) {
-        return arguments[0];
-    }
     switch (arguments.length) {
         case 1:
+            if (exports.canonical(arguments[0])) {
+                return arguments[0];
+            }
             return new File(arguments[0]);
         case 2:
             return new File(exports.file(arguments[0]), arguments[1]);

@@ -129,7 +129,7 @@ function unlisten(listener) {
     }
     listener.event.getMethod("getHandlerList").invoke(null).unregister(listener.listener);
     // noinspection JSUnresolvedVariable
-    log.d('注销事件 %s', eventCls.simpleName);
+    log.d('注销事件 %s', listener.event.simpleName);
 }
 
 var mapEvent = [];
