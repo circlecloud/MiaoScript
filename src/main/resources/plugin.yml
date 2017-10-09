@@ -11,6 +11,9 @@ commands:
     description: ${project.artifactId} - ${project.description}
     aliases:
     - ms
+    - mjs
+    - script
+    - mscript
     usage: §b使用/${project.artifactId} help 查看帮助!
     permission: ${project.artifactId}.reload
     permission-message: §c你没有 <permission> 的权限来执行此命令!

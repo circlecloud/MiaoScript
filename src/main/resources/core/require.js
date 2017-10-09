@@ -20,6 +20,7 @@
         if (_canonical(name)) {
             name = _canonical(name);
         }
+        // 如果不是 .js 结尾就加上
         if (!name.match(/.*\.js/)) {
             name += ".js";
         }
@@ -77,12 +78,12 @@
     /**
      * 加载模块
      * @param name 模块名称
-     * @param parent 父目录
+     * @param path 路径
      * @returns {*}
      * @private
      */
-    function _require(name, parent) {
-        var file = findModule(name, parent);
+    function _require(name, path) {
+        var file = findModule(name, path);
         // 重定向文件名称
         name = file.name.split(".")[0];
         var id = _canonical(file);
@@ -91,6 +92,7 @@
             return module;
         }
         log.d('加载模块 %s 位于 %s', name, id);
+        // noinspection JSUnresolvedVariable
         module = {
             loaded: false,
             id: id,
@@ -110,7 +112,7 @@
             log.d(ex);
         }
         cacheModules[id] = module;
-        return cacheModules[id];
+        return module;
     }
 
     /**

@@ -1,6 +1,8 @@
 package pw.yumc.MiaoScript;
 
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
@@ -10,7 +12,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
  * @author 喵♂呜
  * Created on 2017/9/30 21:32.
  */
-public class ScriptEvent extends BaseEvent implements Cancellable {
+public class ScriptEvent extends Event implements Cancellable {
     private ScriptObjectMirror mirror;
     private boolean cancelled = false;
 
@@ -34,5 +36,16 @@ public class ScriptEvent extends BaseEvent implements Cancellable {
     @Override
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
+    }
+
+    private static HandlerList handlerList = new HandlerList();
+
+    public static HandlerList getHandlerList() {
+        return handlerList;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlerList;
     }
 }

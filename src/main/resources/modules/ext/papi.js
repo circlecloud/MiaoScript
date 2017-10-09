@@ -15,7 +15,7 @@ if (bukkit.plugin.load("PlaceholderAPI")) {
         }
     }
 }
-exports.$ = function (player, str) {
+exports.$ = function () {
     if (arguments.length > 1) {
         return PlaceholderAPI.setPlaceholders(arguments[0], arguments[1]);
     } else {

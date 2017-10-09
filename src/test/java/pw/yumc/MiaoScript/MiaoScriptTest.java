@@ -26,7 +26,7 @@ public class MiaoScriptTest {
         try {
             ScriptEngineManager manager = new ScriptEngineManager();
             this.engine = new MiaoScriptEngine(manager);
-            this.engine.put("base", new MiaoScript.Base());
+            this.engine.put("base", new Base());
             this.engine.eval(new FileReader("src/main/resources/bios.js"));
             engine.invokeFunction("boot", null, engine);
         } catch (Exception e) {

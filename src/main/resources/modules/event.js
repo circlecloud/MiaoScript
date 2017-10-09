@@ -10,13 +10,13 @@ var Modifier = Java.type("java.lang.reflect.Modifier");
 var BukkitEvent = Java.type("org.bukkit.event.Event");
 var EventPriority = Java.type("org.bukkit.event.EventPriority");
 var EventExecutor = Java.type("org.bukkit.plugin.EventExecutor");
+var IllegalStateException = Java.type("java.lang.IllegalStateException");
 
 var mapEvent = [];
 
-var plugin = require('plugin').$;
-
 /**
- * 映射事件名称 org.bukkit.event.player.PlayerLoginEvent => playerloginevent
+ * 扫描包 org.bukkit.event 下的所有事件
+ * 映射简写名称 org.bukkit.event.player.PlayerLoginEvent => playerloginevent
  */
 function mapEventName() {
     var eventPackageDir = "org/bukkit/event";
@@ -32,10 +32,12 @@ function mapEventName() {
             while (entries.hasMoreElements()) {
                 var entry = entries.nextElement();
                 var name = entry.name;
+                // 以 org/bukkit/event 开头 并且以 .class 结尾
                 if (name.startsWith(eventPackageDir) && name.endsWith(".class")) {
                     var i = name.replaceAll('/', '.');
                     try {
                         var clz = base.getClass(i.substring(0, i.length - 6));
+                        // 继承于 org.bukkit.event.Event 访问符为Public
                         if (isVaildEvent(clz)) {
                             // noinspection JSUnresolvedVariable
                             var simpleName = clz.simpleName.toLowerCase();
@@ -51,9 +53,18 @@ function mapEventName() {
     }
 }
 
+/**
+ * 判断是否为一个有效的事件类
+ * @param clz
+ * @returns {*|boolean}
+ */
 function isVaildEvent(clz) {
-    // noinspection JSUnresolvedVariable
-    return BukkitEvent.class.isAssignableFrom(clz) && Modifier.isPublic(clz.getModifiers()) && !Modifier.isAbstract(clz.getModifiers());
+    // noinspection JSUnresolvedVariable 继承于 org.bukkit.event.Event
+    return BukkitEvent.class.isAssignableFrom(clz) &&
+        // 访问符为Public
+        Modifier.isPublic(clz.getModifiers()) &&
+        // 不是抽象类
+        !Modifier.isAbstract(clz.getModifiers());
 }
 
 /**
@@ -70,8 +81,8 @@ function listen(event, exec, priority, ignoreCancel) {
             eventCls = base.getClass(eventCls);
         } catch (ex) {
             log.w("事件 %s 未找到!");
+            return;
         }
-        return;
     }
     if (priority === undefined) {
         priority = 'NORMAL'
@@ -79,6 +90,7 @@ function listen(event, exec, priority, ignoreCancel) {
     if (ignoreCancel === undefined) {
         ignoreCancel = false;
     }
+    var listener = new Listener({});
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param event Event type to register
@@ -90,30 +102,41 @@ function listen(event, exec, priority, ignoreCancel) {
      */
     Bukkit.getPluginManager().registerEvent(
         eventCls,
-        new Listener({}),
+        listener,
         EventPriority[priority],
-        new Java.extend(EventExecutor, {
+        new EventExecutor({
             execute: function (listener, event) {
                 exec(event);
             }
         }),
-        plugin,
+        require('plugin').$,
         ignoreCancel);
+    // noinspection JSUnresolvedVariable
+    log.d('注册事件 %s 方法 %s', eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
     return {
         event: eventCls,
         listener: listener
     }
 }
 
-// 映射事件名称
-mapEventName();
-
-exports.on = listen;
 /**
  * 取消事件监听
  * @param listener 监听结果
  */
-exports.off = function (listener) {
+function unlisten(listener) {
+    if (!listener.event || !listener.listener) {
+        throw new IllegalStateException("非法的监听器对象 无法取消事件!");
+    }
+    listener.event.getMethod("getHandlerList").invoke(null).unregister(listener.listener);
     // noinspection JSUnresolvedVariable
-    listener.event.handlerList.unregister(listener.listener);
+    log.d('注销事件 %s', eventCls.simpleName);
+}
+
+// 映射事件名称
+mapEventName();
+log.i('Bukkit 事件映射完毕 共计 %s 个事件!', mapEvent.length);
+
+module.exports = {
+    on: listen,
+    off: unlisten
 };
