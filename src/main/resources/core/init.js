@@ -30,7 +30,6 @@ function initDir() {
 function loadCore() {
     // 加载基础模块
     load(core_dir + '/ext.js');
-    load(core_dir + '/static.js');
     load(core_dir + '/console.js');
 }
 
@@ -39,7 +38,7 @@ function loadCore() {
  */
 function loadRequire() {
     // 初始化加载器
-    global.require = load(core_dir + '/require.js')(root, core_dir, miao_module_dir);
+    global.require = load(core_dir + '/require.js')(root);
 }
 
 function loadLib4Bukkit() {

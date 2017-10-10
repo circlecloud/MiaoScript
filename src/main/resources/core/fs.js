@@ -96,7 +96,7 @@ exports.list = function (path) {
     if (dir.isDirectory()) {
         return Files.list(dir.toPath());
     }
-    log.w("路径 %s 不是一个目录 返回空数组!");
+    log.w("路径 %s 不是一个目录 返回空数组!", path);
     return [];
 };
 /**

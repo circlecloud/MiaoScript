@@ -11,15 +11,19 @@ var fs = require('core/fs');
  * @param path
  */
 function loadPlugins(path) {
-    path = fs.file(path);
-    log.i("开始扫描 %s 下的插件...", path);
-    updatePlugins(path);
-    var files = [];
-    fs.list(path).forEach(function (file) {
-        files.push(file.toFile());
-    });
-    loadZipPlugin(files);
-    loadJsPlugin(files);
+    var plugin = fs.file(path);
+    if (!plugin) {
+        log.i("首次加载 创建文件夹 %s ...", path);
+    } else {
+        log.i("开始扫描 %s 下的插件 ...", path);
+        updatePlugins(path);
+        var files = [];
+        fs.list(path).forEach(function (file) {
+            files.push(file.toFile());
+        });
+        loadZipPlugin(files);
+        loadJsPlugin(files);
+    }
 }
 
 /**
@@ -28,9 +32,13 @@ function loadPlugins(path) {
  */
 function updatePlugins(path) {
     var update = fs.file(path, "update");
-    fs.list(update).forEach(function (file) {
-        fs.move(fs.file(update, file.name), fs.file(path, file.name), true);
-    })
+    if (!update.exists()) {
+        update.mkdirs();
+    } else {
+        fs.list(update).forEach(function (file) {
+            fs.move(fs.file(update, file.name), fs.file(path, file.name), true);
+        })
+    }
 }
 
 /**

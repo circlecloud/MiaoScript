@@ -3,7 +3,7 @@
  *
  */
 /*global Java, base*/
-(function (parent, core_dir, miao_module_dir) {
+(function (parent) {
     'use strict';
     var File = Java.type("java.io.File");
 
@@ -16,35 +16,37 @@
      * 模块目录 /modules
      * @param name 模块名称
      */
-    function findModule(name) {
+    function resolve(name) {
         if (_canonical(name)) {
             name = _canonical(name);
         }
-        // 如果不是 .js 结尾就加上
-        if (!name.match(/.*\.js/)) {
-            name += ".js";
+        name = normalizeName(name, '.js');
+        return resolveAsFile(parent, name) ||
+            resolveAsFile(name) ||
+            resolveAsFile(core_dir, name) ||
+            resolveAsFile(miao_module_dir, name) ||
+            undefined;
+    }
+
+    /**
+     * 解析文件
+     * @constructor(file)
+     * @constructor(dir,file)
+     * @returns {*}
+     */
+    function resolveAsFile() {
+        var file = arguments.length > 1 ? new File(arguments[0], arguments[1]) : new File(arguments[0]);
+        if (file.exists()) {
+            return file;
         }
-        var jsFile = new File(name);
-        if (jsFile.exists()) {
-            return jsFile;
+    }
+
+    function normalizeName(fileName, ext) {
+        var extension = ext || '.js';
+        if (fileName.endsWith(extension)) {
+            return fileName;
         }
-        var parentFile = new File(parent, name);
-        if (parentFile.exists()) {
-            return parentFile;
-        }
-        var coreFile = new File(core_dir, name);
-        if (coreFile.exists()) {
-            return coreFile;
-        }
-        var moduleFile = new File(miao_module_dir, name);
-        if (moduleFile.exists()) {
-            return moduleFile;
-        }
-        log.w("模块 %s 加载失败! 下列目录中未找到该模块!", name);
-        log.w("当前目录: %s", _canonical(jsFile));
-        log.w("上级目录: %s", _canonical(parentFile));
-        log.w("核心目录: %s", _canonical(coreFile));
-        log.w("模块目录: %s", _canonical(moduleFile));
+        return fileName + extension;
     }
 
     /**
@@ -55,9 +57,41 @@
     function compileJs(file) {
         var cacheFile = _cacheFile(file);
         base.save(cacheFile, "(function (module, exports, require) {" + base.read(file) + "});");
+        // 使用 load 可以保留行号和文件名称
         var obj = load(cacheFile);
         base.delete(cacheFile);
         return obj;
+    }
+
+    /**
+     * 编译模块
+     * @param id
+     * @param name
+     * @param file
+     * @returns {Object}
+     */
+    function compileModule(id, name, file) {
+        log.d('加载模块 %s 位于 %s', name, id);
+        // noinspection JSUnresolvedVariable
+        var module = {
+            id: id,
+            exports: {},
+            loaded: false,
+            require: exports(file.parentFile)
+        };
+        try {
+            // 预编译模块
+            var compiledWrapper = compileJs(file);
+            compiledWrapper.apply(module.exports, [
+                module, module.exports, module.require
+            ]);
+            log.d('模块 %s 编译成功!', name);
+            module.loaded = true;
+        } catch (ex) {
+            log.w("模块 %s 编译失败!", name);
+            log.d(ex);
+        }
+        return module;
     }
 
     /**
@@ -83,7 +117,11 @@
      * @private
      */
     function _require(name, path) {
-        var file = findModule(name, path);
+        var file = resolve(name, path);
+        if (file === undefined) {
+            log.w("模块 %s 加载失败! 未找到该模块!", name);
+            return;
+        }
         // 重定向文件名称
         name = file.name.split(".")[0];
         var id = _canonical(file);
@@ -91,27 +129,7 @@
         if (module) {
             return module;
         }
-        log.d('加载模块 %s 位于 %s', name, id);
-        // noinspection JSUnresolvedVariable
-        module = {
-            loaded: false,
-            id: id,
-            exports: {},
-            require: exports(file.parentFile)
-        };
-        try {
-            // 预编译模块
-            var compiledWrapper = compileJs(file);
-            compiledWrapper.apply(module.exports, [
-                module, module.exports, module.require
-            ]);
-            log.d('模块 %s 编译成功!', name);
-            module.loaded = true;
-        } catch (ex) {
-            log.w("模块 %s 编译失败!", name);
-            log.d(ex);
-        }
-        cacheModules[id] = module;
+        cacheModules[id] = module = compileModule(id, name, file);
         return module;
     }
 
@@ -126,7 +144,7 @@
         };
     }
 
-    var cacheDir = parent + "/cache";
+    var cacheDir = parent + "/runtime";
 
     // 等于 undefined 说明 parent 是一个字符串 需要转成File
     // 可能有更加准确的方案

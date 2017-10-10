@@ -10,7 +10,7 @@ var ext = {};
  * @returns {*}
  */
 ext.getStatic = function (name) {
-    return base.getClass(name).static;
+    return base.class(name).static;
 };
 /**
  * 获得随机数

@@ -18,7 +18,8 @@ var disable;
         } catch (ex) {
             log.w("MiaoScript 初始化失败! %s", ex);
             throw ex;
+        } finally {
+            disable = disablePlugins
         }
-        disable = disablePlugins
     };
 })();

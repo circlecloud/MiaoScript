@@ -80,7 +80,7 @@ function listen(event, exec, priority, ignoreCancel) {
         try {
             eventCls = base.getClass(eventCls);
         } catch (ex) {
-            log.w("事件 %s 未找到!");
+            log.w("事件 %s 未找到!", event);
             return;
         }
     }

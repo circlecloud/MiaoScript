@@ -58,7 +58,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
     }
 
     private void saveScript() {
-        P.saveFile(true, "core", "modules", "plugins");
+        P.saveFile(true, "core", "modules", "kit");
     }
 
     private void loadEngine() {
