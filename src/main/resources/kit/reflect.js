@@ -7,10 +7,59 @@
 /*global Java, base, module, exports, require, __FILE__*/
 var Class = Java.type('java.lang.Class');
 var NoSuchFieldException = Java.type('java.lang.NoSuchFieldException');
+var methodCache = [];
 
 function Reflect(obj) {
     this.obj = obj;
     this.class = obj instanceof Class ? obj : obj.class;
+    this.field = function (name) {
+        try {
+            // Try getting a public field
+            var field = this.class.field(name);
+            return on(field.get(this.obj));
+        } catch (ex) {
+            // Try again, getting a non-public field
+            try {
+                return on(accessible(declaredField(this.class, name)).get(this.obj));
+            } catch (ex) {
+                throw new NoSuchFieldException(ex);
+            }
+        }
+    };
+
+    this.method = function () {
+        var name = arguments[0];
+        var clazzs = Array.prototype.slice.call(arguments, 1);
+        try {
+            return this.class.method(name, clazzs);
+        } catch (ex) {
+            return this.class.declaredMethod(name, clazzs);
+        }
+    };
+
+    this.cacheMethod = function () {
+        var name = arguments[0];
+        var mkey = this.class.name + '.' + name;
+        if (!methodCache[mkey]) {
+            methodCache[mkey] = this.method(name, arguments.slice(1));
+        }
+        return methodCache[mkey];
+    };
+
+    this.call = function () {
+        var name = arguments[0];
+        var params = Array.prototype.slice.call(arguments, 1);
+        var method = this.cacheMethod(name, types(params));
+        return exports.on(method.invoke(this.get(), params));
+    };
+
+    this.get = function () {
+        return arguments.length === 1 ? this.field(arguments[0]) : this.obj;
+    };
+
+    this.create = function () {
+        return on(declaredConstructor(this.class, arguments).newInstance(arguments));
+    };
 }
 
 /**
@@ -59,57 +108,6 @@ function declaredField(clazz, name) {
     }
     return field;
 }
-
-Reflect.field = function (name) {
-    try {
-        // Try getting a public field
-        var field = this.class.field(name);
-        return on(field.get(this.obj));
-    } catch (ex) {
-        // Try again, getting a non-public field
-        try {
-            return on(accessible(declaredField(this.class, name)).get(this.obj));
-        } catch (ex) {
-            throw new NoSuchFieldException(ex);
-        }
-    }
-};
-
-Reflect.method = function () {
-    var name = arguments[0];
-    var clazzs = arguments.slice(1);
-    try {
-        return this.class.method(name, clazzs);
-    } catch (ex) {
-        return this.class.declaredMethod(name, clazzs);
-    }
-};
-
-var methodCache = [];
-
-Reflect.cacheMethod = function () {
-    var name = arguments[0];
-    var mkey = this.class.name + '.' + name;
-    if (!methodCache[mkey]) {
-        methodCache[mkey] = this.method(name, arguments.slice(1));
-    }
-    return methodCache[mkey];
-};
-
-Reflect.call = function () {
-    var name = arguments[0];
-    var params = arguments.slice(1);
-    var method = this.method(name, types(params));
-    return exports.on(method.invoke(this.get(), params));
-};
-
-Reflect.get = function () {
-    return arguments.length === 1 ? this.field(arguments[0]) : this.obj;
-};
-
-Reflect.create = function () {
-    return on(declaredConstructor(this.class, arguments).newInstance(arguments));
-};
 
 function on(obj) {
     return new Reflect(obj);
