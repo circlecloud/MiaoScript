@@ -32,7 +32,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
     public void onEnable() {
         new CommandSub("ms", this);
         saveScript();
-        loadEngine();
+        enableEngine();
     }
 
     @Cmd
@@ -51,12 +51,12 @@ public class MiaoScript extends JavaPlugin implements Executor {
 
     @Cmd
     @Help("重启脚本引擎")
-    @SneakyThrows
     public void reload(CommandSender sender) {
-        engine.invokeFunction("disable");
-        engine.invokeFunction("boot", this);
+        disableEngine();
+        enableEngine();
+        Log.sender(sender, "§bMiaoScript §eEngine §a重启完成!");
     }
-    
+
     private void result(CommandSender sender, Object result) {
         if (result == null) {
             Log.sender(sender, "§a运行成功! §c没有返回结果!");
@@ -69,7 +69,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
         P.saveFile(true, "core", "modules", "kit");
     }
 
-    private void loadEngine() {
+    private void enableEngine() {
         Thread currentThread = Thread.currentThread();
         ClassLoader previousClassLoader = currentThread.getContextClassLoader();
         currentThread.setContextClassLoader(getClassLoader());
@@ -86,13 +86,17 @@ public class MiaoScript extends JavaPlugin implements Executor {
         }
     }
 
-    @Override
-    public void onDisable() {
+    private void disableEngine() {
         try {
             engine.invokeFunction("disable");
         } catch (ScriptException | NoSuchMethodException e) {
             Log.w("脚本引擎关闭失败! %s:%s", e.getClass().getName(), e.getMessage());
             Log.d(e);
         }
+    }
+
+    @Override
+    public void onDisable() {
+        disableEngine();
     }
 }
