@@ -41,21 +41,21 @@ function register(jsp, name, cmd) {
 //
 //     }
 // };
-/
+
 exports.on = function (jsp, name, exec) {
     var c = create(jsp, name);
     if (exec.cmd) {
-        c.setExecutor(
-            function (sender, cmd, command, args) {
-                return exec.cmd(sender, command, args);
-            }
-        );
+        c.setExecutor(function (sender, cmd, command, args) {
+            return exec.cmd(sender, command, args);
+        });
     }
     if (exec.tab) {
-        c.setTabCompleter(
-            function (sender, cmd, command, args) {
-                return Arrays.asList(exec.tab(sender, command, args));
-            }
-        );
+        c.setTabCompleter(function (sender, cmd, command, args) {
+            return Arrays.asList(exec.tab(sender, command, args));
+        });
     }
+};
+
+exports.off = function () {
+
 };

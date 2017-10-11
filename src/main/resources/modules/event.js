@@ -8,11 +8,16 @@ var Bukkit = Java.type("org.bukkit.Bukkit");
 var Listener = Java.type("org.bukkit.event.Listener");
 var Modifier = Java.type("java.lang.reflect.Modifier");
 var BukkitEvent = Java.type("org.bukkit.event.Event");
+var HandlerList = Java.type('org.bukkit.event.HandlerList');
 var EventPriority = Java.type("org.bukkit.event.EventPriority");
 var EventExecutor = Java.type("org.bukkit.plugin.EventExecutor");
 var IllegalStateException = Java.type("java.lang.IllegalStateException");
 
 var plugin = base.plugin;
+
+var ref = require('kit/reflect');
+
+var jspListener = [];
 
 /**
  * 扫描包 org.bukkit.event 下的所有事件
@@ -69,12 +74,17 @@ function isVaildEvent(clz) {
 
 /**
  * 添加事件监听
+ * @param jsp
  * @param event
  * @param exec {function}
  * @param priority
  * @param ignoreCancel
  */
-function listen(event, exec, priority, ignoreCancel) {
+function listen(jsp, event, exec, priority, ignoreCancel) {
+    var pname = jsp.description.name;
+    if (ext.isNull(pname)) {
+        throw new TypeError('插件名称为空 请检查传入参数!');
+    }
     var eventCls = mapEvent[event];
     if (!eventCls) {
         try {
@@ -89,6 +99,9 @@ function listen(event, exec, priority, ignoreCancel) {
     }
     if (ignoreCancel === undefined) {
         ignoreCancel = false;
+    }
+    if (!jspListener[jsp.description.name]) {
+        jspListener[jsp.description.name] = [];
     }
     var listener = new Listener({});
     // noinspection JSUnusedGlobalSymbols
@@ -111,6 +124,9 @@ function listen(event, exec, priority, ignoreCancel) {
         }),
         plugin,
         ignoreCancel);
+    // 添加到缓存 用于关闭插件的时候关闭事件
+    var listeners = jspListener[jsp.description.name];
+    listeners.push(listener);
     // noinspection JSUnresolvedVariable
     log.d('注册事件 %s 方法 %s', eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
     return {
@@ -127,7 +143,7 @@ function unlisten(listener) {
     if (!listener.event || !listener.listener) {
         throw new IllegalStateException("非法的监听器对象 无法取消事件!");
     }
-    listener.event.getMethod("getHandlerList").invoke(null).unregister(listener.listener);
+    ref.on(listener.event).call('getHandlerList').get().unregister(listener.listener);
     // noinspection JSUnresolvedVariable
     log.d('注销事件 %s', listener.event.simpleName);
 }
@@ -139,5 +155,10 @@ mapEventName();
 
 module.exports = {
     on: listen,
-    off: unlisten
+    off: unlisten,
+    disable: function (jsp) {
+        jspListener[jsp.description.name].forEach(function (t) {
+            ref.on(HandlerList).call('unregisterAll', t);
+        })
+    }
 };

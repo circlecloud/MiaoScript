@@ -10,8 +10,13 @@ var NoSuchFieldException = Java.type('java.lang.NoSuchFieldException');
 var methodCache = [];
 
 function Reflect(obj) {
-    this.obj = obj;
-    this.class = obj instanceof Class ? obj : obj.class;
+    if (obj instanceof Class) {
+        this.obj = null;
+        this.class = obj;
+    } else {
+        this.obj = obj;
+        this.class = obj.class;
+    }
     this.field = function (name) {
         try {
             // Try getting a public field
@@ -27,9 +32,8 @@ function Reflect(obj) {
         }
     };
 
-    this.method = function () {
-        var name = arguments[0];
-        var clazzs = Array.prototype.slice.call(arguments, 1);
+    this.method = function (name, param) {
+        var clazzs = types(param);
         try {
             return this.class.getMethod(name, clazzs);
         } catch (ex) {
@@ -37,11 +41,10 @@ function Reflect(obj) {
         }
     };
 
-    this.cacheMethod = function () {
-        var name = arguments[0];
+    this.cacheMethod = function (name, param) {
         var mkey = this.class.name + '.' + name;
         if (!methodCache[mkey]) {
-            methodCache[mkey] = this.method(name, arguments.slice(1));
+            methodCache[mkey] = this.method(name, param);
         }
         return methodCache[mkey];
     };
@@ -91,10 +94,10 @@ function declaredConstructor(clazz, param) {
     var constructor;
     try {
         constructor = clazz.getDeclaredConstructor(types(param));
-    }catch(ex) {
+    } catch (ex) {
         try {
             constructor = clazz.getDeclaredConstructor(types(param, true));
-        }catch(ex) {
+        } catch (ex) {
             constructor = clazz.getDeclaredConstructors()[0];
         }
     }

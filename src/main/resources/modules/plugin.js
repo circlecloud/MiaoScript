@@ -5,6 +5,7 @@
 /*global Java, base, module, exports, require, __FILE__*/
 // var zip = require("core/zip");
 var fs = require('core/fs');
+var event = require('modules/event');
 
 /**
  * 载入插件
@@ -36,7 +37,8 @@ function updatePlugins(path) {
         update.mkdirs();
     } else {
         fs.list(update).forEach(function (file) {
-            fs.move(fs.file(update, file.name), fs.file(path, file.name), true);
+            log.i('自动升级插件 %s', file);
+            fs.move(file, fs.file(path, file.name), true);
         })
     }
 }
@@ -75,22 +77,30 @@ function loadJsPlugin(files) {
     })
 }
 
-function runAndCatch(name, exec) {
+function runAndCatch(jsp, exec, ext) {
     if (exec) {
         try {
-            exec();
+            // 绑定方法的this到插件自身
+            exec.bind(jsp)();
+            if (ext) {
+                ext();
+            }
         } catch (ex) {
-            log.w('插件 %s 执行 %s 发生错误: %s', name, exec.name, ex.message);
+            log.w('插件 %s 执行 %s 发生错误: %s', jsp.description.name, exec.name, ex.message);
             ex.printStackTrace();
         }
     }
 }
 
-function checkAndGet(name) {
+function checkAndGet(args) {
+    if (args.length === 0) {
+        return plugins;
+    }
+    var name = args[0];
     if (!exports.plugins[name]) {
         throw new Error("插件 " + name + "不存在!");
     }
-    return exports.plugins[name];
+    return [exports.plugins[name]];
 }
 
 var plugins = [];
@@ -106,32 +116,11 @@ exports.init = function (plugin, path) {
     loadPlugins(path);
 };
 exports.load = function () {
-    if (arguments.length === 0) {
-        plugins.forEach(function (p) {
-            runAndCatch(p.description.name, p.load);
-        })
-    } else {
-        var p = checkAndGet(arguments[0]);
-        runAndCatch(p.description.name, p.load);
-    }
+    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.load));
 };
 exports.enable = function () {
-    if (arguments.length === 0) {
-        plugins.forEach(function (p) {
-            runAndCatch(p.description.name, p.enable);
-        })
-    } else {
-        var p = checkAndGet(arguments[0]);
-        runAndCatch(p.description.name, p.enable);
-    }
+    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.enable));
 };
 exports.disable = function () {
-    if (arguments.length === 0) {
-        plugins.forEach(function (p) {
-            runAndCatch(p.description.name, p.disable);
-        })
-    } else {
-        var p = checkAndGet(arguments[0]);
-        runAndCatch(p.description.name, p.disable);
-    }
+    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.disable, function () event.disable(p)));
 };
