@@ -6,7 +6,7 @@
 (function (parent) {
     'use strict';
     var File = Java.type("java.io.File");
-    var paths = ['', parent, parent + '/core', parent + '/kit', parent + '/modules'];
+    var paths = [parent, '', parent + '/core', parent + '/modules'];
 
     /**
      * 解析模块名称为文件
@@ -21,12 +21,17 @@
         if (_canonical(name)) {
             name = _canonical(name);
         }
-        var temp = [parent].concat(paths);
-        for(var i in temp) {
-            var path = temp[i];
-            var result = resolveAsFile(path, name) || resolveAsDirectory(path, name);
-            if (result) {
-               return result;
+        // 解析本地目录
+        if(name.startsWith('./') || name.startsWith('../')){
+            return resolveAsFile(parent, name) || resolveAsDirectory(parent, name) || undefined;
+        } else {
+            // 查找可能存在的路径
+            for(var i in paths) {
+                var path = paths[i];
+                var result = resolveAsFile(path, name) || resolveAsDirectory(path, name);
+                if (result) {
+                   return result;
+                }
             }
         }
         return undefined;
