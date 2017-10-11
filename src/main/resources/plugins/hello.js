@@ -5,6 +5,7 @@
 /*global Java, base, module, exports, require*/
 
 var event = require('modules/event');
+var cmd = require('modules/command');
 var join;
 
 var description = {
@@ -25,6 +26,15 @@ function enable() {
             // noinspection JSUnresolvedVariable
             event.player.sendMessage(require("plugins/ext/papi").$(event.player, "§a欢迎来到 §bMiaoScript §a的世界! 当前在线: %server_online%"));
         }, 10);
+    });
+    cmd.on(module.exports, 'hello', {
+        cmd: function (sender, command, args) {
+            console.log(command, args);
+            return true;
+        },
+        tab: function (sender, command, args) {
+            return 'test';
+        }
     });
 }
 

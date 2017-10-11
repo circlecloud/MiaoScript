@@ -6,16 +6,16 @@ var log = base.getLog().static;
 var Level = Java.type('java.util.logging.Level');
 var console = {
     log: function () {
-        log.i(arguments.join(' '));
+        log.i(Array.prototype.join.call(arguments, ' '));
     },
     warn: function () {
-        log.w(arguments.join(' '));
+        log.w(Array.prototype.join.call(arguments, ' '));
     },
     error: function () {
-        log.log(Level.SEVERE, arguments.join(' '));
+        log.log(Level.SEVERE, Array.prototype.join.call(arguments, ' '));
     },
     debug: function () {
-        log.d(arguments.join(' '));
+        log.d(Array.prototype.join.call(arguments, ' '));
     }
 };
 global.console = console;

@@ -11,9 +11,12 @@ var lookupNames = ref.on(bukkit.plugin.manager).get('lookupNames').get();
 var knownCommands = ref.on(bukkit.plugin.manager).get('commandMap').get('knownCommands').get();
 var PluginCommand = Java.type('org.bukkit.command.PluginCommand');
 
+var Arrays = Java.type('java.util.Arrays')
+
 function create(jsp, name) {
     var cmd = ref.on(PluginCommand).create(name, plugin).get();
     register(jsp, name, cmd);
+    return cmd;
 }
 
 function register(jsp, name, cmd) {
@@ -38,13 +41,21 @@ function register(jsp, name, cmd) {
 //
 //     }
 // };
-
-exports.on = function (plugin, name, exec) {
-    var c = create(plugin, name);
-    if (exec.onCommand) {
-        c.setExecutor(exec);
+/
+exports.on = function (jsp, name, exec) {
+    var c = create(jsp, name);
+    if (exec.cmd) {
+        c.setExecutor(
+            function (sender, cmd, command, args) {
+                return exec.cmd(sender, command, args);
+            }
+        );
     }
-    if (exec.onTabComplete) {
-        c.setTabCompleter(exec);
+    if (exec.tab) {
+        c.setTabCompleter(
+            function (sender, cmd, command, args) {
+                return Arrays.asList(exec.tab(sender, command, args));
+            }
+        );
     }
 };

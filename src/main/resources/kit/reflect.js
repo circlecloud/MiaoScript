@@ -31,9 +31,9 @@ function Reflect(obj) {
         var name = arguments[0];
         var clazzs = Array.prototype.slice.call(arguments, 1);
         try {
-            return this.class.method(name, clazzs);
+            return this.class.getMethod(name, clazzs);
         } catch (ex) {
-            return this.class.declaredMethod(name, clazzs);
+            return this.class.getDeclaredMethod(name, clazzs);
         }
     };
 
@@ -58,20 +58,21 @@ function Reflect(obj) {
     };
 
     this.create = function () {
-        return on(declaredConstructor(this.class, arguments).newInstance(arguments));
+        var param = Array.prototype.slice.call(arguments);
+        return on(declaredConstructor(this.class, param).newInstance(param));
     };
 }
 
 /**
  * Get an array of types for an array of objects
  */
-function types(values) {
+function types(values, def) {
     if (values === null) {
         return [];
     }
     var result = [];
     values.forEach(function (t) {
-        result.push(t === null ? Object.class : t.class)
+        result.push((t === null || def) ? Object.class : t instanceof Class ? t : t.class)
     });
     return result;
 }
@@ -86,8 +87,18 @@ function accessible(accessible) {
     return accessible;
 }
 
-function declaredConstructor() {
-    return accessible(arguments[0].declaredConstructor(arguments.slice(1)));
+function declaredConstructor(clazz, param) {
+    var constructor;
+    try {
+        constructor = clazz.getDeclaredConstructor(types(param));
+    }catch(ex) {
+        try {
+            constructor = clazz.getDeclaredConstructor(types(param, true));
+        }catch(ex) {
+            constructor = clazz.getDeclaredConstructors()[0];
+        }
+    }
+    return accessible(constructor);
 }
 
 function declaredField(clazz, name) {
@@ -95,12 +106,12 @@ function declaredField(clazz, name) {
     // noinspection JSUnresolvedVariable
     while (clazz !== java.lang.Object.class) {
         try {
-            field = clazz.declaredField(name);
+            field = clazz.getDeclaredField(name);
             if (field !== null) {
                 break;
             }
         } catch (e) {
-            clazz = clazz.superclass();
+            clazz = clazz.getSuperclass();
         }
     }
     if (field === null) {
