@@ -32,8 +32,7 @@ function Reflect(obj) {
         }
     };
 
-    this.method = function (name, param) {
-        var clazzs = types(param);
+    this.method = function (name, clazzs) {
         try {
             return this.class.getMethod(name, clazzs);
         } catch (ex) {
@@ -41,10 +40,10 @@ function Reflect(obj) {
         }
     };
 
-    this.cacheMethod = function (name, param) {
+    this.cacheMethod = function (name, clazzs) {
         var mkey = this.class.name + '.' + name;
         if (!methodCache[mkey]) {
-            methodCache[mkey] = this.method(name, param);
+            methodCache[mkey] = this.method(name, clazzs);
         }
         return methodCache[mkey];
     };

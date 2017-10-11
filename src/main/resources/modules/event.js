@@ -126,26 +126,18 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
         ignoreCancel);
     // 添加到缓存 用于关闭插件的时候关闭事件
     var listeners = jspListener[jsp.description.name];
-    listeners.push(listener);
-    // noinspection JSUnresolvedVariable
-    log.d('注册事件 %s 方法 %s', eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
-    return {
+    var off = {
         event: eventCls,
-        listener: listener
+        listener: listener,
+        off: function(){
+            ref.on(this.event).call('getHandlerList').get().unregister(this.listener);
+            log.d('插件 %s 注销事件 %s', pname, this.event.simpleName);
+        }
     }
-}
-
-/**
- * 取消事件监听
- * @param listener 监听结果
- */
-function unlisten(listener) {
-    if (!listener.event || !listener.listener) {
-        throw new IllegalStateException("非法的监听器对象 无法取消事件!");
-    }
-    ref.on(listener.event).call('getHandlerList').get().unregister(listener.listener);
+    listeners.push(off);
     // noinspection JSUnresolvedVariable
-    log.d('注销事件 %s', listener.event.simpleName);
+    log.d('插件 %s 注册事件 %s 方法 %s', pname, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
+    return off;
 }
 
 var mapEvent = [];
@@ -155,10 +147,10 @@ mapEventName();
 
 module.exports = {
     on: listen,
-    off: unlisten,
     disable: function (jsp) {
         jspListener[jsp.description.name].forEach(function (t) {
-            ref.on(HandlerList).call('unregisterAll', t);
-        })
+            t.off();
+        });
+        delete jspListener[jsp.description.name];
     }
 };

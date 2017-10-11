@@ -30,9 +30,9 @@ public class MiaoScript extends JavaPlugin implements Executor {
 
     @Override
     public void onEnable() {
+        new CommandSub("ms", this);
         saveScript();
         loadEngine();
-        new CommandSub("ms", this);
     }
 
     @Cmd
@@ -49,6 +49,14 @@ public class MiaoScript extends JavaPlugin implements Executor {
         result(sender, engine.eval(new FileReader(new File(getDataFolder(), file))));
     }
 
+    @Cmd
+    @Help("重启脚本引擎")
+    @SneakyThrows
+    public void reload(CommandSender sender) {
+        engine.invokeFunction("disable");
+        engine.invokeFunction("boot", this);
+    }
+    
     private void result(CommandSender sender, Object result) {
         if (result == null) {
             Log.sender(sender, "§a运行成功! §c没有返回结果!");
