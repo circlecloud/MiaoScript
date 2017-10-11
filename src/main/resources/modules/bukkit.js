@@ -8,6 +8,7 @@
 var Bukkit = Java.type("org.bukkit.Bukkit");
 // noinspection JSUnresolvedVariable
 var PluginManager = Bukkit.pluginManager;
+exports.$ = Bukkit;
 /**
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}

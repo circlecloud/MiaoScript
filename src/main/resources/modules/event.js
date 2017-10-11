@@ -15,7 +15,7 @@ var IllegalStateException = Java.type("java.lang.IllegalStateException");
 
 var plugin = base.plugin;
 
-var ref = require('kit/reflect');
+var ref = require('reflect');
 
 var jspListener = [];
 

@@ -46,7 +46,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
     @Help("执行 JS 代码文件")
     @SneakyThrows
     public void file(CommandSender sender, String file) {
-        result(sender, engine.eval(new FileReader(new File(getDataFolder(), file))));
+        result(sender, engine.eval("load('" + new File(getDataFolder(), file).getCanonicalPath() + "')"));
     }
 
     @Cmd
@@ -66,7 +66,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
     }
 
     private void saveScript() {
-        P.saveFile(true, "core", "modules", "kit");
+        P.saveFile(true, "core", "modules");
     }
 
     private void enableEngine() {
@@ -75,7 +75,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
         currentThread.setContextClassLoader(getClassLoader());
         try {
             ScriptEngineManager manager = new ScriptEngineManager();
-            this.engine = new MiaoScriptEngine(manager);
+            this.engine = new MiaoScriptEngine(manager, "nashorn");
             this.engine.put("base", new Base());
             this.engine.eval(new InputStreamReader(this.getResource("bios.js")));
             engine.invokeFunction("boot", this);
