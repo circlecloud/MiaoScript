@@ -5,6 +5,7 @@
 /*global Java, base, module, exports, require, __FILE__*/
 // var zip = require("core/zip");
 var fs = require('core/fs');
+var yaml = require('modules/yaml');
 var event = require('modules/event');
 
 /**
@@ -70,11 +71,64 @@ function loadJsPlugin(files) {
         if (!p.description || !p.description.name) {
             log.w("文件 %s 不存在 description 描述信息 无法加载插件!", file);
         } else {
+            initPlugin(file, p);
             plugins.push(p);
             plugins[p.description.name] = p;
-            log.i('插件 %s 版本 %s 加载成功!', p.description.name, p.description.version);
+            log.i('载入插件 %s 版本 %s By %s', p.description.name, p.description.version || '未知', p.description.author || '未知');
         }
     })
+}
+/**
+ * 初始化插件内容(提供config,__DATA__等参数)
+ */
+function initPlugin(file, plugin){
+    // 初始化 __DATA__
+    plugin.__DATA__ = fs.file(file.parentFile, plugin.description.name);
+    // 初始化 getFile()
+    plugin.getFile = function(name) {
+        return fs.file(plugin.__DATA__, name);
+    }
+    // 初始化 getConfig()
+    /**
+     * 获取配置文件
+     * @constructor
+     * @constructor (file|string)
+     */
+    plugin.getConfig = function() {
+        switch (arguments.length) {
+            case 0:
+                return plugin.config;
+            case 1:
+                var file = arguments[0];
+                if (!file.isFile) {
+                    file = plugin.getFile(file);
+                }
+                return yaml.safeLoad(base.read(file));
+        }
+    }
+    // 初始化 saveConfig()
+    /**
+     * 保存配置文件
+     * @constructor
+     * @constructor (file, content)
+     */
+    plugin.saveConfig = function() {
+        switch (arguments.length) {
+            case 0:
+                base.save(plugin.configFile, yaml.safeDump(plugin.config));
+            case 2:
+                base.save(arguments[0], yaml.safeDump(arguments[1]));
+        }
+    }
+    // 初始化 getDataFolder()
+    plugin.getDataFolder = function() {
+        return plugin.__DATA__;
+    }
+    // 初始化 config
+    plugin.configFile = plugin.getFile('config.yml');
+    if (plugin.configFile.isFile()) {
+        plugin.config = plugin.getConfig('config.yml');
+    }
 }
 
 function runAndCatch(jsp, exec, ext) {
@@ -97,6 +151,10 @@ function checkAndGet(args) {
         return plugins;
     }
     var name = args[0];
+    // 如果是插件 则直接返回
+    if (name.description) {
+       return [name];
+    }
     if (!exports.plugins[name]) {
         throw new Error("插件 " + name + "不存在!");
     }
@@ -123,4 +181,11 @@ exports.enable = function () {
 };
 exports.disable = function () {
     checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.disable, function () event.disable(p)));
+};
+exports.reload = function () {
+    checkAndGet(arguments).forEach(function (p) {
+        exports.disable(p);
+        exports.load(p);
+        exports.enable(p);
+    });
 };
