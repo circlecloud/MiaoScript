@@ -84,7 +84,7 @@
      */
     function compileJs(file) {
         var cacheFile = _cacheFile(file);
-        base.save(cacheFile, "(function (module, exports, require) {" + base.read(file) + "});");
+        base.save(cacheFile, "(function (module, exports, require, __DIR__, __FILE__) {" + base.read(file) + "});");
         // 使用 load 可以保留行号和文件名称
         var obj = load(cacheFile);
         base.delete(cacheFile);
@@ -110,7 +110,7 @@
         try {
             var compiledWrapper = compileJs(file);
             compiledWrapper.apply(module.exports, [
-                module, module.exports, module.require
+                module, module.exports, module.require, file.parentFile, file
             ]);
             log.d('模块 %s 编译成功!', name);
             module.loaded = true;
