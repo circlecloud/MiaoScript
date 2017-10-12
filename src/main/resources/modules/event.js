@@ -148,9 +148,12 @@ mapEventName();
 module.exports = {
     on: listen,
     disable: function (jsp) {
-        jspListener[jsp.description.name].forEach(function (t) {
-            t.off();
-        });
-        delete jspListener[jsp.description.name];
+        var jspl = jspListener[jsp.description.name];
+        if (jspl) {
+            jspListener[jsp.description.name].forEach(function (t) {
+                t.off();
+            });
+            delete jspListener[jsp.description.name];
+        }
     }
 };
