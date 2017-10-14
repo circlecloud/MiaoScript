@@ -57,16 +57,16 @@
      * @returns {*}
      */
     function resolveAsDirectory(dir, file) {
-        var file = ext.notNull(dir) ? new File(dir, file) : new File(file);
-        var _package = new File(file, 'package.json');
+        var dir = ext.notNull(dir) ? new File(dir, file) : new File(file);
+        var _package = new File(dir, 'package.json');
         if (_package.exists()) {
             var json = JSON.parse(base.read(_package));
             if (json.main) {
-                return resolveAsFile(file, json.main);
+                return resolveAsFile(dir, json.main);
             }
         }
         // if no package or package.main exists, look for index.js
-        return resolveAsFile(file, 'index.js');
+        return resolveAsFile(dir, 'index.js');
     }
 
     function normalizeName(fileName, ext) {
@@ -82,9 +82,13 @@
      * @param file
      * @returns {Object}
      */
-    function compileJs(file) {
+    function compileJs(file, optional) {
         var cacheFile = _cacheFile(file);
-        base.save(cacheFile, "(function (module, exports, require, __DIR__, __FILE__) {" + base.read(file) + "});");
+        var origin = base.read(file);
+        if (optional.hook) {
+            origin = optional.hook(origin);
+        }
+        base.save(cacheFile, "(function (module, exports, require, __DIR__, __FILE__) {" + origin + "});");
         // 使用 load 可以保留行号和文件名称
         var obj = load(cacheFile);
         base.delete(cacheFile);
@@ -98,7 +102,7 @@
      * @param file
      * @returns {Object}
      */
-    function compileModule(id, name, file) {
+    function compileModule(id, name, file, optional) {
         log.d('加载模块 %s 位于 %s', name, id);
         // noinspection JSUnresolvedVariable
         var module = {
@@ -108,14 +112,14 @@
             require: exports(file.parentFile)
         };
         try {
-            var compiledWrapper = compileJs(file);
+            var compiledWrapper = compileJs(file, optional);
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
             ]);
             log.d('模块 %s 编译成功!', name);
             module.loaded = true;
         } catch (ex) {
-            log.w("模块 %s 编译失败!", name);
+            log.console("§4警告! §b模块 §a%s §4编译失败! ERR: %s", name, ex);
             log.d(ex);
         }
         return module;
@@ -143,20 +147,21 @@
      * @returns {*}
      * @private
      */
-    function _require(name, path) {
+    function _require(name, path, optional) {
         var file = resolve(name, path);
         if (file === undefined) {
             log.w("模块 %s 加载失败! 未找到该模块!", name);
             return {exports:{}};
         }
+        if (!optional) optional = { cache: true }
         // 重定向文件名称和类型
         name = file.name.split(".")[0];
         var id = _canonical(file);
         var module = cacheModules[id];
-        if (module) {
+        if (optional.cache && module) {
             return module;
         }
-        cacheModules[id] = module = compileModule(id, name, file);
+        cacheModules[id] = module = compileModule(id, name, file, optional);
         return module;
     }
 
@@ -166,8 +171,8 @@
      * @returns {Function}
      */
     function exports(parent) {
-        return function (path) {
-            return _require(path, parent).exports;
+        return function (path, optional) {
+            return _require(path, parent, optional).exports;
         };
     }
 
