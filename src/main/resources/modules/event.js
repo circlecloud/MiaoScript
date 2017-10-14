@@ -17,7 +17,7 @@ var plugin = base.plugin;
 
 var ref = require('reflect');
 
-var jspListener = [];
+var listenerMap = [];
 
 /**
  * 扫描包 org.bukkit.event 下的所有事件
@@ -81,10 +81,8 @@ function isVaildEvent(clz) {
  * @param ignoreCancel
  */
 function listen(jsp, event, exec, priority, ignoreCancel) {
-    var pname = jsp.description.name;
-    if (ext.isNull(pname)) {
-        throw new TypeError('插件名称为空 请检查传入参数!');
-    }
+    var name = jsp.description.name;
+    if (ext.isNull(name)) throw new TypeError('插件名称为空 请检查传入参数!');
     var eventCls = mapEvent[event];
     if (!eventCls) {
         try {
@@ -99,9 +97,6 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
     }
     if (ignoreCancel === undefined) {
         ignoreCancel = false;
-    }
-    if (!jspListener[jsp.description.name]) {
-        jspListener[jsp.description.name] = [];
     }
     var listener = new Listener({});
     // noinspection JSUnusedGlobalSymbols
@@ -125,18 +120,19 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
         plugin,
         ignoreCancel);
     // 添加到缓存 用于关闭插件的时候关闭事件
-    var listeners = jspListener[jsp.description.name];
+    if (!listenerMap[name]) listenerMap[name] = []
+    var listeners = listenerMap[name];
     var off = {
         event: eventCls,
         listener: listener,
         off: function(){
             ref.on(this.event).call('getHandlerList').get().unregister(this.listener);
-            log.d('插件 %s 注销事件 %s', pname, this.event.simpleName);
+            log.d('插件 %s 注销事件 %s', name, this.event.simpleName);
         }
     }
     listeners.push(off);
     // noinspection JSUnresolvedVariable
-    log.d('插件 %s 注册事件 %s 方法 %s', pname, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
+    log.d('插件 %s 注册事件 %s 方法 %s', name, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
     return off;
 }
 
@@ -148,12 +144,10 @@ mapEventName();
 module.exports = {
     on: listen,
     disable: function (jsp) {
-        var jspl = jspListener[jsp.description.name];
+        var jspl = listenerMap[jsp.description.name];
         if (jspl) {
-            jspListener[jsp.description.name].forEach(function (t) {
-                t.off();
-            });
-            delete jspListener[jsp.description.name];
+            jspl.forEach(function (t) t.off());
+            delete listenerMap[jsp.description.name];
         }
     }
 };

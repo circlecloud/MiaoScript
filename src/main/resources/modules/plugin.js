@@ -71,23 +71,40 @@ function loadJsPlugins(files) {
 }
 
 function loadPlugin(file) {
-    var p = require(file, {
+    var plugin = require(file, {
         cache: false,
         // 给插件注入单独的 console
         hook: function (origin) {
-            return 'var console = new Console();' + origin + 'module.exports.console = console;'
+            return beforeLoadHook(origin);
         }
     });
-    log.d("插件编译结果: %s", p.toJson());
-    if (!p.description || !p.description.name) {
+    log.d("插件编译结果: %s", plugin.toJson());
+    var desc = plugin.description;
+    if (!desc || !desc.name) {
         log.w("文件 %s 不存在 description 描述信息 无法加载插件!", file);
     } else {
-        initPlugin(file, p);
-        plugins.push(p);
-        plugins[p.description.name] = p;
-        log.i('载入插件 %s 版本 %s By %s', p.description.name, p.description.version || '未知', p.description.author || '未知');
+        initPlugin(file, plugin);
+        afterLoadHook(plugin);
+        plugins.push(plugin);
+        plugins[plugin.description.name] = plugin;
+        log.i('载入插件 %s 版本 %s By %s', desc.name, desc.version || '未知', desc.author || '未知');
     }
-    return p;
+    return plugin;
+}
+
+function beforeLoadHook(origin) {
+    var result = origin;
+    // 处理 event 为了不影响 正常逻辑 event 还是手动require吧
+    // result = result + 'var event = {}; module.exports.event = event;';
+    // 注入 console 对象
+    result = result + 'var console = new Console(); module.exports.console = console;';
+    return result;
+}
+
+function afterLoadHook(plugin) {
+    // plugin.event.on = event.on.bind(plugin);
+    // 给 console 添加插件名称
+    plugin.console.name = plugin.description.name;
 }
 
 /**
@@ -102,8 +119,6 @@ function initPlugin(file, plugin){
     plugin.getFile = function(name) {
         return fs.file(plugin.__DATA__, name);
     }
-    // 给 console 添加插件名称
-    plugin.console.name = plugin.description.name;
     // 初始化 getConfig()
     /**
      * 获取配置文件
@@ -133,8 +148,10 @@ function initPlugin(file, plugin){
             case 0:
                 plugin.configFile.parentFile.mkdirs()
                 base.save(plugin.configFile, plugin.config.toYaml());
+                break;
             case 2:
                 base.save(arguments[0], arguments[1].toYaml());
+                break;
         }
     }
     // 初始化 getDataFolder()
@@ -156,9 +173,7 @@ function runAndCatch(jsp, exec, ext) {
         try {
             // 绑定方法的this到插件自身
             exec.bind(jsp)();
-            if (ext) {
-                ext();
-            }
+            if (ext) { ext(); }
         } catch (ex) {
             log.w('插件 %s 执行 %s 发生错误: %s', jsp.description.name, exec.name, ex.message);
             ex.printStackTrace();
@@ -200,7 +215,10 @@ exports.enable = function () {
     checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.enable));
 };
 exports.disable = function () {
-    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.disable, function () event.disable(p)));
+    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.disable, function(){
+        event.disable(p);
+        task.cancel();
+    }));
 };
 exports.reload = function () {
     checkAndGet(arguments).forEach(function (p) {
