@@ -31,6 +31,8 @@ function loadCore() {
     // 加载基础模块
     load(core_dir + '/ext.js');
     load(core_dir + '/console.js');
+    // 加载补丁和扩展
+    load(core_dir + '/patch.js');
 }
 
 /**
@@ -44,14 +46,14 @@ function loadRequire() {
 function loadLib4Bukkit() {
     require('modules/event');
     var task = require('modules/task');
-    global.setTimeout = function (func, time) {
-        return task.later(func, time)
+    global.setTimeout = function (func, time, async) {
+        return async ? task.laterAsync(func, time) : task.later(func, time);
     };
     global.clearTimeout = function (task) {
         task.cancel();
     };
-    global.setInterval = function (func, time) {
-        return task.timer(func, time)
+    global.setInterval = function (func, time, async) {
+        return async ? task.timerAsync(func, time) : task.timer(func, time);
     };
     global.clearInterval = function (task) {
         task.cancel();
