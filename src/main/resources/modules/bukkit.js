@@ -9,7 +9,22 @@ var Bukkit = Java.type("org.bukkit.Bukkit");
 // noinspection JSUnresolvedVariable
 var PluginManager = Bukkit.pluginManager;
 exports.$ = Bukkit;
+/**
+ * 获取NMS版本
+ */
 exports.nmsVersion = Bukkit.server.class.name.split('.')[3];
+/**
+ * 获取NMS类
+ */
+exports.nmsCls = function (name) {
+    return Java.type(['net.minecraft.server', exports.nmsVersion, name].join('.'));
+}
+/**
+ * 获取在线玩家
+ */
+exports.players = function (func) {
+    return Bukkit.onlinePlayers.forEach(func);
+};
 /**
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
@@ -40,9 +55,6 @@ exports.plugin = {
         return PluginManager.isPluginEnabled(name);
     }
 };
-exports.nmsCls = function (name){
-    return Java.type(['net.minecraft.server', exports.nmsVersion, name].join('.'));
-}
 /**
  * 公告
  * @param message 消息
