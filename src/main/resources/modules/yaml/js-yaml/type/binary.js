@@ -4,11 +4,11 @@
 
 var NodeBuffer;
 
-try {
-  // A trick for browserified version, to not include `Buffer` shim
-  var _require = require;
-  NodeBuffer = _require('buffer').Buffer;
-} catch (__) {}
+// try {
+//   // A trick for browserified version, to not include `Buffer` shim
+//   var _require = require;
+//   NodeBuffer = _require('buffer').Buffer;
+// } catch (__) {}
 
 var Type       = require('../type');
 
