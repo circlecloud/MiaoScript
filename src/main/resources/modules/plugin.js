@@ -23,8 +23,8 @@ function loadPlugins(path) {
         fs.list(path).forEach(function (file) {
             files.push(file.toFile());
         });
-        loadZipPlugin(files);
-        loadJsPlugin(files);
+        loadZipPlugins(files);
+        loadJsPlugins(files);
     }
 }
 
@@ -48,7 +48,7 @@ function updatePlugins(path) {
  * ZIP类型插件预加载
  * @param files
  */
-function loadZipPlugin(files) {
+function loadZipPlugins(files) {
     // // TODO ZIP类型插件加载
     // files.filter(function (file) {
     //     return file.name.endsWith(".zip");
@@ -62,32 +62,48 @@ function loadZipPlugin(files) {
 /**
  * JS类型插件预加载
  */
-function loadJsPlugin(files) {
+function loadJsPlugins(files) {
     files.filter(function (file) {
         return file.name.endsWith(".js")
     }).forEach(function (file) {
-        var p = require(file);
-        log.d("插件编译结果: %s", JSON.stringify(p));
-        if (!p.description || !p.description.name) {
-            log.w("文件 %s 不存在 description 描述信息 无法加载插件!", file);
-        } else {
-            initPlugin(file, p);
-            plugins.push(p);
-            plugins[p.description.name] = p;
-            log.i('载入插件 %s 版本 %s By %s', p.description.name, p.description.version || '未知', p.description.author || '未知');
-        }
+        loadPlugin(file);
     })
 }
+
+function loadPlugin(file) {
+    var p = require(file, {
+        cache: false,
+        // 给插件注入单独的 console
+        hook: function (origin) {
+            return 'var console = new Console();' + origin + 'module.exports.console = console;'
+        }
+    });
+    log.d("插件编译结果: %s", p.toJson());
+    if (!p.description || !p.description.name) {
+        log.w("文件 %s 不存在 description 描述信息 无法加载插件!", file);
+    } else {
+        initPlugin(file, p);
+        plugins.push(p);
+        plugins[p.description.name] = p;
+        log.i('载入插件 %s 版本 %s By %s', p.description.name, p.description.version || '未知', p.description.author || '未知');
+    }
+    return p;
+}
+
 /**
  * 初始化插件内容(提供config,__DATA__等参数)
  */
 function initPlugin(file, plugin){
+    // 初始化 __FILE__
+    plugin.__FILE__ = file;
     // 初始化 __DATA__
     plugin.__DATA__ = fs.file(file.parentFile, plugin.description.name);
     // 初始化 getFile()
     plugin.getFile = function(name) {
         return fs.file(plugin.__DATA__, name);
     }
+    // 给 console 添加插件名称
+    plugin.console.name = plugin.description.name;
     // 初始化 getConfig()
     /**
      * 获取配置文件
@@ -115,9 +131,10 @@ function initPlugin(file, plugin){
     plugin.saveConfig = function() {
         switch (arguments.length) {
             case 0:
-                base.save(plugin.configFile, yaml.safeDump(plugin.config));
+                plugin.configFile.parentFile.mkdirs()
+                base.save(plugin.configFile, plugin.config.toYaml());
             case 2:
-                base.save(arguments[0], yaml.safeDump(arguments[1]));
+                base.save(arguments[0], arguments[1].toYaml());
         }
     }
     // 初始化 getDataFolder()
@@ -128,6 +145,9 @@ function initPlugin(file, plugin){
     plugin.configFile = plugin.getFile('config.yml');
     if (plugin.configFile.isFile()) {
         plugin.config = plugin.getConfig('config.yml');
+    } else if ( plugin.description.config ){
+        plugin.config = plugin.description.config;
+        plugin.saveConfig();
     }
 }
 
@@ -185,6 +205,7 @@ exports.disable = function () {
 exports.reload = function () {
     checkAndGet(arguments).forEach(function (p) {
         exports.disable(p);
+        p = loadPlugin(p.__FILE__);
         exports.load(p);
         exports.enable(p);
     });

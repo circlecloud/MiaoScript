@@ -5,8 +5,8 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 var plugin = base.plugin;
-var bukkit = require('bukkit');
-var ref = require('kit/reflect');
+var bukkit = require('./bukkit');
+var ref = require('core/reflect');
 var lookupNames = ref.on(bukkit.plugin.manager).get('lookupNames').get();
 var knownCommands = ref.on(bukkit.plugin.manager).get('commandMap').get('knownCommands').get();
 var PluginCommand = Java.type('org.bukkit.command.PluginCommand');
