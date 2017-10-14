@@ -17,6 +17,7 @@ function Reflect(obj) {
         this.obj = obj;
         this.class = obj.class;
     }
+
     this.field = function (name) {
         try {
             // Try getting a public field
@@ -59,6 +60,15 @@ function Reflect(obj) {
         return arguments.length === 1 ? this.field(arguments[0]) : this.obj;
     };
 
+    this.set = function (name, value) {
+        try {
+            this.class.getField(name).set(this.obj, value);
+        } catch (ex) {
+            accessible(this.class.getDeclaredField(name)).set(this.obj, value);
+        }
+        return this;
+    }
+    
     this.create = function () {
         var param = Array.prototype.slice.call(arguments);
         return on(declaredConstructor(this.class, param).newInstance(param));
