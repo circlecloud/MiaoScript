@@ -22,9 +22,14 @@ exports.nmsCls = function (name) {
 /**
  * 获取在线玩家
  */
-exports.players = function (func) {
-    return Bukkit.onlinePlayers.forEach(func);
-};
+exports.players = function(){
+    switch (arguments.length) {
+        case 1:
+            return Bukkit.onlinePlayers.forEach(arguments[0]);
+        default:
+            return Bukkit.onlinePlayers;
+    }
+}
 /**
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}

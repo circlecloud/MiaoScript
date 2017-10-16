@@ -7,6 +7,8 @@
 var fs = require('core/fs');
 var yaml = require('modules/yaml');
 var event = require('modules/event');
+var bukkit = require('./bukkit');
+var command = require('./command');
 
 /**
  * 载入插件
@@ -18,7 +20,7 @@ function loadPlugins(path) {
         log.i("首次加载 创建文件夹 %s ...", path);
     } else {
         log.i("开始扫描 %s 下的插件 ...", path);
-        updatePlugins(path);
+        createUpdate(path);
         var files = [];
         fs.list(path).forEach(function (file) {
             files.push(file.toFile());
@@ -32,15 +34,10 @@ function loadPlugins(path) {
  * 更新插件
  * @param path
  */
-function updatePlugins(path) {
+function createUpdate(path) {
     var update = fs.file(path, "update");
     if (!update.exists()) {
         update.mkdirs();
-    } else {
-        fs.list(update).forEach(function (file) {
-            log.i('自动升级插件 %s', file);
-            fs.move(file, fs.file(path, file.name), true);
-        })
     }
 }
 
@@ -71,6 +68,11 @@ function loadJsPlugins(files) {
 }
 
 function loadPlugin(file) {
+    var update = fs.file(fs.file(file.parentFile, 'update'), file.name);
+    if (update.exists()) {
+        log.i('自动升级插件 %s', file.name);
+        fs.move(update, file, true);        
+    }
     var plugin = require(file, {
         cache: false,
         // 给插件注入单独的 console
@@ -115,11 +117,23 @@ function initPlugin(file, plugin){
     plugin.__FILE__ = file;
     // 初始化 __DATA__
     plugin.__DATA__ = fs.file(file.parentFile, plugin.description.name);
+    // 初始化 getDataFolder()
+    plugin.getDataFolder = function() {
+        return plugin.__DATA__;
+    }
     // 初始化 getFile()
     plugin.getFile = function(name) {
-        return fs.file(plugin.__DATA__, name);
+        return fs.file(plugin.getDataFolder(), name);
     }
-    // 初始化 getConfig()
+    initPluginConfig(plugin);
+    initPluginCommand(plugin);
+    initPluginPermission(plugin);
+}
+
+/**
+ * 初始化插件配置
+ */
+function initPluginConfig(plugin){
     /**
      * 获取配置文件
      * @constructor
@@ -137,7 +151,6 @@ function initPlugin(file, plugin){
                 return yaml.safeLoad(base.read(file));
         }
     }
-    // 初始化 saveConfig()
     /**
      * 保存配置文件
      * @constructor
@@ -154,10 +167,6 @@ function initPlugin(file, plugin){
                 break;
         }
     }
-    // 初始化 getDataFolder()
-    plugin.getDataFolder = function() {
-        return plugin.__DATA__;
-    }
     // 初始化 config
     plugin.configFile = plugin.getFile('config.yml');
     if (plugin.configFile.isFile()) {
@@ -165,6 +174,37 @@ function initPlugin(file, plugin){
     } else if ( plugin.description.config ){
         plugin.config = plugin.description.config;
         plugin.saveConfig();
+    }
+}
+
+/*
+ * 初始化插件命令
+ */
+function initPluginCommand(plugin) {
+    command.init(plugin);
+}
+
+
+/**
+ * Permission(String name, String description)
+ */
+var Permission = Java.type("org.bukkit.permissions.Permission");
+var PermissionDefault = Java.type('org.bukkit.permissions.PermissionDefault');
+/*
+ * 初始化插件命令
+ */
+function initPluginPermission(plugin) {
+    var permissions = plugin.description.permissions;
+    var manager = bukkit.plugin.manager;
+    if(permissions){
+       for (var name in permissions){
+           var permission = permissions[name];
+           if (typeof permission !== 'object') continue;
+           var desc = permission.description;
+           var def = permission.default || 'OP';
+           manager.addPermission(new Permission(name, desc, PermissionDefault.getByName(def)));
+           log.d('插件 %s 注册权限 %s Default %s ...', plugin.description.name, name, def);
+       }
     }
 }
 

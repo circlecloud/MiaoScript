@@ -5,45 +5,55 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 var plugin = base.plugin;
-var bukkit = require('./bukkit');
 var ref = require('core/reflect');
-var lookupNames = ref.on(bukkit.plugin.manager).get('lookupNames').get();
-var knownCommands = ref.on(bukkit.plugin.manager).get('commandMap').get('knownCommands').get();
+var bukkit = require('./bukkit');
+var commandMap = ref.on(bukkit.plugin.manager).get('commandMap').get();
 var PluginCommand = Java.type('org.bukkit.command.PluginCommand');
 
 var Arrays = Java.type('java.util.Arrays')
 
-function create(jsp, name) {
-    var cmd = ref.on(PluginCommand).create(name, plugin).get();
-    register(jsp, name, cmd);
-    return cmd;
+function init(jsp){
+    var commands = jsp.description.commands;
+    if(commands){
+        var pluginCmds = [];
+        for (var name in commands){
+            var command = commands[name];
+            if (typeof command !== 'object') continue;
+            var newCmd = create(jsp, name);
+            if (command.description) newCmd.setDescription(command.description);
+            if (command.usage) newCmd.setUsage(command.usage);
+            if (command.aliases) newCmd.setAliases(Arrays.asList(command.aliases));
+            if (command.permission) newCmd.setPermission(command.permission);
+            if (command['permission-message']) newCmd.setPermissionMessage(command['permission-message']);
+            pluginCmds.push(newCmd);
+            log.d('插件 %s 注册命令 %s ...', jsp.description.name, name);
+        }
+        commandMap.registerAll(jsp.description.name, Arrays.asList(pluginCmds));
+    }
 }
 
-function register(jsp, name, cmd) {
-    if (name.isEmpty()) {
-        return;
-    }
-    knownCommands.put(name, cmd);
-    knownCommands.computeIfAbsent(jsp.description.name + ":" + name, function () {
-        return cmd;
-    });
-    knownCommands.computeIfAbsent('ms:' + jsp.description.name + ":" + name, function () {
-        return cmd;
-    });
-    lookupNames.put(name, plugin);
+function get(name) {
+    return commandMap.getCommand(name);
+}
+
+function create(jsp, name) {
+    return ref.on(PluginCommand).create(name, plugin).get();
+}
+
+function register(jsp, cmd){
+    commandMap.register(jsp.description.name, cmd);
 }
 
 // var exec = {
-//     onCommand: function (sender, cmd, command, args) {
+//     cmd: function (sender, command, args) {
 //
 //     },
-//     onTabComplete: function (sender, cmd, command, args) {
+//     tab: function (sender, command, args) {
 //
 //     }
 // };
-
-exports.on = function (jsp, name, exec) {
-    var c = create(jsp, name);
+function on(jsp, name, exec) {
+    var c = get(name) || create(jsp, name);
     if (exec.cmd) {
         c.setExecutor(function (sender, cmd, command, args) {
             return exec.cmd(sender, command, args);
@@ -54,8 +64,10 @@ exports.on = function (jsp, name, exec) {
             return Arrays.asList(exec.tab(sender, command, args));
         });
     }
-};
+}
 
+exports.init = init
+exports.on = on;
 exports.off = function () {
 
 };
