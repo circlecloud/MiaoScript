@@ -217,7 +217,7 @@ exports.enable = function () {
 exports.disable = function () {
     checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.disable, function(){
         event.disable(p);
-        task.cancel();
+        // task.cancel();
     }));
 };
 exports.reload = function () {
