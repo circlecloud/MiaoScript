@@ -103,7 +103,7 @@
      * @returns {Object}
      */
     function compileModule(id, name, file, optional) {
-        log.d('加载模块 %s 位于 %s', name, id);
+        log.d('加载模块 %s 位于 %s Optional %s', name, id, optional.toJson());
         // noinspection JSUnresolvedVariable
         var module = {
             id: id,
