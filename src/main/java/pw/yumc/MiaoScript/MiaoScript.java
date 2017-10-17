@@ -1,16 +1,18 @@
 package pw.yumc.MiaoScript;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import lombok.SneakyThrows;
+import lombok.val;
 import pw.yumc.YumCore.bukkit.Log;
 import pw.yumc.YumCore.bukkit.P;
 import pw.yumc.YumCore.commands.CommandSub;
@@ -53,6 +55,16 @@ public class MiaoScript extends JavaPlugin implements Executor {
     @Help("重启脚本引擎")
     public void reload(CommandSender sender) {
         disableEngine();
+        val server = Bukkit.getServer();
+        try {
+            server.getScheduler().cancelTasks(this);
+            server.getServicesManager().unregisterAll(this);
+            HandlerList.unregisterAll(this);
+            server.getMessenger().unregisterIncomingPluginChannel(this);
+            server.getMessenger().unregisterOutgoingPluginChannel(this);
+        } catch (Exception ex) {
+            Log.d("Error reload", ex);
+        }
         enableEngine();
         Log.sender(sender, "§bMiaoScript §eEngine §a重启完成!");
     }
