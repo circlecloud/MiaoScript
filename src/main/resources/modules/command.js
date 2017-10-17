@@ -12,7 +12,7 @@ var PluginCommand = Java.type('org.bukkit.command.PluginCommand');
 
 var Arrays = Java.type('java.util.Arrays')
 
-function init(jsp){
+function enable(jsp){
     var commands = jsp.description.commands;
     if(commands){
         var pluginCmds = [];
@@ -66,7 +66,8 @@ function on(jsp, name, exec) {
     }
 }
 
-exports.init = init
+exports.enable = enable
+
 exports.on = on;
 exports.off = function () {
 

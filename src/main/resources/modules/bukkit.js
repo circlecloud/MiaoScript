@@ -7,6 +7,7 @@
 /*global Java, base, module, exports, require, __FILE__*/
 var Bukkit = Java.type("org.bukkit.Bukkit");
 // noinspection JSUnresolvedVariable
+var Server = Bukkit.server;
 var PluginManager = Bukkit.pluginManager;
 exports.$ = Bukkit;
 /**
@@ -18,6 +19,22 @@ exports.nmsVersion = Bukkit.server.class.name.split('.')[3];
  */
 exports.nmsCls = function (name) {
     return Java.type(['net.minecraft.server', exports.nmsVersion, name].join('.'));
+}
+exports.command = function (name) {
+    return Server.getPluginCommand(name);
+}
+/**
+ * 获取玩家
+ */
+exports.player = function(){
+    switch (arguments.length) {
+        case 0:
+            return undefined;
+        case 1:
+            return Bukkit.getPlayer(arguments[0]);
+        default:
+            return Bukkit.getPlayerExtra(arguments[0]);
+    }
 }
 /**
  * 获取在线玩家

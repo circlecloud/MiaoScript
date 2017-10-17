@@ -9,6 +9,7 @@ var yaml = require('modules/yaml');
 var event = require('modules/event');
 var bukkit = require('./bukkit');
 var command = require('./command');
+var permission = require('./permission');
 
 /**
  * 载入插件
@@ -126,8 +127,9 @@ function initPlugin(file, plugin){
         return fs.file(plugin.getDataFolder(), name);
     }
     initPluginConfig(plugin);
-    initPluginCommand(plugin);
-    initPluginPermission(plugin);
+    
+    command.enable(plugin);
+    permission.enable(plugin);
 }
 
 /**
@@ -174,37 +176,6 @@ function initPluginConfig(plugin){
     } else if ( plugin.description.config ){
         plugin.config = plugin.description.config;
         plugin.saveConfig();
-    }
-}
-
-/*
- * 初始化插件命令
- */
-function initPluginCommand(plugin) {
-    command.init(plugin);
-}
-
-
-/**
- * Permission(String name, String description)
- */
-var Permission = Java.type("org.bukkit.permissions.Permission");
-var PermissionDefault = Java.type('org.bukkit.permissions.PermissionDefault');
-/*
- * 初始化插件命令
- */
-function initPluginPermission(plugin) {
-    var permissions = plugin.description.permissions;
-    var manager = bukkit.plugin.manager;
-    if(permissions){
-       for (var name in permissions){
-           var permission = permissions[name];
-           if (typeof permission !== 'object') continue;
-           var desc = permission.description;
-           var def = permission.default || 'OP';
-           manager.addPermission(new Permission(name, desc, PermissionDefault.getByName(def)));
-           log.d('插件 %s 注册权限 %s Default %s ...', plugin.description.name, name, def);
-       }
     }
 }
 
