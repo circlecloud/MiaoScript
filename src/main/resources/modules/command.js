@@ -10,6 +10,9 @@ var bukkit = require('./bukkit');
 var commandMap = ref.on(bukkit.plugin.manager).get('commandMap').get();
 var PluginCommand = Java.type('org.bukkit.command.PluginCommand');
 
+var StringUtil = Java.type('org.bukkit.util.StringUtil');
+
+var ArrayList = Java.type('java.util.ArrayList');
 var Arrays = Java.type('java.util.Arrays')
 
 function enable(jsp){
@@ -37,11 +40,12 @@ function get(name) {
 }
 
 function create(jsp, name) {
-    return ref.on(PluginCommand).create(name, plugin).get();
+    return register(jsp, ref.on(PluginCommand).create(name, plugin).get());
 }
 
 function register(jsp, cmd){
     commandMap.register(jsp.description.name, cmd);
+    return cmd;
 }
 
 // var exec = {
@@ -52,8 +56,10 @@ function register(jsp, cmd){
 //
 //     }
 // };
+
 function on(jsp, name, exec) {
     var c = get(name) || create(jsp, name);
+    log.d('插件 %s 设置命令 %s(%s) 执行器 ...', jsp.description.name, name, c);
     if (exec.cmd) {
         c.setExecutor(function (sender, cmd, command, args) {
             return exec.cmd(sender, command, args);
@@ -61,7 +67,10 @@ function on(jsp, name, exec) {
     }
     if (exec.tab) {
         c.setTabCompleter(function (sender, cmd, command, args) {
-            return Arrays.asList(exec.tab(sender, command, args));
+            var completions = new ArrayList();
+            var token = args[args.length - 1];
+            StringUtil.copyPartialMatches(token, Arrays.asList(exec.tab(sender, command, args)), completions);
+            return completions;
         });
     }
 }
