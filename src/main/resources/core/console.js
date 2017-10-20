@@ -27,6 +27,12 @@ var log = base.getLog().static;
         this.debug = function () {
             log.d(this.name + Array.prototype.join.call(arguments, ' '));
         }
+        this.ex = function (ex) {
+            log.console('§4' + ex);
+            ex.getStackTrace().forEach(function (stack) {
+                log.console('    §e位于 §c%s §4行%s', stack.fileName, stack.lineNumber);
+            });
+        }
     }
     global.Console = Console;
     global.console = new Console();

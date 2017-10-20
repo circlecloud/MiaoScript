@@ -62,15 +62,25 @@ function on(jsp, name, exec) {
     log.d('插件 %s 设置命令 %s(%s) 执行器 ...', jsp.description.name, name, c);
     if (exec.cmd) {
         c.setExecutor(function (sender, cmd, command, args) {
-            return exec.cmd(sender, command, args);
+            try {
+                return exec.cmd(sender, command, args);
+            } catch (ex) {
+                log.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s', sender.name, jsp.description.name, command, Java.from(args).join(' '), ex);
+                console.ex(ex);
+            }
         });
     }
     if (exec.tab) {
         c.setTabCompleter(function (sender, cmd, command, args) {
-            var completions = new ArrayList();
-            var token = args[args.length - 1];
-            StringUtil.copyPartialMatches(token, Arrays.asList(exec.tab(sender, command, args)), completions);
-            return completions;
+            try {
+                var completions = new ArrayList();
+                var token = args[args.length - 1];
+                StringUtil.copyPartialMatches(token, Arrays.asList(exec.tab(sender, command, args)), completions);
+                return completions;
+            } catch (ex) {
+                log.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s',sender.name ,jsp.description.name, command, Java.from(args).join(' '), ex);
+                console.ex(ex);
+            }
         });
     }
 }

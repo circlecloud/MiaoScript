@@ -114,7 +114,12 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
         EventPriority[priority],
         new EventExecutor({
             execute: function (listener, event) {
-                exec(event);
+                try{
+                    exec(event);
+                } catch (ex){
+                    log.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s', name, event.class.simpleName, ex);
+                    console.ex(ex);
+                }
             }
         }),
         plugin,

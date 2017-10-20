@@ -76,7 +76,6 @@ function loadPlugin(file) {
     }
     var plugin = require(file, {
         cache: false,
-        // 给插件注入单独的 console
         hook: function (origin) {
             return beforeLoadHook(origin);
         }
@@ -99,8 +98,10 @@ function beforeLoadHook(origin) {
     var result = origin;
     // 处理 event 为了不影响 正常逻辑 event 还是手动require吧
     // result = result + 'var event = {}; module.exports.event = event;';
-    // 注入 console 对象
+    // 注入 console 对象         // 给插件注入单独的 console
     result = result + 'var console = new Console(); module.exports.console = console;';
+    // 插件注入 self 对象
+    result = result + 'var self = {}; module.exports.self = self;';
     return result;
 }
 
@@ -108,6 +109,10 @@ function afterLoadHook(plugin) {
     // plugin.event.on = event.on.bind(plugin);
     // 给 console 添加插件名称
     plugin.console.name = plugin.description.name;
+    // 赋值 self
+    for (var i in plugin){
+        plugin.self[i] = plugin[i];
+    }
 }
 
 /**
@@ -119,15 +124,13 @@ function initPlugin(file, plugin){
     // 初始化 __DATA__
     plugin.__DATA__ = fs.file(file.parentFile, plugin.description.name);
     // 初始化 getDataFolder()
-    plugin.getDataFolder = function() {
-        return plugin.__DATA__;
-    }
+    plugin.getDataFolder = function() { return plugin.__DATA__; }
     // 初始化 getFile()
-    plugin.getFile = function(name) {
-        return fs.file(plugin.getDataFolder(), name);
-    }
+    plugin.getFile = function(name) { return fs.file(plugin.getDataFolder(), name); }
+
+    // 初始化插件配置相关方法
     initPluginConfig(plugin);
-    
+
     command.enable(plugin);
     permission.enable(plugin);
 }
@@ -136,6 +139,8 @@ function initPlugin(file, plugin){
  * 初始化插件配置
  */
 function initPluginConfig(plugin){
+    // 初始化 config
+    plugin.configFile = plugin.getFile('config.yml');
     /**
      * 获取配置文件
      * @constructor
@@ -154,6 +159,14 @@ function initPluginConfig(plugin){
         }
     }
     /**
+     * 重载配置文件
+     * @constructor
+     * @constructor (file|string)
+     */
+    plugin.reloadConfig = function() {
+        plugin.config = plugin.getConfig(plugin.configFile);
+    }
+    /**
      * 保存配置文件
      * @constructor
      * @constructor (file, content)
@@ -169,11 +182,9 @@ function initPluginConfig(plugin){
                 break;
         }
     }
-    // 初始化 config
-    plugin.configFile = plugin.getFile('config.yml');
     if (plugin.configFile.isFile()) {
         plugin.config = plugin.getConfig('config.yml');
-    } else if ( plugin.description.config ){
+    } else if (plugin.description.config ){
         plugin.config = plugin.description.config;
         plugin.saveConfig();
     }
@@ -186,24 +197,18 @@ function runAndCatch(jsp, exec, ext) {
             exec.bind(jsp)();
             if (ext) { ext(); }
         } catch (ex) {
-            log.w('插件 %s 执行 %s 发生错误: %s', jsp.description.name, exec.name, ex.message);
-            ex.printStackTrace();
+            log.w('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s', jsp.description.name, exec.name, ex.message);
+            console.ex(ex);
         }
     }
 }
 
 function checkAndGet(args) {
-    if (args.length === 0) {
-        return plugins;
-    }
+    if (args.length === 0) { return plugins; }
     var name = args[0];
     // 如果是插件 则直接返回
-    if (name.description) {
-       return [name];
-    }
-    if (!exports.plugins[name]) {
-        throw new Error("插件 " + name + "不存在!");
-    }
+    if (name.description) { return [name]; }
+    if (!exports.plugins[name]) { throw new Error("插件 " + name + "不存在!"); }
     return [exports.plugins[name]];
 }
 
