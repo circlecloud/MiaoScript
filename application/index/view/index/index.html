@@ -46,6 +46,9 @@
       extraKeys: {
         "Ctrl-Q": function (cm) {
           cm.foldCode(cm.getCursor());
+        },
+        "Ctrl-s": function (cm) {
+          console.log('执行保存!');
         }
       },
       foldGutter: true,
@@ -55,7 +58,5 @@
 </script>
 
 <body>
-  <textarea id="code" style="height: 100%">
-
-  </textarea>
+  <textarea id="code" style="height: 100%"></textarea>
 </body>
