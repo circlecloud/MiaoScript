@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <!-- UC应用模式 -->
+  <meta name="browsermode" content="application">
+  <!-- QQ应用模式 -->
+  <meta name="x5-page-mode" content="app">
+  <title>YUMC插件商城</title>
+  <script src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+  <script src="//cdn.bootcss.com/pagedown/1.0/Markdown.Converter.min.js"></script>
+  <link href="//cdn.bootcss.com/github-markdown-css/2.4.1/github-markdown.min.css" rel="stylesheet">
+  <script src="//cdn.bootcss.com/avalon.js/2.2.4/avalon.min.js"></script>
+  <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <script src="//cdn.bootcss.com/js-yaml/3.8.1/js-yaml.min.js"></script>
+
+  <link href="//cdn.bootcss.com/messenger/1.5.0/css/messenger.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/messenger/1.5.0/css/messenger-theme-future.min.css" rel="stylesheet">
+  <script src="//cdn.bootcss.com/messenger/1.5.0/js/messenger.min.js"></script>
+  <script src="//cdn.bootcss.com/messenger/1.5.0/js/messenger-theme-future.min.js"></script>
+
+  <link href="//cdn.bootcss.com/codemirror/5.30.0/codemirror.min.css" rel="stylesheet">
+  <script src="//cdn.bootcss.com/codemirror/5.30.0/codemirror.min.js"></script>
+  <script src="//cdn.bootcss.com/codemirror/5.30.0/addon/lint/javascript-lint.min.js"></script>
+  <script src="//cdn.bootcss.com/codemirror/5.30.0/addon/lint/yaml-lint.min.js"></script>
+</head>
+<script>
+  myTextarea = document.getElementById("code");
+  var editor = CodeMirror.fromTextArea(myTextarea, {
+    mode: "javascript"
+  });
+</script>
+
+<body>
+  <textarea id="code">
+
+  </textarea>
+</body>
