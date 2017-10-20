@@ -25,12 +25,16 @@
 
   <link href="//cdn.bootcss.com/codemirror/5.30.0/codemirror.min.css" rel="stylesheet">
   <script src="//cdn.bootcss.com/codemirror/5.30.0/codemirror.min.js"></script>
+
+  <script src="//cdn.bootcss.com/codemirror/5.30.0/mode/javascript/javascript.min.js"></script>
   <script src="//cdn.bootcss.com/codemirror/5.30.0/addon/lint/javascript-lint.min.js"></script>
+  <script src="//cdn.bootcss.com/codemirror/5.30.0/addon/hint/javascript-hint.min.js"></script>
+
   <script src="//cdn.bootcss.com/codemirror/5.30.0/addon/lint/yaml-lint.min.js"></script>
 </head>
 <script>
-  myTextarea = document.getElementById("code");
-  var editor = CodeMirror.fromTextArea(myTextarea, {
+  code = document.getElementById("code");
+  var editor = CodeMirror.fromTextArea(code, {
     mode: "javascript"
   });
 </script>
