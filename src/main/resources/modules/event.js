@@ -25,7 +25,7 @@ var listenerMap = [];
  */
 function mapEventName() {
     var eventPackageDir = "org/bukkit/event";
-
+    var count = 0;
     var dirs = Thread.currentThread().getContextClassLoader().getResources(eventPackageDir);
     while (dirs.hasMoreElements()) {
         var url = dirs.nextElement();
@@ -48,6 +48,7 @@ function mapEventName() {
                             var simpleName = clz.simpleName.toLowerCase();
                             log.fd("Mapping Event [%s] => %s", clz.name, simpleName);
                             mapEvent[simpleName] = clz;
+                            count++;
                         }
                     } catch (ex) {
                         //ignore already loaded class
@@ -56,6 +57,7 @@ function mapEventName() {
             }
         }
     }
+    return count;
 }
 
 /**
@@ -83,7 +85,7 @@ function isVaildEvent(clz) {
 function listen(jsp, event, exec, priority, ignoreCancel) {
     var name = jsp.description.name;
     if (ext.isNull(name)) throw new TypeError('插件名称为空 请检查传入参数!');
-    var eventCls = mapEvent[event];
+    var eventCls = mapEvent[event] || mapEvent[event.toLowerCase()] || mapEvent[event +'Event'] || mapEvent[event.toLowerCase() + 'event'];
     if (!eventCls) {
         try {
             eventCls = base.getClass(eventCls);
@@ -92,12 +94,11 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
             return;
         }
     }
-    if (priority === undefined) {
-        priority = 'NORMAL'
+    if (typeof priority === 'boolean') {
+        ignoreCancel = priority
     }
-    if (ignoreCancel === undefined) {
-        ignoreCancel = false;
-    }
+    priority = priority || 'NORMAL';
+    ignoreCancel = ignoreCancel || false;
     var listener = new Listener({});
     // noinspection JSUnusedGlobalSymbols
     /**
@@ -143,8 +144,7 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
 
 var mapEvent = [];
 // 映射事件名称
-mapEventName();
-// log.i('Bukkit 事件映射完毕 共计 %s 个事件!', mapEvent.length);
+log.i('Bukkit 事件映射完毕 共计 %s 个事件!', mapEventName().toFixed(0));
 
 module.exports = {
     on: listen,

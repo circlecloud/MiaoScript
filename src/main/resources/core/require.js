@@ -103,7 +103,7 @@
      * @returns {Object}
      */
     function compileModule(id, name, file, optional) {
-        log.d('加载模块 %s 位于 %s Optional %s', name, id, optional.toJson());
+        log.fd('加载模块 %s 位于 %s Optional %s', name, id, optional.toJson());
         // noinspection JSUnresolvedVariable
         var module = {
             id: id,
@@ -116,7 +116,7 @@
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
             ]);
-            log.d('模块 %s 编译成功!', name);
+            log.fd('模块 %s 编译成功!', name);
             module.loaded = true;
         } catch (ex) {
             log.console("§4警告! §b模块 §a%s §4编译失败! ERR: %s", name, ex);
@@ -150,7 +150,7 @@
     function _require(name, path, optional) {
         var file = resolve(name, path);
         if (file === undefined) {
-            log.w("模块 %s 加载失败! 未找到该模块!", name);
+            log.console("§c模块 §a%s §c加载失败! §4未找到该模块!", name);
             return {exports:{}};
         }
         if (!optional) optional = { cache: true }

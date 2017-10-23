@@ -36,12 +36,12 @@ public class Base {
     }
 
     public String read(String path) throws IOException {
-        Log.d("读取文件 %s ...", path);
+        Log.fd("读取文件 %s ...", path);
         return new String(Files.readAllBytes(new File(path).toPath()), "UTF-8");
     }
 
     public void save(String path, String content) throws IOException {
-        Log.d("保存文件 %s ...", path);
+        Log.fd("保存文件 %s ...", path);
         File file = new File(path);
         file.getParentFile().mkdirs();
         Files.write(file.toPath(), content.getBytes("UTF-8"));
@@ -54,7 +54,7 @@ public class Base {
     public void delete(Path path) throws IOException {
         val file = path.toFile();
         if (!file.exists()) { return; }
-        Log.d("删除文件 %s ...", path);
+        Log.fd("删除文件 %s ...", path);
         if (file.isDirectory()) {
             for (Path f : Files.list(file.toPath()).collect(Collectors.toList())) {
                 delete(f);

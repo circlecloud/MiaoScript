@@ -42,7 +42,7 @@ function Reflect(obj) {
     };
 
     this.cacheMethod = function (name, clazzs) {
-        var mkey = this.class.name + '.' + name;
+        var mkey = this.class.name + '.' + name + ':' + clazzs.join(':');
         if (!methodCache[mkey]) {
             methodCache[mkey] = this.method(name, clazzs);
         }
@@ -53,7 +53,7 @@ function Reflect(obj) {
         var name = arguments[0];
         var params = Array.prototype.slice.call(arguments, 1);
         var method = this.cacheMethod(name, types(params));
-        return exports.on(method.invoke(this.get(), params));
+        return on(method.invoke(this.get(), params));
     };
 
     this.get = function () {
@@ -84,7 +84,7 @@ function types(values, def) {
     }
     var result = [];
     values.forEach(function (t) {
-        result.push((t === null || def) ? Object.class : t instanceof Class ? t : t.class)
+        result.push((t || def) ? Object.class : t instanceof Class ? t : t.class)
     });
     return result;
 }

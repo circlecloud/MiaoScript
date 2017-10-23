@@ -197,7 +197,7 @@ function runAndCatch(jsp, exec, ext) {
             exec.bind(jsp)();
             if (ext) { ext(); }
         } catch (ex) {
-            log.w('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s', jsp.description.name, exec.name, ex.message);
+            log.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s', jsp.description.name, exec.name, ex.message);
             console.ex(ex);
         }
     }
@@ -208,7 +208,7 @@ function checkAndGet(args) {
     var name = args[0];
     // 如果是插件 则直接返回
     if (name.description) { return [name]; }
-    if (!exports.plugins[name]) { throw new Error("插件 " + name + "不存在!"); }
+    if (!exports.plugins[name]) { throw new Error("插件 " + name + " 不存在!"); }
     return [exports.plugins[name]];
 }
 
