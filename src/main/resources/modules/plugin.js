@@ -15,15 +15,15 @@ var permission = require('./permission');
  * 载入插件
  * @param path
  */
-function loadPlugins(path) {
-    var plugin = fs.file(path);
+function loadPlugins(dir) {
+    var plugin = fs.file(root, dir);
     if (!plugin) {
-        log.i("首次加载 创建文件夹 %s ...", path);
+        log.i("首次加载 创建文件夹 %s ...", plugin);
     } else {
-        log.i("开始扫描 %s 下的插件 ...", path);
-        createUpdate(path);
+        log.i("开始扫描 %s 下的插件 ...", plugin);
+        createUpdate(plugin);
         var files = [];
-        fs.list(path).forEach(function (file) {
+        fs.list(plugin).forEach(function (file) {
             files.push(file.toFile());
         });
         loadZipPlugins(files);

@@ -4,8 +4,15 @@
 var String = Java.type("java.lang.String");
 var File = Java.type("java.io.File");
 var Files = Java.type("java.nio.file.Files");
+var separatorChar = File.separatorChar;
 var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
 
+/**
+ * 用文件分割符合并路径
+ */
+exports.concat = function () {
+    return Array.prototype.join.call(arguments, separatorChar);
+}
 /**
  * 获得文件
  * @constructor(file)

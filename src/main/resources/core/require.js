@@ -6,7 +6,8 @@
 (function (parent) {
     'use strict';
     var File = Java.type("java.io.File");
-    var paths = [parent, '', parent + '/core', parent + '/modules'];
+    var separatorChar = File.separatorChar;
+    var paths = [parent, '', parent + separatorChar + 'core', parent + separatorChar + 'modules'];
 
     /**
      * 解析模块名称为文件
@@ -137,7 +138,7 @@
     }
 
     function _cacheFile(file) {
-        return cacheDir + "/" + file.name;
+        return cacheDir + separatorChar + file.name;
     }
 
     /**
@@ -176,7 +177,7 @@
         };
     }
 
-    var cacheDir = parent + "/runtime";
+    var cacheDir = parent + separatorChar + "runtime";
 
     // 等于 undefined 说明 parent 是一个字符串 需要转成File
     // 可能有更加准确的方案

@@ -14,7 +14,7 @@ var disable;
         }
         load(root + '/core/init.js');
         try {
-            init(root, plugin);
+            init(root);
         } catch (ex) {
             log.w("MiaoScript 初始化失败! %s", ex);
             throw ex;

@@ -2,8 +2,11 @@
  * 补丁和方法扩展
  */
 
-// JSON快捷方法
-Object.prototype.toJson = function(){ return JSON.stringify(this); }
+(function(){
+    // JSON快捷方法
+    Object.prototype.toJson = function(){ return JSON.stringify(this); }
 
-// YAML快速生成
-Object.prototype.toYaml = function(){ return require('modules/yaml').safeDump(this); }
+    // YAML快速生成
+    var yaml = require('modules/yaml');
+    Object.prototype.toYaml = function(){ return yaml.safeDump(this); }
+})();

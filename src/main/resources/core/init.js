@@ -3,12 +3,13 @@ var global = this;
 /*global base*/
 
 // noinspection JSUnusedLocalSymbols
-function init(root, plugin) {
+function init(root) {
     global.root = root;
     loadCore();
     loadRequire();
+    loadPatch();
     loadLib4Bukkit();
-    loadPlugins(plugin);
+    loadPlugins();
 }
 
 /**
@@ -18,8 +19,6 @@ function loadCore() {
     // 加载基础模块
     load(root + '/core/ext.js');
     load(root + '/core/console.js');
-    // 加载补丁和扩展
-    load(root + '/core/patch.js');
 }
 
 /**
@@ -30,6 +29,17 @@ function loadRequire() {
     global.require = load(root + '/core/require.js')(root);
 }
 
+/**
+ * 加载补丁
+ */
+function loadPatch() {
+    // 加载补丁和扩展
+    load(root + '/core/patch.js');
+}
+
+/**
+ * 加载Bukkit的类库
+ */
 function loadLib4Bukkit() {
     require('modules/event');
     var task = require('modules/task');
@@ -50,14 +60,14 @@ function loadLib4Bukkit() {
 /**
  * 加载JS插件
  */
-function loadPlugins(plugin) {
+function loadPlugins() {
     // 初始化本体插件
-    global.pluginManager = require('modules/plugin');
-    pluginManager.init(plugin, root + '/plugins');
+    global.manager = require('modules/plugin');
+    manager.init(base.plugin, 'plugins');
     // 只有当在正式环境运行的时候才加载
-    if (pluginManager.$) {
-        pluginManager.load();
-        pluginManager.enable();
+    if (manager.$) {
+        manager.load();
+        manager.enable();
     }
 }
 
@@ -66,7 +76,7 @@ function loadPlugins(plugin) {
  * 关闭插件Hook
  */
 function disablePlugins() {
-    if (pluginManager.$) {
-        pluginManager.disable();
+    if (manager.$) {
+        manager.disable();
     }
 }
