@@ -89,7 +89,7 @@
         if (optional.hook) {
             origin = optional.hook(origin);
         }
-        base.save(cacheFile, "(function (module, exports, require, __DIR__, __FILE__) {" + origin + "});");
+        base.save(cacheFile, "(function (module, exports, require, __dirname, __filename) {" + origin + "});");
         // 使用 load 可以保留行号和文件名称
         var obj = load(cacheFile);
         base.delete(cacheFile);
@@ -149,7 +149,7 @@
      * @private
      */
     function _require(name, path, optional) {
-        var file = resolve(name, path);
+        var file = _canonical(name) ? name : resolve(name, path);
         if (file === undefined) {
             log.console("§c模块 §a%s §c加载失败! §4未找到该模块!", name);
             return {exports:{}};
