@@ -1,4 +1,5 @@
 'use strict';
+var log = base.getLog().static;
 var boot;
 var disable;
 /**

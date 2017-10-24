@@ -55,11 +55,8 @@ function enable() {
             switch (subcommand) {
                 case 'reload':
                     self.reloadConfig();
+                    console.sender(sender, "§a配置文件重载完成!", "TEST");
                     break;
-                case 'test':
-                    // var IllegalStateException = Java.type("java.lang.IllegalStateException");
-                    // throw new IllegalStateException('TEST');
-                    throw new TypeError('TEST');
             }
         },
         tab: function tab (sender, command, args){
@@ -68,14 +65,17 @@ function enable() {
     })
     bukkit.players(function (p) fakeTag.set(p));
     event.on(self, 'PlayerJoin', function (event) fakeTag.set(event.player));
-    event.on(self, 'EntityDamage', function (event) {
+    var entityUpdate = function (event) {
         var player = event.entity;
         if(player instanceof org.bukkit.entity.Player){
            setTimeout(function () {
                fakeTag.update(player);
            }, 1);
         }
-    }, false);
+    };
+    event.on(self, 'EntityRegainHealth', entityUpdate, false);
+    event.on(self, 'EntityDamage', entityUpdate, false);
+    event.on(self, 'EntityRegainHealth', entityUpdate, false);
     //event.on(this, 'playerquitevent', function quit(event) removeTask(event.player));
 }
 

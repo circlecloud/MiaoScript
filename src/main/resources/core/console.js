@@ -2,7 +2,6 @@
  * 控制台输出类
  */
 /*global base*/
-var log = base.getLog().static;
 (function(global){
     var Arrays = Java.type('java.util.Arrays');
     var Level = Java.type('java.util.logging.Level');
@@ -13,6 +12,7 @@ var log = base.getLog().static;
             }.bind(this),
             set: function (name) {
                 this._name = name ? '[' + name + '] ' : '';
+                this.prefix = name ? '§6[§b' + name + '§6]§r ' : '';
             }.bind(this)
         });
         this.name = name;
@@ -29,8 +29,10 @@ var log = base.getLog().static;
             log.d(this.name + Array.prototype.join.call(arguments, ' '));
         }
         this.sender = function () {
+            var sender = arguments[0];
+            if (!(sender instanceof org.bukkit.command.CommandSender)) { console.error("第一个参数未实现 org.bukkit.command.CommandSender 无法发送消息!") }
             var args = Array.prototype.slice.call(arguments, 1);
-            log.sender();
+            sender.sendMessage(this.prefix + args.join(' '));
         }
         this.ex = function (ex) {
             log.console('§4' + ex);
