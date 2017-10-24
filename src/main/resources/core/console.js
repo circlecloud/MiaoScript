@@ -4,6 +4,7 @@
 /*global base*/
 var log = base.getLog().static;
 (function(global){
+    var Arrays = Java.type('java.util.Arrays');
     var Level = Java.type('java.util.logging.Level');
     var Console = function (name) {
         Object.defineProperty(this, 'name', {
@@ -27,11 +28,23 @@ var log = base.getLog().static;
         this.debug = function () {
             log.d(this.name + Array.prototype.join.call(arguments, ' '));
         }
+        this.sender = function () {
+            var args = Array.prototype.slice.call(arguments, 1);
+            log.sender();
+        }
         this.ex = function (ex) {
             log.console('§4' + ex);
-            ex.getStackTrace().forEach(function (stack) {
-                log.console('    §e位于 §c%s §4行%s', stack.fileName, stack.lineNumber);
-            });
+            var track = ex.getStackTrace();
+            if (track.class) { track = Arrays.asList(track) }
+            if (track.forEach) {
+                track.forEach(function (stack) {
+                    if (stack.className.startsWith('<')) {
+                        log.console('    §e位于 §c%s => §c%s §4行%s', stack.fileName, stack.methodName, stack.lineNumber);
+                    } else {
+                        log.console('    §e位于 §c%s.%s(§4%s:%s§c)', stack.className, stack.methodName, stack.fileName, stack.lineNumber);
+                    }
+                });
+            }
         }
     }
     global.Console = Console;
