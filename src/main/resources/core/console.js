@@ -12,7 +12,7 @@
             }.bind(this),
             set: function (name) {
                 this._name = name ? '[' + name + '] ' : '';
-                this.prefix = name ? '§6[§b' + name + '§6]§r ' : '';
+                this.prefix = name ? '§6[§cMS§6][§b' + name + '§6]§r ' : '';
             }.bind(this)
         });
         this.name = name;
