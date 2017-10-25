@@ -10,16 +10,15 @@ var event = require('modules/event');
 var bukkit = require('modules/bukkit');
 var command = require('modules/command');
 
-var papi = require('plugins/ext/papi');
+var papi = require('./ext/papi');
 
 var fakeTag;
 
 var description = {
     name: 'MiaoTag',
-    version: '1.0.1',
+    version: '1.1',
     author: '喵♂呜',
     config: {
-        update: 20,
         format: '§4§l❤'
     },
     commands: {
@@ -55,6 +54,7 @@ function enable() {
             switch (subcommand) {
                 case 'reload':
                     self.reloadConfig();
+                    fakeTag = new FakeTag(config.format);
                     console.sender(sender, "§a配置文件重载完成!", "TEST");
                     break;
             }
@@ -66,7 +66,7 @@ function enable() {
     bukkit.players(function (p) fakeTag.set(p));
     event.on(self, 'PlayerJoin', function (event) fakeTag.set(event.player));
     var entityUpdate = function (event) {
-        var player = event.entity;
+        var player = event.entity || event.player;
         if(player instanceof org.bukkit.entity.Player){
            setTimeout(function () {
                fakeTag.update(player);
@@ -76,6 +76,7 @@ function enable() {
     event.on(self, 'EntityRegainHealth', entityUpdate, false);
     event.on(self, 'EntityDamage', entityUpdate, false);
     event.on(self, 'EntityRegainHealth', entityUpdate, false);
+    event.on(self, 'PlayerRespawn', entityUpdate, false);
     //event.on(this, 'playerquitevent', function quit(event) removeTask(event.player));
 }
 
