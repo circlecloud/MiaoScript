@@ -13,13 +13,13 @@ var PluginCommand = Java.type('org.bukkit.command.PluginCommand');
 var StringUtil = Java.type('org.bukkit.util.StringUtil');
 
 var ArrayList = Java.type('java.util.ArrayList');
-var Arrays = Java.type('java.util.Arrays')
+var Arrays = Java.type('java.util.Arrays');
 
-function enable(jsp){
+function enable(jsp) {
     var commands = jsp.description.commands;
-    if(commands){
+    if (commands) {
         var pluginCmds = [];
-        for (var name in commands){
+        for (var name in commands) {
             var command = commands[name];
             if (typeof command !== 'object') continue;
             var newCmd = create(jsp, name);
@@ -29,7 +29,7 @@ function enable(jsp){
             if (command.permission) newCmd.setPermission(command.permission);
             if (command['permission-message']) newCmd.setPermissionMessage(command['permission-message']);
             pluginCmds.push(newCmd);
-            log.d('插件 %s 注册命令 %s ...', jsp.description.name, name);
+            console.debug('插件 %s 注册命令 %s ...', jsp.description.name, name);
         }
         commandMap.registerAll(jsp.description.name, Arrays.asList(pluginCmds));
     }
@@ -43,7 +43,7 @@ function create(jsp, name) {
     return register(jsp, ref.on(PluginCommand).create(name, plugin).get());
 }
 
-function register(jsp, cmd){
+function register(jsp, cmd) {
     commandMap.register(jsp.description.name, cmd);
     return cmd;
 }
@@ -59,13 +59,13 @@ function register(jsp, cmd){
 
 function on(jsp, name, exec) {
     var c = get(name) || create(jsp, name);
-    log.d('插件 %s 设置命令 %s(%s) 执行器 ...', jsp.description.name, name, c);
+    console.debug('插件 %s 设置命令 %s(%s) 执行器 ...', jsp.description.name, name, c);
     if (exec.cmd) {
         c.setExecutor(function (sender, cmd, command, args) {
             try {
                 return exec.cmd(sender, command, args);
             } catch (ex) {
-                log.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s', sender.name, jsp.description.name, command, Java.from(args).join(' '), ex);
+                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s', sender.name, jsp.description.name, command, Java.from(args).join(' '), ex);
                 console.ex(ex);
             }
         });
@@ -78,14 +78,14 @@ function on(jsp, name, exec) {
                 StringUtil.copyPartialMatches(token, Arrays.asList(exec.tab(sender, command, args)), completions);
                 return completions;
             } catch (ex) {
-                log.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s',sender.name ,jsp.description.name, command, Java.from(args).join(' '), ex);
+                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s', sender.name, jsp.description.name, command, Java.from(args).join(' '), ex);
                 console.ex(ex);
             }
         });
     }
 }
 
-exports.enable = enable
+exports.enable = enable;
 
 exports.on = on;
 exports.off = function () {

@@ -49,7 +49,7 @@ function load() {
 
 function enable() {
     command.on(self, 'mtag', {
-        cmd: function cmd (sender, command, args){
+        cmd: function cmd(sender, command, args) {
             var subcommand = args[0];
             switch (subcommand) {
                 case 'reload':
@@ -59,18 +59,18 @@ function enable() {
                     break;
             }
         },
-        tab: function tab (sender, command, args){
+        tab: function tab(sender, command, args) {
             return ['reload'];
         }
-    })
+    });
     bukkit.players(function (p) fakeTag.set(p));
     event.on(self, 'PlayerJoin', function (event) fakeTag.set(event.player));
     var entityUpdate = function (event) {
         var player = event.entity || event.player;
-        if(player instanceof org.bukkit.entity.Player){
-           setTimeout(function () {
-               fakeTag.update(player);
-           }, 1);
+        if (player instanceof org.bukkit.entity.Player) {
+            setTimeout(function () {
+                fakeTag.update(player);
+            }, 1);
         }
     };
     event.on(self, 'EntityRegainHealth', entityUpdate, false);
@@ -92,14 +92,14 @@ function FakeTag(name) {
     var PacketPlayOutScoreboardScore = bukkit.nmsCls('PacketPlayOutScoreboardScore');
     var PacketPlayOutScoreboardObjective = bukkit.nmsCls('PacketPlayOutScoreboardObjective');
     var PacketPlayOutScoreboardDisplayObjective = bukkit.nmsCls('PacketPlayOutScoreboardDisplayObjective');
-    
+
     var scoreboardManager = bukkit.$.scoreboardManager;
     var mainScoreboard = scoreboardManager.mainScoreboard.handle;
 
     try {
         // 注册tag对象
         mainScoreboard.registerObjective(name, new ScoreboardBaseCriteria(name));
-    } catch (ex){
+    } catch (ex) {
         // ignore 忽略创建错误 eg: java.lang.IllegalArgumentException: An objective with the name 'xxxxx' already exists!
     }
     var objective = mainScoreboard.getObjective(name);
@@ -118,24 +118,24 @@ function FakeTag(name) {
         sendPacket(player, cache.objective);
         sendPacket(player, cache.display);
         this.update(player);
-    }
-    
-    this.update = function (player){
+    };
+
+    this.update = function (player) {
         var score = mainScoreboard.getPlayerScoreForObjective(player.name, objective);
         score.setScore(player.getHealth());
         var scorePack = new PacketPlayOutScoreboardScore(score);
         //把其他玩家缓存的包发给这个玩家
         bukkit.players(function (t) {
             sendPacket(t, scorePack);
-            if (t.name != player.name) {
+            if (t.name !== player.name) {
                 var outher = mainScoreboard.getPlayerScoreForObjective(t.name, objective);
                 outher.setScore(t.getHealth());
                 sendPacket(player, new PacketPlayOutScoreboardScore(outher));
             }
         });
-    }
-    
-    this.disable = function (){
+    };
+
+    this.disable = function () {
         // 注销tag对象
         mainScoreboard.unregisterObjective(objective);
     }

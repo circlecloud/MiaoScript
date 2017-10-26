@@ -18,9 +18,9 @@ var permission = require('./permission');
 function loadPlugins(dir) {
     var plugin = fs.file(root, dir);
     if (!plugin) {
-        log.i("首次加载 创建文件夹 %s ...", plugin);
+        console.info("首次加载 创建文件夹 %s ...", plugin);
     } else {
-        log.i("开始扫描 %s 下的插件 ...", plugin);
+        console.info("开始扫描 %s 下的插件 ...", plugin);
         createUpdate(plugin);
         var files = [];
         fs.list(plugin).forEach(function (file) {
@@ -71,8 +71,8 @@ function loadJsPlugins(files) {
 function loadPlugin(file) {
     var update = fs.file(fs.file(file.parentFile, 'update'), file.name);
     if (update.exists()) {
-        log.i('自动升级插件 %s', file.name);
-        fs.move(update, file, true);        
+        console.info('自动升级插件 %s', file.name);
+        fs.move(update, file, true);
     }
     var plugin = require(file, {
         cache: false,
@@ -80,16 +80,16 @@ function loadPlugin(file) {
             return beforeLoadHook(origin);
         }
     });
-    log.d("插件编译结果: %s", plugin.toJson());
+    console.debug("插件编译结果: %s", plugin.toJson());
     var desc = plugin.description;
     if (!desc || !desc.name) {
-        log.w("文件 %s 不存在 description 描述信息 无法加载插件!", file);
+        console.warn("文件 %s 不存在 description 描述信息 无法加载插件!", file);
     } else {
         initPlugin(file, plugin);
         afterLoadHook(plugin);
         plugins.push(plugin);
         plugins[plugin.description.name] = plugin;
-        log.i('载入插件 %s 版本 %s By %s', desc.name, desc.version || '未知', desc.author || '未知');
+        console.info('载入插件 %s 版本 %s By %s', desc.name, desc.version || '未知', desc.author || '未知');
     }
     return plugin;
 }
@@ -110,7 +110,7 @@ function afterLoadHook(plugin) {
     // 给 console 添加插件名称
     plugin.console.name = plugin.description.name;
     // 赋值 self
-    for (var i in plugin){
+    for (var i in plugin) {
         plugin.self[i] = plugin[i];
     }
 }
@@ -118,15 +118,19 @@ function afterLoadHook(plugin) {
 /**
  * 初始化插件内容(提供config,__DATA__等参数)
  */
-function initPlugin(file, plugin){
+function initPlugin(file, plugin) {
     // 初始化 __FILE__
     plugin.__FILE__ = file;
     // 初始化 __DATA__
     plugin.__DATA__ = fs.file(file.parentFile, plugin.description.name);
     // 初始化 getDataFolder()
-    plugin.getDataFolder = function() { return plugin.__DATA__; }
+    plugin.getDataFolder = function () {
+        return plugin.__DATA__;
+    };
     // 初始化 getFile()
-    plugin.getFile = function(name) { return fs.file(plugin.getDataFolder(), name); }
+    plugin.getFile = function (name) {
+        return fs.file(plugin.getDataFolder(), name);
+    };
 
     // 初始化插件配置相关方法
     initPluginConfig(plugin);
@@ -138,7 +142,7 @@ function initPlugin(file, plugin){
 /**
  * 初始化插件配置
  */
-function initPluginConfig(plugin){
+function initPluginConfig(plugin) {
     // 初始化 config
     plugin.configFile = plugin.getFile('config.yml');
     /**
@@ -146,7 +150,7 @@ function initPluginConfig(plugin){
      * @constructor
      * @constructor (file|string)
      */
-    plugin.getConfig = function() {
+    plugin.getConfig = function () {
         switch (arguments.length) {
             case 0:
                 return plugin.config;
@@ -157,34 +161,34 @@ function initPluginConfig(plugin){
                 }
                 return yaml.safeLoad(base.read(file));
         }
-    }
+    };
     /**
      * 重载配置文件
      * @constructor
      * @constructor (file|string)
      */
-    plugin.reloadConfig = function() {
+    plugin.reloadConfig = function () {
         plugin.config = plugin.getConfig(plugin.configFile);
-    }
+    };
     /**
      * 保存配置文件
      * @constructor
      * @constructor (file, content)
      */
-    plugin.saveConfig = function() {
+    plugin.saveConfig = function () {
         switch (arguments.length) {
             case 0:
-                plugin.configFile.parentFile.mkdirs()
+                plugin.configFile.parentFile.mkdirs();
                 base.save(plugin.configFile, plugin.config.toYaml());
                 break;
             case 2:
                 base.save(arguments[0], arguments[1].toYaml());
                 break;
         }
-    }
+    };
     if (plugin.configFile.isFile()) {
         plugin.config = plugin.getConfig('config.yml');
-    } else if (plugin.description.config ){
+    } else if (plugin.description.config) {
         plugin.config = plugin.description.config;
         plugin.saveConfig();
     }
@@ -195,20 +199,28 @@ function runAndCatch(jsp, exec, ext) {
         try {
             // 绑定方法的this到插件自身
             exec.bind(jsp)();
-            if (ext) { ext(); }
+            if (ext) {
+                ext();
+            }
         } catch (ex) {
-            log.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s', jsp.description.name, exec.name, ex.message);
+            console.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s', jsp.description.name, exec.name, ex.message);
             console.ex(ex);
         }
     }
 }
 
 function checkAndGet(args) {
-    if (args.length === 0) { return plugins; }
+    if (args.length === 0) {
+        return plugins;
+    }
     var name = args[0];
     // 如果是插件 则直接返回
-    if (name.description) { return [name]; }
-    if (!exports.plugins[name]) { throw new Error("插件 " + name + " 不存在!"); }
+    if (name.description) {
+        return [name];
+    }
+    if (!exports.plugins[name]) {
+        throw new Error("插件 " + name + " 不存在!");
+    }
     return [exports.plugins[name]];
 }
 
@@ -220,7 +232,7 @@ exports.init = function (plugin, path) {
     if (plugin !== null) {
         // 如果过plugin不等于null 则代表是正式环境
         exports.$ = plugin;
-        log.i("初始化 MiaoScript 插件系统 版本: %s", plugin.description.version);
+        console.info("初始化 MiaoScript 插件系统 版本: %s", plugin.description.version);
     }
     loadPlugins(path);
 };
@@ -231,7 +243,7 @@ exports.enable = function () {
     checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.enable));
 };
 exports.disable = function () {
-    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.disable, function(){
+    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.disable, function () {
         event.disable(p);
         // task.cancel();
     }));

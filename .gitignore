@@ -38,3 +38,7 @@
 /atlassian-ide-plugin.xml
 
 /src/main/resources/cache/
+
+# ThinkPHP
+vendor/
+composer.lock

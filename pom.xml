@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>1.1.4</version>
+    <version>1.1.5</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -49,7 +49,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+            <!--<plugin>
                 <groupId>com.github.wvengen</groupId>
                 <artifactId>proguard-maven-plugin</artifactId>
                 <version>2.0.13</version>
@@ -71,7 +71,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
     <ciManagement>
@@ -94,6 +94,10 @@
             <id>yumc-repo</id>
             <url>http://repo.yumc.pw/content/groups/public/</url>
         </repository>
+        <repository>
+            <id>sponge</id>
+            <url>https://repo.spongepowered.org/maven/</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -114,6 +118,17 @@
             <artifactId>YumCore</artifactId>
             <type>jar</type>
             <version>[1.8,)</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>craftbukkit</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.spongepowered</groupId>
+            <artifactId>spongeapi</artifactId>
+            <version>6.0.0</version>
         </dependency>
     </dependencies>
 </project>

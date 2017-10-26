@@ -46,7 +46,7 @@ function mapEventName() {
                         if (isVaildEvent(clz)) {
                             // noinspection JSUnresolvedVariable
                             var simpleName = clz.simpleName.toLowerCase();
-                            log.fd("Mapping Event [%s] => %s", clz.name, simpleName);
+                            console.debug("Mapping Event [%s] => %s", clz.name, simpleName);
                             mapEvent[simpleName] = clz;
                             count++;
                         }
@@ -85,12 +85,12 @@ function isVaildEvent(clz) {
 function listen(jsp, event, exec, priority, ignoreCancel) {
     var name = jsp.description.name;
     if (ext.isNull(name)) throw new TypeError('插件名称为空 请检查传入参数!');
-    var eventCls = mapEvent[event] || mapEvent[event.toLowerCase()] || mapEvent[event +'Event'] || mapEvent[event.toLowerCase() + 'event'];
+    var eventCls = mapEvent[event] || mapEvent[event.toLowerCase()] || mapEvent[event + 'Event'] || mapEvent[event.toLowerCase() + 'event'];
     if (!eventCls) {
         try {
             eventCls = base.getClass(eventCls);
         } catch (ex) {
-            log.w("事件 %s 未找到!", event);
+            console.warn("事件 %s 未找到!", event);
             return;
         }
     }
@@ -115,10 +115,10 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
         EventPriority[priority],
         new EventExecutor({
             execute: function (listener, event) {
-                try{
+                try {
                     exec(event);
-                } catch (ex){
-                    log.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s', name, event.class.simpleName, ex);
+                } catch (ex) {
+                    console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s', name, event.class.simpleName, ex);
                     console.ex(ex);
                 }
             }
@@ -131,20 +131,20 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
     var off = {
         event: eventCls,
         listener: listener,
-        off: function(){
+        off: function () {
             ref.on(this.event).call('getHandlerList').get().unregister(this.listener);
-            log.d('插件 %s 注销事件 %s', name, this.event.simpleName);
+            console.debug('插件 %s 注销事件 %s', name, this.event.simpleName);
         }
     }
     listeners.push(off);
     // noinspection JSUnresolvedVariable
-    log.d('插件 %s 注册事件 %s 方法 %s', name, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
+    console.debug('插件 %s 注册事件 %s 方法 %s', name, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name);
     return off;
 }
 
 var mapEvent = [];
 // 映射事件名称
-log.i('Bukkit 事件映射完毕 共计 %s 个事件!', mapEventName().toFixed(0));
+console.info('Bukkit 事件映射完毕 共计 %s 个事件!', mapEventName().toFixed(0));
 
 module.exports = {
     on: listen,

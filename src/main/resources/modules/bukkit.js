@@ -19,14 +19,14 @@ exports.nmsVersion = Bukkit.server.class.name.split('.')[3];
  */
 exports.nmsCls = function (name) {
     return Java.type(['net.minecraft.server', exports.nmsVersion, name].join('.'));
-}
+};
 exports.command = function (name) {
     return Server.getPluginCommand(name);
-}
+};
 /**
  * 获取玩家
  */
-exports.player = function(){
+exports.player = function () {
     switch (arguments.length) {
         case 0:
             return undefined;
@@ -35,18 +35,18 @@ exports.player = function(){
         default:
             return Bukkit.getPlayerExtra(arguments[0]);
     }
-}
+};
 /**
  * 获取在线玩家
  */
-exports.players = function(){
+exports.players = function () {
     switch (arguments.length) {
         case 1:
             return Bukkit.onlinePlayers.forEach(arguments[0]);
         default:
             return Bukkit.onlinePlayers;
     }
-}
+};
 /**
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}

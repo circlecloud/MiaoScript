@@ -18,6 +18,7 @@ function init(root) {
 function loadCore() {
     // 加载基础模块
     load(root + '/core/ext.js');
+    load(root + '/core/detect.js');
     load(root + '/core/console.js');
 }
 

@@ -1,10 +1,6 @@
 package pw.yumc.MiaoScript;
 
 import java.io.File;
-import java.io.InputStreamReader;
-
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -19,7 +15,6 @@ import pw.yumc.YumCore.commands.CommandSub;
 import pw.yumc.YumCore.commands.annotation.Cmd;
 import pw.yumc.YumCore.commands.annotation.Help;
 import pw.yumc.YumCore.commands.interfaces.Executor;
-import pw.yumc.YumCore.engine.MiaoScriptEngine;
 
 /**
  * 喵式脚本
@@ -28,33 +23,34 @@ import pw.yumc.YumCore.engine.MiaoScriptEngine;
  * @since 2016年8月29日 上午7:50:39
  */
 public class MiaoScript extends JavaPlugin implements Executor {
-    private MiaoScriptEngine engine;
+    private ScriptEngine engine;
 
     @Override
+    @SneakyThrows
     public void onEnable() {
         new CommandSub("ms", this);
         saveScript();
-        enableEngine();
+        engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getClassLoader(), getLogger());
     }
 
     @Cmd
     @Help("执行 JS 代码")
     @SneakyThrows
     public void js(CommandSender sender, String script) {
-        result(sender, engine.eval(script));
+        result(sender, engine.getEngine().eval(script));
     }
 
     @Cmd
     @Help("执行 JS 代码文件")
     @SneakyThrows
     public void file(CommandSender sender, String file) {
-        result(sender, engine.eval("load('" + new File(getDataFolder(), file).getCanonicalPath() + "')"));
+        result(sender, engine.getEngine().eval("load('" + new File(getDataFolder(), file).getCanonicalPath() + "')"));
     }
 
     @Cmd
     @Help("重启脚本引擎")
     public void reload(CommandSender sender) {
-        disableEngine();
+        engine.disableEngine();
         val server = Bukkit.getServer();
         try {
             server.getScheduler().cancelTasks(this);
@@ -65,7 +61,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
         } catch (Exception ex) {
             Log.d("Error reload", ex);
         }
-        enableEngine();
+        engine.enableEngine();
         Log.sender(sender, "§bMiaoScript §eEngine §a重启完成!");
     }
 
@@ -82,34 +78,8 @@ public class MiaoScript extends JavaPlugin implements Executor {
         P.saveFile("plugins");
     }
 
-    private void enableEngine() {
-        Thread currentThread = Thread.currentThread();
-        ClassLoader previousClassLoader = currentThread.getContextClassLoader();
-        currentThread.setContextClassLoader(getClassLoader());
-        try {
-            ScriptEngineManager manager = new ScriptEngineManager();
-            this.engine = new MiaoScriptEngine(manager, "nashorn");
-            this.engine.put("base", new Base());
-            this.engine.eval(new InputStreamReader(this.getResource("bios.js")));
-            engine.invokeFunction("boot", this);
-        } catch (Exception e) {
-            Log.d(e);
-        } finally {
-            currentThread.setContextClassLoader(previousClassLoader);
-        }
-    }
-
-    private void disableEngine() {
-        try {
-            engine.invokeFunction("disable");
-        } catch (ScriptException | NoSuchMethodException e) {
-            Log.w("脚本引擎关闭失败! %s:%s", e.getClass().getName(), e.getMessage());
-            Log.d(e);
-        }
-    }
-
     @Override
     public void onDisable() {
-        disableEngine();
+        engine.disableEngine();
     }
 }

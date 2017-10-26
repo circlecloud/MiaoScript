@@ -6,13 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 
-import org.bukkit.plugin.Plugin;
-
 import lombok.val;
 import pw.yumc.YumCore.annotation.NotProguard;
-import pw.yumc.YumCore.bukkit.Log;
-import pw.yumc.YumCore.bukkit.P;
-import pw.yumc.YumCore.bukkit.compatible.C;
 import pw.yumc.YumCore.mc.MinecraftTools;
 
 /**
@@ -23,25 +18,15 @@ import pw.yumc.YumCore.mc.MinecraftTools;
  */
 @NotProguard
 public class Base {
-    public Plugin getPlugin() {
-        return P.instance;
-    }
-
     public Class getClass(String name) throws ClassNotFoundException {
         return Class.forName(name);
     }
 
-    public Class getLog() {
-        return Log.class;
-    }
-
     public String read(String path) throws IOException {
-        Log.fd("读取文件 %s ...", path);
         return new String(Files.readAllBytes(new File(path).toPath()), "UTF-8");
     }
 
     public void save(String path, String content) throws IOException {
-        Log.fd("保存文件 %s ...", path);
         File file = new File(path);
         file.getParentFile().mkdirs();
         Files.write(file.toPath(), content.getBytes("UTF-8"));
@@ -54,25 +39,12 @@ public class Base {
     public void delete(Path path) throws IOException {
         val file = path.toFile();
         if (!file.exists()) { return; }
-        Log.fd("删除文件 %s ...", path);
         if (file.isDirectory()) {
             for (Path f : Files.list(file.toPath()).collect(Collectors.toList())) {
                 delete(f);
             }
         }
         Files.delete(path);
-    }
-
-    public Class getActionBar() {
-        return C.ActionBar.class;
-    }
-
-    public Class getTitle() {
-        return C.Title.class;
-    }
-
-    public Class getPlayer() {
-        return C.Player.class;
     }
 
     public Class getTools() {

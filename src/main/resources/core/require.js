@@ -7,7 +7,7 @@
     'use strict';
     var File = Java.type("java.io.File");
     var separatorChar = File.separatorChar;
-    var paths = [parent, '', parent + separatorChar + 'core', parent + separatorChar + 'modules'];
+    var paths = [parent, parent + separatorChar + 'core', parent + separatorChar + 'modules'];
 
     /**
      * 解析模块名称为文件
@@ -17,21 +17,22 @@
      * 核心目录 /core
      * 模块目录 /modules
      * @param name 模块名称
+     * @param parent 父目录
      */
     function resolve(name, parent) {
         if (_canonical(name)) {
             name = _canonical(name);
         }
         // 解析本地目录
-        if(name.startsWith('./') || name.startsWith('../')){
+        if (name.startsWith('./') || name.startsWith('../')) {
             return resolveAsFile(parent, name) || resolveAsDirectory(parent, name) || undefined;
         } else {
             // 查找可能存在的路径
-            for(var i in paths) {
+            for (var i in paths) {
                 var path = paths[i];
                 var result = resolveAsFile(path, name) || resolveAsDirectory(path, name);
                 if (result) {
-                   return result;
+                    return result;
                 }
             }
         }
@@ -43,7 +44,7 @@
      * @returns {*}
      */
     function resolveAsFile(dir, file) {
-        var file = ext.notNull(dir) ? new File(dir, file) : new File(file);
+        file = ext.notNull(dir) ? new File(dir, file) : new File(file);
         if (file.isFile()) {
             return file;
         }
@@ -52,13 +53,13 @@
             return ef;
         }
     }
-    
+
     /**
      * 解析目录
      * @returns {*}
      */
     function resolveAsDirectory(dir, file) {
-        var dir = ext.notNull(dir) ? new File(dir, file) : new File(file);
+        dir = ext.notNull(dir) ? new File(dir, file) : new File(file);
         var _package = new File(dir, 'package.json');
         if (_package.exists()) {
             var json = JSON.parse(base.read(_package));
@@ -80,7 +81,8 @@
 
     /**
      * 预编译模块
-     * @param file
+     * @param file JS文件
+     * @param optional 附加选项
      * @returns {Object}
      */
     function compileJs(file, optional) {
@@ -98,13 +100,14 @@
 
     /**
      * 编译模块
-     * @param id
-     * @param name
-     * @param file
+     * @param id 模块ID
+     * @param name 模块名称
+     * @param file 模块文件
+     * @param optional 附加选项
      * @returns {Object}
      */
     function compileModule(id, name, file, optional) {
-        log.fd('加载模块 %s 位于 %s Optional %s', name, id, optional.toJson());
+        console.debug('加载模块 %s 位于 %s Optional %s', name, id, optional.toJson());
         // noinspection JSUnresolvedVariable
         var module = {
             id: id,
@@ -117,11 +120,11 @@
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
             ]);
-            log.fd('模块 %s 编译成功!', name);
+            console.debug('模块 %s 编译成功!', name);
             module.loaded = true;
         } catch (ex) {
-            log.console("§4警告! §b模块 §a%s §4编译失败! ERR: %s", name, ex);
-            log.d(ex);
+            console.console("§4警告! §b模块 §a%s §4编译失败! ERR: %s", name, ex);
+            console.ex(ex);
         }
         return module;
     }
@@ -145,16 +148,17 @@
      * 加载模块
      * @param name 模块名称
      * @param path 路径
+     * @param optional 附加选项
      * @returns {*}
      * @private
      */
     function _require(name, path, optional) {
         var file = _canonical(name) ? name : resolve(name, path);
         if (file === undefined) {
-            log.console("§c模块 §a%s §c加载失败! §4未找到该模块!", name);
-            return {exports:{}};
+            console.console("§c模块 §a%s §c加载失败! §4未找到该模块!", name);
+            return {exports: {}};
         }
-        if (!optional) optional = { cache: true }
+        if (!optional) optional = {cache: true};
         // 重定向文件名称和类型
         name = file.name.split(".")[0];
         var id = _canonical(file);
@@ -185,6 +189,6 @@
         parent = new File(parent);
     }
     var cacheModules = [];
-    log.d("初始化 require 模块组件 父目录 %s", _canonical(parent));
+    console.debug("初始化 require 模块组件 父目录 %s", _canonical(parent));
     return exports(parent);
 });
