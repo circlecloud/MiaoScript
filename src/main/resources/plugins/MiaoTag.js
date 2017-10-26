@@ -7,7 +7,7 @@
 
 var fs = require('core/fs');
 var event = require('modules/event');
-var bukkit = require('modules/bukkit');
+var bukkit = require('modules/server');
 var command = require('modules/command');
 
 var papi = require('./ext/papi');

@@ -17,14 +17,17 @@ var disable;
         try {
             init(root);
         } catch (ex) {
-            throw ex;
+            if(console.ex){
+                console.ex(ex);
+            }else{
+                throw ex;
+            }
         } finally {
             disable = disablePlugins
         }
     };
 
     function release(root, regex, replace) {
-        print(Array.prototype.join.call(arguments, ' '));
         var Files = Java.type("java.nio.file.Files");
         var Paths = Java.type("java.nio.file.Paths");
         var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
@@ -55,7 +58,6 @@ var disable;
                 }
             })
         } catch (ex) {
-
         } finally {
         }
     }

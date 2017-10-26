@@ -64,7 +64,7 @@ function loadLib4Bukkit() {
 function loadPlugins() {
     // 初始化本体插件
     global.manager = require('modules/plugin');
-    manager.init(base.plugin, 'plugins');
+    manager.init('plugins');
     // 只有当在正式环境运行的时候才加载
     if (manager.$) {
         manager.load();
@@ -77,7 +77,7 @@ function loadPlugins() {
  * 关闭插件Hook
  */
 function disablePlugins() {
-    if (manager.$) {
+    if (manager && manager.$) {
         manager.disable();
     }
 }

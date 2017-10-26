@@ -4,7 +4,7 @@
  */
 /*global Java, base, module, exports, require, __FILE__*/
 var PlaceholderAPI;
-var bukkit = require('modules/bukkit');
+var bukkit = require('modules/server');
 if (bukkit.plugin.load("PlaceholderAPI")) {
     PlaceholderAPI = ext.getStatic("me.clip.placeholderapi.PlaceholderAPI");
 } else {

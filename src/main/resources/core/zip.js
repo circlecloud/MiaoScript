@@ -12,7 +12,7 @@ var fs = require('fs');
  */
 function unzip(zipFile, target) {
     if (!zipFile.exists()) {
-        log.w("解压文件 %s 错误 文件不存在!", zipFile);
+        console.warn("解压文件 %s 错误 文件不存在!".format(zipFile));
         return;
     }
     if (target === undefined) {
@@ -20,7 +20,7 @@ function unzip(zipFile, target) {
         // noinspection JSUnresolvedVariable
         target = fs.file(zipFile.parentFile.canonicalPath, fname.substring(0, fname.length() - 4));
     }
-    log.d("解压文件 %s 到目录 %s", zipFile.canonicalPath, target);
+    console.debug("解压文件 %s 到目录 %s".format(zipFile.canonicalPath, target));
     var zipObj = new ZipFile(zipFile);
     var e = zipObj.entries();
     while (e.hasMoreElements()) {

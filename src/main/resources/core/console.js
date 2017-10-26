@@ -20,6 +20,7 @@
         this.log = function () {
             log.info(this.name + Array.prototype.join.call(arguments, ' '));
         };
+        this.info = this.log;
         this.warn = function () {
             log.warning(this.name + Array.prototype.join.call(arguments, ' '));
         };
@@ -71,9 +72,9 @@
             }
             track.forEach(function (stack) {
                 if (stack.className.startsWith('<')) {
-                    this.console(String.format('    §e位于 §c%s => §c%s §4行%s', stack.fileName, stack.methodName, stack.lineNumber));
+                    this.console('    §e位于 §c%s => §c%s §4行%s'.format(stack.fileName, stack.methodName, stack.lineNumber));
                 } else {
-                    this.console(String.format('    §e位于 §c%s.%s(§4%s:%s§c)', stack.className, stack.methodName, stack.fileName, stack.lineNumber));
+                    this.console('    §e位于 §c%s.%s(§4%s:%s§c)'.format(stack.className, stack.methodName, stack.fileName, stack.lineNumber));
                 }
             }.bind(this));
         }

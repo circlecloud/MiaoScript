@@ -107,7 +107,7 @@
      * @returns {Object}
      */
     function compileModule(id, name, file, optional) {
-        console.debug('加载模块 %s 位于 %s Optional %s', name, id, optional.toJson());
+        console.debug('加载模块 %s 位于 %s Optional %s'.format(name, id, optional.toJson()));
         // noinspection JSUnresolvedVariable
         var module = {
             id: id,
@@ -120,10 +120,10 @@
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
             ]);
-            console.debug('模块 %s 编译成功!', name);
+            console.debug('模块 %s 编译成功!'.format(name));
             module.loaded = true;
         } catch (ex) {
-            console.console("§4警告! §b模块 §a%s §4编译失败! ERR: %s", name, ex);
+            console.console("§4警告! §c模块 §a%s §c编译失败! §4ERR: %s".format(name, ex));
             console.ex(ex);
         }
         return module;
@@ -155,7 +155,7 @@
     function _require(name, path, optional) {
         var file = _canonical(name) ? name : resolve(name, path);
         if (file === undefined) {
-            console.console("§c模块 §a%s §c加载失败! §4未找到该模块!", name);
+            console.console("§c模块 §a%s §c加载失败! §4未找到该模块!".format(name));
             return {exports: {}};
         }
         if (!optional) optional = {cache: true};
@@ -189,6 +189,6 @@
         parent = new File(parent);
     }
     var cacheModules = [];
-    console.debug("初始化 require 模块组件 父目录 %s", _canonical(parent));
+    console.debug("初始化 require 模块组件 父目录 ", _canonical(parent));
     return exports(parent);
 });

@@ -75,7 +75,8 @@ exports.plugin = {
             PluginManager.enablePlugin(plugin);
         }
         return PluginManager.isPluginEnabled(name);
-    }
+    },
+    self: PluginManager.getPlugin('MiaoScript')
 };
 /**
  * 公告

@@ -21,7 +21,7 @@ exports.concat = function () {
  */
 exports.file = function () {
     if (!arguments[0]) {
-        log.w("文件名称不得为 undefined 或者 null !");
+        console.warn("文件名称不得为 undefined 或者 null !");
     }
     switch (arguments.length) {
         case 1:
@@ -77,7 +77,7 @@ exports.copy = function (inputStream, target, override) {
 exports.read = function (file) {
     file = exports.file(file);
     if (!file.exists()) {
-        log.w("读取文件 %s 错误 文件不存在!", file);
+        console.warn("读取文件 %s 错误 文件不存在!".format(file));
         return;
     }
     // noinspection JSPrimitiveTypeWrapperUsage
@@ -103,7 +103,7 @@ exports.list = function (path) {
     if (dir.isDirectory()) {
         return Files.list(dir.toPath());
     }
-    log.w("路径 %s 不是一个目录 返回空数组!", path);
+    console.warn("路径 %s 不是一个目录 返回空数组!".format(path));
     return [];
 };
 /**

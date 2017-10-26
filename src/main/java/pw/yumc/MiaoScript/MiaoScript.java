@@ -29,7 +29,6 @@ public class MiaoScript extends JavaPlugin implements Executor {
     @SneakyThrows
     public void onEnable() {
         new CommandSub("ms", this);
-        saveScript();
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getClassLoader(), getLogger());
     }
 
@@ -71,11 +70,6 @@ public class MiaoScript extends JavaPlugin implements Executor {
         } else {
             Log.sender(sender, "§a运行成功! §b数据类型: §r%s §d结果: §r%s", result.getClass().getName(), result);
         }
-    }
-
-    private void saveScript() {
-        P.saveFile(true, "core", "modules");
-        P.saveFile("plugins");
     }
 
     @Override
