@@ -29,7 +29,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
     @SneakyThrows
     public void onEnable() {
         new CommandSub("ms", this);
-        engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getClassLoader(), getLogger());
+        engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger());
     }
 
     @Cmd

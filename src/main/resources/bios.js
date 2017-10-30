@@ -7,23 +7,28 @@ var disable;
  */
 (function () {
     boot = function (root, logger) {
-        log = logger;
-        // 开发环境下初始化
-        root = root || "src/main/resources";
-        // 解压文件到根目录
-        release(root, "[core|modules]/.*", true);
-        release(root, "plugins/.*");
-        load(root + '/core/init.js');
         try {
+            log = logger;
+            // 开发环境下初始化
+            root = root || "src/main/resources";
+            // 解压文件到根目录
+            release(root, "[core|modules]/.*", true);
+            release(root, "plugins/.*");
+            load(root + '/core/init.js');
+            if (__FILE__ !== "<eval>") {
+                logger.info('载入自定义 BIOS 文件 ' + __FILE__);
+                global.debug = true;
+            }
             init(root);
         } catch (ex) {
-            if(console.ex){
+            if (console && console.ex) {
                 console.ex(ex);
-            }else{
+            } else {
+                ex.printStackTrace();
                 throw ex;
             }
         } finally {
-            disable = disablePlugins
+            disable = disablePlugins;
         }
     };
 
@@ -34,14 +39,12 @@ var disable;
 
         var classLoader = java.lang.Thread.currentThread().getContextClassLoader();
         var url = classLoader.getResource("plugin.yml");
-        if (url === null) {
-            return;
-        }
+        if (url === null) { return; }
+
         var upath = url.getFile().substring(url.getFile().indexOf("/") + 1);
         var jarPath = java.net.URLDecoder.decode(upath.substring(0, upath.indexOf('!')));
-        if (!Files.exists(Paths.get(jarPath))) {
-            jarPath = "/" + jarPath;
-        }
+        if (!Files.exists(Paths.get(jarPath))) { jarPath = "/" + jarPath; }
+
         try {
             var jar = new java.util.jar.JarFile(jarPath);
             var r = new RegExp(regex);// "[core|modules]/.*"

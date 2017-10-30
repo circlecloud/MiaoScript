@@ -5,10 +5,10 @@
  */
 
 /*global Java, base, module, exports, require, __FILE__*/
-var Bukkit = Java.type("org.bukkit.Bukkit");
+var Bukkit = MServer;
 // noinspection JSUnresolvedVariable
 var Server = Bukkit.server;
-var PluginManager = Bukkit.pluginManager;
+var PluginManager = Server.pluginManager;
 exports.$ = Bukkit;
 /**
  * 获取NMS版本

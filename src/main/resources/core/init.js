@@ -4,11 +4,12 @@ var global = this;
 
 // noinspection JSUnusedLocalSymbols
 function init(root) {
+    log.info('Init MiaoScript System...');
     global.root = root;
     loadCore();
     loadRequire();
     loadPatch();
-    loadLib4Bukkit();
+    loadServerLib();
     loadPlugins();
 }
 
@@ -16,9 +17,12 @@ function init(root) {
  * 初始化核心
  */
 function loadCore() {
+    global.noop = function () {};
     // 加载基础模块
     load(root + '/core/ext.js');
+    // 探测服务器类型
     load(root + '/core/detect.js');
+    // 加载Console
     load(root + '/core/console.js');
 }
 
@@ -41,8 +45,7 @@ function loadPatch() {
 /**
  * 加载Bukkit的类库
  */
-function loadLib4Bukkit() {
-    require('modules/event');
+function loadServerLib() {
     var task = require('modules/task');
     global.setTimeout = function (func, time, _async) {
         return _async ? task.laterAsync(func, time) : task.later(func, time);
@@ -64,11 +67,13 @@ function loadLib4Bukkit() {
 function loadPlugins() {
     // 初始化本体插件
     global.manager = require('modules/plugin');
-    manager.init('plugins');
-    // 只有当在正式环境运行的时候才加载
-    if (manager.$) {
+    if (manager) {
+        manager.init('plugins');
+        // 只有当在正式环境运行的时候才加载
         manager.load();
         manager.enable();
+    } else {
+        console.console('§4当前服务器不支持使用MiaoScript插件系统!');
     }
 }
 

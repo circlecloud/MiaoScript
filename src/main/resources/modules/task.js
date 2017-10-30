@@ -1,1 +1,1 @@
-module.exports = require('./bukkit/task');
+module.exports = require('./mserver').task;

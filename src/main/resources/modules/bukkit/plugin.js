@@ -6,7 +6,7 @@
 // var zip = require("core/zip");
 var fs = require('core/fs');
 var yaml = require('modules/yaml');
-var event = require('modules/event');
+var event = require('./event');
 var bukkit = require('./server');
 var command = require('./command');
 var permission = require('./permission');
@@ -99,7 +99,7 @@ function beforeLoadHook(origin) {
     // 处理 event 为了不影响 正常逻辑 event 还是手动require吧
     // result = result + 'var event = {}; module.exports.event = event;';
     // 注入 console 对象         // 给插件注入单独的 console
-    result = result + 'var console = new Console(); module.exports.console = console;';
+    result = result + 'var console = Console.createNew(); module.exports.console = console;';
     // 插件注入 self 对象
     result = result + 'var self = {}; module.exports.self = self;';
     return result;
@@ -226,7 +226,6 @@ function checkAndGet(args) {
 
 var plugins = [];
 
-exports.$ = undefined;
 exports.plugins = plugins;
 exports.init = function (path) {
     var plugin = bukkit.plugin.self;

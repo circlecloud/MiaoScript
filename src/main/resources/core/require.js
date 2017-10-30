@@ -20,9 +20,7 @@
      * @param parent 父目录
      */
     function resolve(name, parent) {
-        if (_canonical(name)) {
-            name = _canonical(name);
-        }
+        name = _canonical(name) || name;
         // 解析本地目录
         if (name.startsWith('./') || name.startsWith('../')) {
             return resolveAsFile(parent, name) || resolveAsDirectory(parent, name) || undefined;

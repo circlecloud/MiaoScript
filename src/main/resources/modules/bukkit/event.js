@@ -138,7 +138,7 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
     }
     listeners.push(off);
     // noinspection JSUnresolvedVariable
-    console.debug('插件 %s 注册事件 %s 方法 %s'.format(name, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name));
+    console.debug('插件 %s 注册事件 %s => %s'.format(name, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name));
     return off;
 }
 

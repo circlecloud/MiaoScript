@@ -5,80 +5,99 @@
 (function (global) {
     var Arrays = Java.type('java.util.Arrays');
     var Level = Java.type('java.util.logging.Level');
-    var String = Java.type('java.lang.String');
-    var Console = function (name) {
-        Object.defineProperty(this, 'name', {
-            get: function () {
-                return this._name;
-            }.bind(this),
-            set: function (name) {
-                this._name = name ? '[' + name + '] ' : '';
-                this.prefix = name ? '§6[§cMS§6][§b' + name + '§6]§r ' : '';
-            }.bind(this)
-        });
-        this.name = name;
-        this.log = function () {
-            log.info(this.name + Array.prototype.join.call(arguments, ' '));
-        };
-        this.info = this.log;
-        this.warn = function () {
-            log.warning(this.name + Array.prototype.join.call(arguments, ' '));
-        };
-        this.error = function () {
-            log.log(Level.SEVERE, this.name + Array.prototype.join.call(arguments, ' '));
-        };
-        switch (DetectServerType) {
-            case ServerType.Bukkit:
-                this.sender = function () {
-                    var sender = arguments[0];
-                    if (!(sender instanceof org.bukkit.command.CommandSender)) {
-                        console.error("第一个参数未实现 org.bukkit.command.CommandSender 无法发送消息!")
-                    }
-                    var args = Array.prototype.slice.call(arguments, 1);
-                    sender.sendMessage(this.prefix + args.join(' '));
-                };
-                this.console = function () {
-                    this.sender(MServer.consoleSender, Array.prototype.join.call(arguments, ' '));
-                };
-                break;
-            case ServerType.Sponge:
-                this.sender = function () {
-                    var Text = Java.type("org.spongepowered.api.text.Text");
-                    var sender = arguments[0];
-                    if (!(sender instanceof org.spongepowered.api.command.CommandSource)) {
-                        console.error("第一个参数未实现 org.spongepowered.api.command.CommandSource 无法发送消息!")
-                    }
-                    var args = Array.prototype.slice.call(arguments, 1);
-                    sender.sendMessage(Text.of(this.prefix + args.join(' ')));
-                };
-                this.console = function () {
-                    this.sender(MServer.server.console, Array.prototype.join.call(arguments, ' '));
-                };
-                break;
-            default:
-                this.sender = function () {
-                    throw Error("console.sender 不支持的服务器类型: " + DetectServerType);
-                };
-                this.console = function () {
-                    throw Error("console.console 不支持的服务器类型: " + DetectServerType);
-                };
-        }
-        this.debug = this.log;
-        this.ex = function (ex) {
-            this.console('§4' + ex);
-            var track = ex.getStackTrace();
-            if (track.class) {
-                track = Arrays.asList(track)
-            }
-            track.forEach(function (stack) {
-                if (stack.className.startsWith('<')) {
-                    this.console('    §e位于 §c%s => §c%s §4行%s'.format(stack.fileName, stack.methodName, stack.lineNumber));
-                } else {
-                    this.console('    §e位于 §c%s.%s(§4%s:%s§c)'.format(stack.className, stack.methodName, stack.fileName, stack.lineNumber));
+    var Console = {
+        createNew: function(name) {
+            var console = {};
+            Object.defineProperty(console, 'name', {
+                get: function () {
+                    return this._name;
+                }.bind(console),
+                set: function (name) {
+                    this._name = name ? '[' + name + '] ' : '';
+                    this.prefix = name ? '§6[§cMS§6][§b' + name + '§6]§r ' : '§6[§bMiaoScript§6]§r ';
+                }.bind(console)
+            });
+            console.name = name;
+            console.log = console.info = function () {
+                log.info(this.name + Array.prototype.join.call(arguments, ' '));
+            };
+            console.warn = function () {
+                log.warning(this.name + Array.prototype.join.call(arguments, ' '));
+            };
+            console.error = function () {
+                log.log(Level.SEVERE, this.name + Array.prototype.join.call(arguments, ' '));
+            };
+            console.debug = function () {
+                log.info(this.name + '[DEBUG] ' + Array.prototype.join.call(arguments, ' '));
+            };
+            console.debug = global.debug ? console.debug : global.noop;
+            console.sender = console.info;
+            console.console = console.info;
+            console.ex = function (ex) {
+                this.console('§4' + ex);
+                var track = ex.getStackTrace();
+                if (track.class) {
+                    track = Arrays.asList(track)
                 }
-            }.bind(this));
+                track.forEach(function (stack) {
+                    if (stack.className.startsWith('<')) {
+                        this.console('    §e位于 §c%s => §c%s §4行%s'.format(stack.fileName, stack.methodName, stack.lineNumber));
+                    } else {
+                        this.console('    §e位于 §c%s.%s(§4%s:%s§c)'.format(stack.className, stack.methodName, stack.fileName, stack.lineNumber));
+                    }
+                }.bind(this));
+            }
+            return console;
         }
-    };
-    global.Console = Console;
-    global.console = new Console();
+    }
+    var BukkitConsole = {
+        createNew: function () {
+            var console = Console.createNew();
+            console.sender = function () {
+                var sender = arguments[0];
+                if (!(sender instanceof org.bukkit.command.CommandSender)) {
+                    this.error("第一个参数未实现 org.bukkit.command.CommandSender 无法发送消息!")
+                }
+                var args = Array.prototype.slice.call(arguments, 1);
+                sender.sendMessage(console.prefix + args.join(' '));
+            };
+            console.console = function () {
+                this.sender(MServer.consoleSender, Array.prototype.join.call(arguments, ' '));
+            };
+            return console;
+        }
+    }
+    var SpongeConsole = {
+        createNew: function () {
+            var console = Console.createNew();
+            console.sender = function () {
+                var Text = Java.type("org.spongepowered.api.text.Text");
+                var sender = arguments[0];
+                if (!(sender instanceof org.spongepowered.api.command.CommandSource)) {
+                    this.error("第一个参数未实现 org.spongepowered.api.command.CommandSource 无法发送消息!")
+                }
+                var args = Array.prototype.slice.call(arguments, 1);
+                sender.sendMessage(Text.of(console.prefix + args.join(' ')));
+            };
+            console.console = function () {
+                this.sender(MServer.server.console, Array.prototype.join.call(arguments, ' '));
+            };
+            console.warn = function () {
+                log.warn(this.name + Array.prototype.join.call(arguments, ' '));
+            };
+            return console;
+        }
+    }
+    switch (DetectServerType) {
+        case ServerType.Bukkit:
+            global.Console = BukkitConsole;
+            break;
+        case ServerType.Sponge:
+            global.Console = SpongeConsole;
+            break;
+        default:
+            global.Console = Console;
+            break;
+    }
+    global.console = global.Console.createNew();
 })(global);

@@ -1,16 +1,16 @@
 'use strict';
 /**
- * Bukkit 命令相关类
+ * Sponge 命令相关类
  */
 
 /*global Java, base, module, exports, require, __FILE__*/
-var ref = require('core/reflect');
-var bukkit = require('./server');
-var plugin = bukkit.plugin.self;
-var commandMap = ref.on(bukkit.plugin.manager).get('commandMap').get();
-var PluginCommand = Java.type('org.bukkit.command.PluginCommand');
+var server = require('./server');
+var plugin = server.plugin.self;
 
-var StringUtil = Java.type('org.bukkit.util.StringUtil');
+var CommandManager = server.CommandManager;
+
+var CommandSpec = Java.type('org.spongepowered.api.command.spec.CommandSpec');
+var Text = Java.type('org.spongepowered.api.text.Text');
 
 var ArrayList = Java.type('java.util.ArrayList');
 var Arrays = Java.type('java.util.Arrays');

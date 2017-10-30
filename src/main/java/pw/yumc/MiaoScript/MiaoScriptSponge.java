@@ -3,10 +3,10 @@ package pw.yumc.MiaoScript;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.script.ScriptException;
 
+import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.GenericArguments;
@@ -48,6 +48,7 @@ public class MiaoScriptSponge {
                           .permission("MiaoScript.admin")
                           .child(js(), "js")
                           .child(file(), "file")
+                          .child(reload(), "reload")
                           .build();
     }
 
@@ -81,11 +82,24 @@ public class MiaoScriptSponge {
                           .build();
     }
 
+    private CommandSpec reload() {
+        return CommandSpec.builder()
+                          .description(Text.of("重载 JS 引擎"))
+                          .executor((src, args) -> {
+                              engine.disableEngine();
+                              Sponge.getEventManager().unregisterPluginListeners(this);
+                              engine.enableEngine();
+                              // src.sendMesssage("§6[§bMiaoScript§6]§r §bMiaoScript §eEngine §a重启完成!");
+                              return CommandResult.success();
+                          })
+                          .build();
+    }
+
     @Listener
     @SneakyThrows
     public void onStart(GameStartedServerEvent event) {
         Sponge.getServer().getConsole();
         Sponge.getCommandManager().register(this, main(), "ms", "mscript", "MiaoScript");
-        engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), Thread.currentThread().getContextClassLoader(), logger);
+        engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger);
     }
 }

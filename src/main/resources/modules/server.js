@@ -1,1 +1,1 @@
-module.exports = require('./bukkit/server');
+module.exports = require('./mserver').server;

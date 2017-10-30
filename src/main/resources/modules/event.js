@@ -1,1 +1,1 @@
-module.exports = require('./bukkit/event');
+module.exports = require('./mserver').event;

@@ -3,8 +3,8 @@
  */
 /*global base*/
 var ServerType = {
-    Bukkit: 1,
-    Sponge: 2
+    Bukkit: 'bukkit',
+    Sponge: 'sponge'
 };
 var MServer;
 var DetectServerType = ServerType.Bukkit;

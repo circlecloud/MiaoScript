@@ -1,1 +1,1 @@
-module.exports = require('./bukkit/permission');
+module.exports = require('./mserver').permission;
