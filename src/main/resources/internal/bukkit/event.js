@@ -8,10 +8,8 @@ var Bukkit = Java.type("org.bukkit.Bukkit");
 var Listener = Java.type("org.bukkit.event.Listener");
 var Modifier = Java.type("java.lang.reflect.Modifier");
 var BukkitEvent = Java.type("org.bukkit.event.Event");
-var HandlerList = Java.type('org.bukkit.event.HandlerList');
 var EventPriority = Java.type("org.bukkit.event.EventPriority");
 var EventExecutor = Java.type("org.bukkit.plugin.EventExecutor");
-var IllegalStateException = Java.type("java.lang.IllegalStateException");
 
 var plugin = require('./server').plugin.self;
 
@@ -126,7 +124,7 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
         plugin,
         ignoreCancel);
     // 添加到缓存 用于关闭插件的时候关闭事件
-    if (!listenerMap[name]) listenerMap[name] = []
+    if (!listenerMap[name]) listenerMap[name] = [];
     var listeners = listenerMap[name];
     var off = {
         event: eventCls,
@@ -135,7 +133,7 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
             ref.on(this.event).call('getHandlerList').get().unregister(this.listener);
             console.debug('插件 %s 注销事件 %s'.format(name, this.event.simpleName));
         }
-    }
+    };
     listeners.push(off);
     // noinspection JSUnresolvedVariable
     console.debug('插件 %s 注册事件 %s => %s'.format(name, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name));

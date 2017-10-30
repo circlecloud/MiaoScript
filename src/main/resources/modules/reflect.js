@@ -67,8 +67,8 @@ function Reflect(obj) {
             accessible(this.class.getDeclaredField(name)).set(this.obj, value);
         }
         return this;
-    }
-    
+    };
+
     this.create = function () {
         var param = Array.prototype.slice.call(arguments);
         return on(declaredConstructor(this.class, param).newInstance(param));

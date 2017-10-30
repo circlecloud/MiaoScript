@@ -6,7 +6,6 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 var Bukkit = MServer;
-// noinspection JSUnresolvedVariable
 var Server = Bukkit.server;
 var PluginManager = Server.pluginManager;
 exports.$ = Bukkit;

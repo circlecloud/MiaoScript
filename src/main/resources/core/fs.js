@@ -12,7 +12,7 @@ var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
  */
 exports.concat = function () {
     return Array.prototype.join.call(arguments, separatorChar);
-}
+};
 /**
  * 获得文件
  * @constructor(file)

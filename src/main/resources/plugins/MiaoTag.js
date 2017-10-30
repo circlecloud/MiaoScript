@@ -4,13 +4,9 @@
  * 可兼容任何记分板
  */
 /*global Java, base, module, exports, require*/
-
-var fs = require('core/fs');
-var event = require('modules/event');
-var bukkit = require('modules/server');
-var command = require('modules/command');
-
-var papi = require('./ext/papi');
+var event = require('api/event');
+var bukkit = require('api/server');
+var command = require('api/command');
 
 var fakeTag;
 
@@ -25,7 +21,7 @@ var description = {
         'mtag': {
             description: 'MiaoTag主命令',
             usage: '',
-            permission: 'MiaoTag.admin',
+            permission: 'MiaoTag.admin'
         }
     },
     permissions: {
@@ -86,8 +82,6 @@ function disable() {
 
 function FakeTag(name) {
     // NMS CLASS
-    var Scoreboard = bukkit.nmsCls('Scoreboard');
-    var ScoreboardScore = bukkit.nmsCls('ScoreboardScore');
     var ScoreboardBaseCriteria = bukkit.nmsCls('ScoreboardBaseCriteria');
     var PacketPlayOutScoreboardScore = bukkit.nmsCls('PacketPlayOutScoreboardScore');
     var PacketPlayOutScoreboardObjective = bukkit.nmsCls('PacketPlayOutScoreboardObjective');

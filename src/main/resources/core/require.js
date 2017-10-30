@@ -1,6 +1,27 @@
 /**
- * 符合 CommonJS 规范的 模块化加载
- *
+ * 符合 CommonJS 规范的 类似 Node 的模块化加载
+ * 一. 注: MiaoScript 中 require.main 不存在
+ * 二. 加载 require 流程 例如 在 dir 目录下 调用 require('xx');
+ *   a) 加载流程
+ *     1. 如果xx模块是一个內建模块
+ *       a. 编译并返回该模块
+ *       b. 停止执行
+ *     2. 如果模块以 `./` `../` 开头
+ *       a. 尝试使用 resolveAsFile(dir/xx) 加载文件
+ *       b. 尝试使用 resolveAsDirectory(dir/xx) 加载目录
+ *     3. 尝试去 root root/core root/modules 用方法2加载模块
+ *     4. 抛出 not found 异常
+ *   b) resolveAsFile 解析流程
+ *     1. 如果 xx 是一个文件 则作为 `javascript` 文本加载 并停止执行
+ *     2. 如果 xx.js 是一个文件 则作为 `javascript` 文本加载 并停止执行
+ *     暂不支持 3. 如果 xx.json 是一个文件 则使用 `JSON.parse(xx.json)` 解析为对象加载 并停止执行
+ *     暂不支持 4. 如果 xx.ms 是一个文件 则使用MScript解析器解析 并停止执行
+ *   c) resolveAsDirectory 解析流程
+ *     1. 如果 xx/package.json 存在 则使用 `JSON.parse(xx/package.json)` 解析并取得 main 字段使用 resolveAsFile(main) 加载
+ *     2. 如果 xx/index.js 存在 则使用 resolveAsFile(xx/index.js) 加载
+ *     暂不支持 3. 如果 xx/index.json 存在 则使用 `xx/index.json` 解析为对象加载 并停止执行
+ *     暂不支持 4. 如果 xx/index.ms 是一个文件 则使用MScript解析器解析 并停止执行
+ *   注: MiaoScript 暂不支持多层 modules 加载 暂时不需要(估计以后也不会需要)
  */
 /*global Java, base*/
 (function (parent) {
@@ -151,7 +172,7 @@
      * @private
      */
     function _require(name, path, optional) {
-        var file = _canonical(name) ? name : resolve(name, path);
+        var file = name.isFile && name.isFile() ? name : resolve(name, path);
         if (file === undefined) {
             console.console("§c模块 §a%s §c加载失败! §4未找到该模块!".format(name));
             return {exports: {}};
@@ -181,9 +202,8 @@
 
     var cacheDir = parent + separatorChar + "runtime";
 
-    // 等于 undefined 说明 parent 是一个字符串 需要转成File
-    // 可能有更加准确的方案
-    if (_canonical(parent) === undefined) {
+    // 判断是否存在 isFile 不存在说明 parent 是一个字符串 需要转成File
+    if (parent.isFile) {
         parent = new File(parent);
     }
     var cacheModules = [];

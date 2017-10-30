@@ -6,7 +6,7 @@
     var Arrays = Java.type('java.util.Arrays');
     var Level = Java.type('java.util.logging.Level');
     var Console = {
-        createNew: function(name) {
+        createNew: function (name) {
             var console = {};
             Object.defineProperty(console, 'name', {
                 get: function () {
@@ -46,10 +46,10 @@
                         this.console('    §e位于 §c%s.%s(§4%s:%s§c)'.format(stack.className, stack.methodName, stack.fileName, stack.lineNumber));
                     }
                 }.bind(this));
-            }
+            };
             return console;
         }
-    }
+    };
     var BukkitConsole = {
         createNew: function () {
             var console = Console.createNew();
@@ -66,7 +66,7 @@
             };
             return console;
         }
-    }
+    };
     var SpongeConsole = {
         createNew: function () {
             var console = Console.createNew();
@@ -87,7 +87,7 @@
             };
             return console;
         }
-    }
+    };
     switch (DetectServerType) {
         case ServerType.Bukkit:
             global.Console = BukkitConsole;

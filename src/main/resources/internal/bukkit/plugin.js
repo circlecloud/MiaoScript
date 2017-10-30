@@ -13,7 +13,7 @@ var permission = require('./permission');
 
 /**
  * 载入插件
- * @param path
+ * @param dir
  */
 function loadPlugins(dir) {
     var plugin = fs.file(root, dir);

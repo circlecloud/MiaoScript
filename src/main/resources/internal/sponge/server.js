@@ -6,7 +6,6 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 var Sponge = MServer;
-// noinspection JSUnresolvedVariable
 var Server = Sponge.server;
 var PluginManager = Sponge.pluginManager;
 exports.$ = Sponge;

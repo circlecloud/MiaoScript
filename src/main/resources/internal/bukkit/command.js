@@ -4,7 +4,7 @@
  */
 
 /*global Java, base, module, exports, require, __FILE__*/
-var ref = require('core/reflect');
+var ref = require('modules/reflect');
 var bukkit = require('./server');
 var plugin = bukkit.plugin.self;
 var commandMap = ref.on(bukkit.plugin.manager).get('commandMap').get();

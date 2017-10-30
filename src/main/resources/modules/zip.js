@@ -3,7 +3,7 @@
 /*global Java, base, module, exports, require, __FILE__*/
 
 var ZipFile = Java.type("java.util.zip.ZipFile");
-var fs = require('fs');
+var fs = require('core/fs');
 
 /**
  * 解压文件

@@ -39,11 +39,15 @@ var disable;
 
         var classLoader = java.lang.Thread.currentThread().getContextClassLoader();
         var url = classLoader.getResource("plugin.yml");
-        if (url === null) { return; }
+        if (url === null) {
+            return;
+        }
 
         var upath = url.getFile().substring(url.getFile().indexOf("/") + 1);
         var jarPath = java.net.URLDecoder.decode(upath.substring(0, upath.indexOf('!')));
-        if (!Files.exists(Paths.get(jarPath))) { jarPath = "/" + jarPath; }
+        if (!Files.exists(Paths.get(jarPath))) {
+            jarPath = "/" + jarPath;
+        }
 
         try {
             var jar = new java.util.jar.JarFile(jarPath);

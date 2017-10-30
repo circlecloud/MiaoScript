@@ -4,19 +4,19 @@
  */
 /*global Java, base, module, exports, require*/
 
-var event = require('modules/event');
-var command = require('modules/command');
+var event = require('api/event');
+var command = require('api/command');
 var papi = require('./ext/papi');
 var join;
 
 var description = {
     name: 'HelloWorld',
     version: '1.0',
-    //commands: {
-    //    'hello': {
-    //        description: 'HelloWorld主命令'
-    //    }
-    //}
+    commands: {
+        'hello': {
+            description: 'HelloWorld主命令'
+        }
+    }
 };
 
 function load() {
