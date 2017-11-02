@@ -19,9 +19,6 @@ exports.nmsVersion = Bukkit.server.class.name.split('.')[3];
 exports.nmsCls = function (name) {
     return Java.type(['net.minecraft.server', exports.nmsVersion, name].join('.'));
 };
-exports.command = function (name) {
-    return Server.getPluginCommand(name);
-};
 /**
  * 获取玩家
  */

@@ -4,8 +4,8 @@ var global = this;
 
 // noinspection JSUnusedLocalSymbols
 function init(root) {
-    log.info('Init MiaoScript System...');
     global.root = root;
+    global.noop = function () {};
     loadCore();
     loadRequire();
     loadPatch();
@@ -17,8 +17,6 @@ function init(root) {
  * 初始化核心
  */
 function loadCore() {
-    global.noop = function () {
-    };
     // 加载基础模块
     load(root + '/core/ext.js');
     // 探测服务器类型

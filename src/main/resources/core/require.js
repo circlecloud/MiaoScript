@@ -148,6 +148,10 @@
         return module;
     }
 
+    function _isFile(file) {
+        return file.isFile && file.isFile();
+    }
+
     /**
      * 获得文件规范路径
      * @param file
@@ -172,7 +176,8 @@
      * @private
      */
     function _require(name, path, optional) {
-        var file = name.isFile && name.isFile() ? name : resolve(name, path);
+        var file = new File(name);
+        file = _isFile(file) ? file : resolve(name, path);
         if (file === undefined) {
             console.console("§c模块 §a%s §c加载失败! §4未找到该模块!".format(name));
             return {exports: {}};

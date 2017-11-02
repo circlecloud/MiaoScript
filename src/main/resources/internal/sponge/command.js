@@ -10,10 +10,32 @@ var plugin = server.plugin.self;
 var CommandManager = server.CommandManager;
 
 var CommandSpec = Java.type('org.spongepowered.api.command.spec.CommandSpec');
+var CommandCallable = Java.type('org.spongepowered.api.command.CommandCallable');
+
 var Text = Java.type('org.spongepowered.api.text.Text');
+
+var Optional = Java.type('java.util.Optional');
 
 var ArrayList = Java.type('java.util.ArrayList');
 var Arrays = Java.type('java.util.Arrays');
+
+var SimpleCommandCallable = function () {
+    this.process = function (source, arguments) {
+        
+    },
+    this.getSuggestions = function (source, arguments, targetPosition) {
+        return Arrays.asList('');
+    },
+    this.testPermission = function (source) {
+        return true;
+    },
+    this.getShortDescription = function (source) {
+        return Optional.ofNullable('');
+    },
+    this.getHelp = function (source) {
+        
+    }
+}
 
 function enable(jsp) {
     var commands = jsp.description.commands;
@@ -22,9 +44,9 @@ function enable(jsp) {
         for (var name in commands) {
             var command = commands[name];
             if (typeof command !== 'object') continue;
-            var newCmd = create(jsp, name);
-            if (command.description) newCmd.setDescription(command.description);
-            if (command.usage) newCmd.setUsage(command.usage);
+            var newCmd = CommandSpec.builder();
+            if (command.description) newCmd.description(Text.of(command.description));
+            // if (command.usage) newCmd.setUsage(command.usage);
             if (command.aliases) newCmd.setAliases(Arrays.asList(command.aliases));
             if (command.permission) newCmd.setPermission(command.permission);
             if (command['permission-message']) newCmd.setPermissionMessage(command['permission-message']);
