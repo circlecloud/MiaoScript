@@ -6,6 +6,7 @@
 
 var event = require('api/event');
 var command = require('api/command');
+var fs = require('fs');
 var papi = require('./ext/papi');
 var join;
 
@@ -19,27 +20,15 @@ var description = {
     }
 };
 
-function load() {
-    console.log('载入 Hello Wrold 测试插件!');
-}
+// function load() {
+//     console.log('载入 Hello Wrold 测试插件!');
+// }
 
 function enable() {
     command.on(this, 'hello', {
         cmd: function (sender, command, args) {
-            console.log(command, Array.prototype.join.call(args, ' '));
+            load(fs.file(root, 'test.js'));
             return true;
-        },
-        tab: function (sender, command, args) {
-            switch (args.length) {
-                case 1:
-                    return "arg1";
-                case 2:
-                    return "arg2";
-                case 3:
-                    return "arg3";
-                default:
-                    return 'default';
-            }
         }
     });
     console.log('启用 Hello Wrold 测试插件!');
@@ -61,7 +50,7 @@ function disable() {
 
 module.exports = {
     description: description,
-    load: load,
+    // load: load,
     enable: enable,
     disable: disable
 };
