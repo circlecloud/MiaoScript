@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import javax.script.ScriptEngineManager;
 
 import lombok.SneakyThrows;
+import lombok.val;
 import pw.yumc.YumCore.engine.MiaoScriptEngine;
 
 /**
@@ -32,6 +33,8 @@ public class ScriptEngine {
 
     @SneakyThrows
     public void enableEngine(ClassLoader loader) {
+        val origin = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(loader);
         ScriptEngineManager manager = new ScriptEngineManager(null);
         this.engine = new MiaoScriptEngine(manager, "nashorn");
         this.engine.put("base", new Base());
@@ -40,9 +43,10 @@ public class ScriptEngine {
         if (Files.exists(bios)) {
             this.engine.eval("load('" + bios.toFile().getCanonicalPath() + "')");
         } else {
-            this.engine.eval(new InputStreamReader(loader.getResourceAsStream("bios.js")));
+            this.engine.eval(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream("bios.js")));
         }
         engine.invokeFunction("boot", root, logger);
+        Thread.currentThread().setContextClassLoader(origin);
     }
 
     @SneakyThrows

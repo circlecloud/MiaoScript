@@ -12,7 +12,7 @@ var disable;
             // 开发环境下初始化
             root = root || "src/main/resources";
             // 解压文件到根目录
-            release(root, "[core|modules]/.*", true);
+            release(root, "[api|core|internal|modules]/.*", true);
             release(root, "plugins/.*");
             load(root + '/core/init.js');
             if (__FILE__ !== "<eval>") {

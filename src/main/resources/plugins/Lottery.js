@@ -8,7 +8,6 @@ var event = require('api/event');
 var command = require('api/command');
 var bukkit = require('api/server');
 var item = require('api/item');
-var fs = require('fs');
 
 var Arrays = Java.type('java.util.Arrays');
 var ItemStackArray = Java.type('org.bukkit.inventory.ItemStack[]');
@@ -26,7 +25,7 @@ var description = {
         panel: '160:13',
         list: [
             {
-                box:{
+                box: {
                     id: 160,
                     damage: 1,
                     name: '§a箱子',
@@ -34,7 +33,7 @@ var description = {
                         '这是箱子的Lore'
                     ]
                 },
-                key:{
+                key: {
                     id: 160,
                     damage: 2,
                     name: '§b钥匙',
@@ -42,16 +41,28 @@ var description = {
                         '这是钥匙的Lore'
                     ]
                 },
-                result:[
+                result: [
                     {
                         percent: 10,
-                        command: 'money give %player% 200',
+                        command: 'money give %player% 100',
                         item: {
                             id: 160,
                             damage: 3,
-                            name: '§c奖品',
+                            name: '§c奖品1',
                             lore: [
-                                '这是奖品子的Lore'
+                                '这是奖品1的Lore'
+                            ]
+                        }
+                    },
+                    {
+                        percent: 20,
+                        command: 'money give %player% 200',
+                        item: {
+                            id: 160,
+                            damage: 4,
+                            name: '§c奖品2',
+                            lore: [
+                                '这是奖品2的Lore'
                             ]
                         }
                     }
@@ -62,12 +73,11 @@ var description = {
 };
 
 var panel = item.create(160, 1, 13);
-var air = item.create(0);
 var config;
 var items;
 
-var lmap=[];
-var cmap=[];
+var lmap = [];
+var cmap = [];
 
 function load() {
     config = this.config;
@@ -95,21 +105,21 @@ function load() {
     Arrays.fill(items, 41, 54, panel);
 }
 
-function isTargetItem(item, config){
-    return item.typeId == config.id && 
-        item.itemMeta && 
-        item.itemMeta.displayName == config.name && 
-        item.itemMeta.lore && Java.from(item.itemMeta.lore).toJson() == config.lore.toJson()
+function isTargetItem(item, config) {
+    return item.typeId === config.id &&
+        item.itemMeta &&
+        item.itemMeta.displayName === config.name &&
+        item.itemMeta.lore && Java.from(item.itemMeta.lore).toJson() === config.lore.toJson()
 }
 
 function newItem(name, sub) {
     return item.create(name, 1, sub || 0);
 }
 
-function newItemFromConfig(config){
+function newItemFromConfig(config) {
     var i = newItem(config.id, config.damage);
-    if (config.name) item.setName(i, config.name)
-    if (config.lore) item.setLore(i, config.lore)
+    if (config.name) item.setName(i, config.name);
+    if (config.lore) item.setLore(i, config.lore);
     return i;
 }
 
@@ -124,16 +134,14 @@ function enable() {
     });
     event.on(this, 'InventoryClick', function click(event) {
         var inv = event.inventory;
-        if (inv.title != config.title) return;
+        if (inv.title !== config.title) return;
         var player = event.whoClicked;
         var slot = event.rawSlot;
         if (slot > 53 || slot < 0) {
             return;
         }
         event.cancelled = true;
-        var click = event.currentItem;
-        var cursor = event.cursor;
-        switch(slot){
+        switch (slot) {
             case 10:
             case 16:
             case 40:
@@ -145,17 +153,17 @@ function enable() {
                 break;
             case 33:
                 var temp = inv.getItem(40);
-                if (temp && temp.typeId != 0) {
-                    console.sender(player, '§c请先取走奖品!')
+                if (temp && temp.typeId !== 0) {
+                    console.sender(player, '§c请先取走奖品!');
                     return;
                 }
                 var litem;
                 var box = inv.getItem(10);
                 var key = inv.getItem(16);
-                if (box && box.typeId != 0 && key && key.typeId != 0) {
-                   for (var i = 0; i < config.list.length; i++){
+                if (box && box.typeId !== 0 && key && key.typeId !== 0) {
+                    for (var i = 0; i < config.list.length; i++) {
                         var r = config.list[i];
-                        if (isTargetItem(box, r.box)){
+                        if (isTargetItem(box, r.box)) {
                             litem = r;
                             break;
                         }
@@ -163,16 +171,16 @@ function enable() {
                 }
                 // TODO 抽奖
                 if (!litem) {
-                    console.sender(player, '§c请先放入抽奖物品和钥匙!')
+                    console.sender(player, '§c请先放入抽奖物品和钥匙!');
                     return;
                 }
                 if (!isTargetItem(key, litem.key)) {
-                    console.sender(player, '§c抽奖物品和钥匙不匹配!')
+                    console.sender(player, '§c抽奖物品和钥匙不匹配!');
                     return;
                 }
                 var resultlist = [];
-                litem.result.forEach(function(t){
-                    for (var i=0; i < t.percent; i++){
+                litem.result.forEach(function (t) {
+                    for (var i = 0; i < t.percent; i++) {
                         resultlist.push(t);
                     }
                 });
@@ -191,7 +199,7 @@ function enable() {
                 delete cmap[player.name];
                 break;
             default:
-                event.cancelled = true;                                 
+                event.cancelled = true;
         }
     });
 }
