@@ -10,7 +10,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import lombok.SneakyThrows;
 import lombok.val;
 import pw.yumc.YumCore.bukkit.Log;
-import pw.yumc.YumCore.bukkit.P;
 import pw.yumc.YumCore.commands.CommandSub;
 import pw.yumc.YumCore.commands.annotation.Cmd;
 import pw.yumc.YumCore.commands.annotation.Help;
@@ -30,6 +29,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
     public void onEnable() {
         new CommandSub("ms", this);
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger());
+        engine.enableEngine(getClassLoader());
     }
 
     @Cmd
@@ -60,7 +60,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
         } catch (Exception ex) {
             Log.d("Error reload", ex);
         }
-        engine.enableEngine();
+        engine.enableEngine(getClassLoader());
         Log.sender(sender, "§bMiaoScript §eEngine §a重启完成!");
     }
 
