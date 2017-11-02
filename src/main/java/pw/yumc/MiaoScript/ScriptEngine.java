@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import lombok.SneakyThrows;
 import pw.yumc.YumCore.engine.MiaoScriptEngine;
 
 /**
@@ -31,30 +32,24 @@ public class ScriptEngine {
         enableEngine();
     }
 
+    @SneakyThrows
     public void enableEngine() {
-        try {
-            ScriptEngineManager manager = new ScriptEngineManager(null);
-            this.engine = new MiaoScriptEngine(manager, "nashorn");
-            this.engine.put("base", new Base());
-            Path bios = Paths.get(root, "bios.js");
-            // 如果存在自定义bios就加载自定义的
-            if (Files.exists(bios)) {
-                this.engine.eval("load('" + bios.toFile().getCanonicalPath() + "')");
-            } else {
-                this.engine.eval(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream("bios.js")));
-            }
-            engine.invokeFunction("boot", root, logger);
-        } catch (Exception e) {
-            // logger.log(Level.SEVERE, "MiaoScript 启动失败!", e);
+        ScriptEngineManager manager = new ScriptEngineManager(null);
+        this.engine = new MiaoScriptEngine(manager, "nashorn");
+        this.engine.put("base", new Base());
+        Path bios = Paths.get(root, "bios.js");
+        // 如果存在自定义bios就加载自定义的
+        if (Files.exists(bios)) {
+            this.engine.eval("load('" + bios.toFile().getCanonicalPath() + "')");
+        } else {
+            this.engine.eval(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream("bios.js")));
         }
+        engine.invokeFunction("boot", root, logger);
     }
 
+    @SneakyThrows
     public void disableEngine() {
-        try {
-            engine.invokeFunction("disable");
-        } catch (ScriptException | NoSuchMethodException e) {
-            // logger.log(Level.SEVERE, "MiaoScript 关闭失败!", e);
-        }
+        engine.invokeFunction("disable");
     }
 
     public MiaoScriptEngine getEngine() {
