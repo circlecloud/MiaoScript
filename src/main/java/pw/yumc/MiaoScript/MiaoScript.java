@@ -29,7 +29,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
     public void onEnable() {
         new CommandSub("ms", this);
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger());
-        engine.enableEngine(getClassLoader());
+        enableEngine();
     }
 
     @Cmd
@@ -60,7 +60,7 @@ public class MiaoScript extends JavaPlugin implements Executor {
         } catch (Exception ex) {
             Log.d("Error reload", ex);
         }
-        engine.enableEngine(getClassLoader());
+        enableEngine();
         Log.sender(sender, "§bMiaoScript §eEngine §a重启完成!");
     }
 
@@ -70,6 +70,13 @@ public class MiaoScript extends JavaPlugin implements Executor {
         } else {
             Log.sender(sender, "§a运行成功! §b数据类型: §r%s §d结果: §r%s", result.getClass().getName(), result);
         }
+    }
+
+    private void enableEngine() {
+        val origin = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(getClassLoader());
+        engine.enableEngine();
+        Thread.currentThread().setContextClassLoader(origin);
     }
 
     @Override

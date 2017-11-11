@@ -8,14 +8,13 @@ import java.nio.file.Paths;
 import javax.script.ScriptEngineManager;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import pw.yumc.YumCore.engine.MiaoScriptEngine;
 
 /**
  * Created with IntelliJ IDEA
  *
  * @author 喵♂呜
- *         Created on 2017/10/25 21:01.
+ * Created on 2017/10/25 21:01.
  */
 public class ScriptEngine {
     private String root;
@@ -27,14 +26,8 @@ public class ScriptEngine {
         this.logger = logger;
     }
 
-    public void enableEngine() {
-        enableEngine(Thread.currentThread().getContextClassLoader());
-    }
-
     @SneakyThrows
-    public void enableEngine(ClassLoader loader) {
-        val origin = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(loader);
+    public void enableEngine() {
         ScriptEngineManager manager = new ScriptEngineManager();
         this.engine = new MiaoScriptEngine(manager, "nashorn");
         this.engine.put("base", new Base());
@@ -46,7 +39,6 @@ public class ScriptEngine {
             this.engine.eval(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream("bios.js")));
         }
         engine.invokeFunction("boot", root, logger);
-        Thread.currentThread().setContextClassLoader(origin);
     }
 
     @SneakyThrows
