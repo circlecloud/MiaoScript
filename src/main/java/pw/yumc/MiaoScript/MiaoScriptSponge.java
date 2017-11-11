@@ -89,7 +89,7 @@ public class MiaoScriptSponge {
                               engine.disableEngine();
                               Sponge.getEventManager().unregisterPluginListeners(this);
                               engine.enableEngine();
-                              // src.sendMesssage("§6[§bMiaoScript§6]§r §bMiaoScript §eEngine §a重启完成!");
+                              src.sendMessage(Text.of("§6[§bMiaoScript§6]§r §bMiaoScript §eEngine §a重启完成!"));
                               return CommandResult.success();
                           })
                           .build();
@@ -101,5 +101,6 @@ public class MiaoScriptSponge {
         Sponge.getServer().getConsole();
         Sponge.getCommandManager().register(this, main(), "ms", "mscript", "MiaoScript");
         engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger);
+        engine.enableEngine();
     }
 }

@@ -35,7 +35,7 @@ public class ScriptEngine {
     public void enableEngine(ClassLoader loader) {
         val origin = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(loader);
-        ScriptEngineManager manager = new ScriptEngineManager(null);
+        ScriptEngineManager manager = new ScriptEngineManager();
         this.engine = new MiaoScriptEngine(manager, "nashorn");
         this.engine.put("base", new Base());
         Path bios = Paths.get(root, "bios.js");
