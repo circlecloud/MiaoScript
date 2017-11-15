@@ -6,10 +6,11 @@ var global = this;
     // noinspection JSUnusedLocalSymbols
     global.init = function init(root) {
         global.root = root;
-        global.noop = function () {};
+        global.noop = function () {
+        };
         loadCore();
         loadRequire();
-        try{
+        try {
             loadExt();
             loadServerLib();
             loadPlugins();
@@ -17,7 +18,7 @@ var global = this;
             console.console("§4初始化插件基础系统库错误:§c", ex);
             console.ex(ex);
         }
-    }
+    };
 
     /**
      * 初始化核心
@@ -46,7 +47,7 @@ var global = this;
         var fs = require('core/fs');
         fs.list(fs.file(root, 'core/ext')).forEach(function (path) {
             console.log('加载扩展类库', path);
-            try{
+            try {
                 load(path.toFile());
             } catch (ex) {
                 console.ex(ex);

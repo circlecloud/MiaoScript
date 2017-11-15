@@ -123,8 +123,8 @@ function newItemFromConfig(config) {
 function enable() {
     command.on(this, 'l', {
         cmd: function (sender, command, args) {
-            if(!sender.openInventory){
-               console.sender(sender, "§4当前用户无法使用该命令!");
+            if (!sender.openInventory) {
+                console.sender(sender, "§4当前用户无法使用该命令!");
             }
             var inv = bukkit.$.createInventory(null, 54, config.title);
             inv.setContents(items);

@@ -39,7 +39,7 @@ function disable(jsp) {
     var commands = jsp.description.commands;
     if (commands) {
         for (var name in commands) {
-            
+
         }
     }
 }
@@ -73,28 +73,30 @@ function on(jsp, name, exec) {
         // 必须指定需要实现的接口类型 否则MOD服会报错
         c.setExecutor(new org.bukkit.command.CommandExecutor({
             onCommand: function (sender, cmd, command, args) {
-            try {
-                return exec.cmd(sender, command, args);
-            } catch (ex) {
-                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
-                console.ex(ex);
+                try {
+                    return exec.cmd(sender, command, args);
+                } catch (ex) {
+                    console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
+                    console.ex(ex);
+                }
             }
-        }}));
+        }));
     }
     if (exec.tab) {
         // 必须指定需要实现的接口类型 否则MOD服会报错
         c.setTabCompleter(new org.bukkit.command.TabCompleter({
             onTabComplete: function (sender, cmd, command, args) {
-            try {
-                var completions = new ArrayList();
-                var token = args[args.length - 1];
-                StringUtil.copyPartialMatches(token, Arrays.asList(exec.tab(sender, command, args)), completions);
-                return completions;
-            } catch (ex) {
-                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
-                console.ex(ex);
+                try {
+                    var completions = new ArrayList();
+                    var token = args[args.length - 1];
+                    StringUtil.copyPartialMatches(token, Arrays.asList(exec.tab(sender, command, args)), completions);
+                    return completions;
+                } catch (ex) {
+                    console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
+                    console.ex(ex);
+                }
             }
-        }}));
+        }));
     }
 }
 

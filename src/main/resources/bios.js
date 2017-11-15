@@ -33,7 +33,7 @@ var disable;
 
     var pluginYml;
 
-    function checkClassLoader(){
+    function checkClassLoader() {
         var classLoader = java.lang.Thread.currentThread().getContextClassLoader();
         pluginYml = classLoader.getResource("plugin.yml");
         if (pluginYml === null) {

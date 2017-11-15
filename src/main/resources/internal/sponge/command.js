@@ -20,22 +20,22 @@ var ArrayList = Java.type('java.util.ArrayList');
 var Arrays = Java.type('java.util.Arrays');
 
 var SimpleCommandCallable = function () {
-    this.process = function (source, arguments) {
-        
-    },
-    this.getSuggestions = function (source, arguments, targetPosition) {
+    this.process = function (source, args) {
+
+    };
+    this.getSuggestions = function (source, args, targetPosition) {
         return Arrays.asList('');
-    },
+    };
     this.testPermission = function (source) {
         return true;
-    },
+    };
     this.getShortDescription = function (source) {
         return Optional.ofNullable('');
-    },
+    };
     this.getHelp = function (source) {
-        
+
     }
-}
+};
 
 function enable(jsp) {
     var commands = jsp.description.commands;

@@ -17,8 +17,8 @@ var Material = Java.type('org.bukkit.Material');
  */
 item.create = function () {
     var idOrType = arguments[0];
-    if (isNaN(new Number(idOrType))) {
-       idOrType = Material[idOrType];
+    if (isNaN(Number(idOrType))) {
+        idOrType = Material[idOrType];
     }
     switch (arguments.length) {
         case 1:
@@ -87,7 +87,9 @@ item.setName = function (item, name) {
 item.setLore = item.setLores = function (item, lores) {
     if (item.getType().name() !== "AIR") {
         var meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
-        if (typeof(lores) === 'string') { lores = lores.split("\n") };
+        if (typeof(lores) === 'string') {
+            lores = lores.split("\n")
+        }
         meta.setLore(lores);
         item.setItemMeta(meta);
     }
