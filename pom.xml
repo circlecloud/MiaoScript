@@ -17,6 +17,9 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>plugins/**.js</exclude>
+                </excludes>
                 <filtering>true</filtering>
             </resource>
         </resources>
@@ -49,7 +52,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>
+            <plugin>
                 <groupId>com.github.wvengen</groupId>
                 <artifactId>proguard-maven-plugin</artifactId>
                 <version>2.0.13</version>
@@ -71,7 +74,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
     <ciManagement>

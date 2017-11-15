@@ -28,12 +28,6 @@ var disable;
             init(root);
         } catch (ex) {
             ex.printStackTrace();
-        } finally {
-            disable = function () {
-                if (disablePlugins && typeof(disablePlugins) === "function") {
-                    disablePlugins();
-                }
-            }
         }
     };
 
