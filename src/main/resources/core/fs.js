@@ -77,7 +77,7 @@ exports.copy = function (inputStream, target, override) {
 exports.read = function (file) {
     file = exports.file(file);
     if (!file.exists()) {
-        console.warn("读取文件 %s 错误 文件不存在!".format(file));
+        console.warn('读取文件', file, '错误 文件不存在!');
         return;
     }
     // noinspection JSPrimitiveTypeWrapperUsage
@@ -103,7 +103,7 @@ exports.list = function (path) {
     if (dir.isDirectory()) {
         return Files.list(dir.toPath());
     }
-    console.warn("路径 %s 不是一个目录 返回空数组!".format(path));
+    console.warn('路径', path, '不是一个目录 返回空数组!');
     return [];
 };
 /**

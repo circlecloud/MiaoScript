@@ -41,9 +41,9 @@
                 }
                 track.forEach(function (stack) {
                     if (stack.className.startsWith('<')) {
-                        this.console('    §e位于 §c%s => §c%s §4行%s'.format(stack.fileName, stack.methodName, stack.lineNumber));
-                    } else {
-                        this.console('    §e位于 §c%s.%s(§4%s:%s§c)'.format(stack.className, stack.methodName, stack.fileName, stack.lineNumber));
+                        this.console('    §e位于§c', stack.fileName, '=>§c', stack.methodName, '§4行', stack.lineNumber);
+                    } else {// %s.%s(§4%s:%s§c)
+                        this.console('    §e位于§c', stack.className + '.' + stack.methodName + '(§4' + stack.fileName + ':' + stack.lineNumber + '§c)');
                     }
                 }.bind(this));
             };

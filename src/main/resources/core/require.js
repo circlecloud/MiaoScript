@@ -113,7 +113,11 @@
         base.save(cacheFile, "(function (module, exports, require, __dirname, __filename) {" + origin + "});");
         // 使用 load 可以保留行号和文件名称
         var obj = load(cacheFile);
-        base.delete(cacheFile);
+        try {
+            base.delete(cacheFile);
+        } catch (ex) {
+            cacheFile.deleteOnExit();
+        }
         return obj;
     }
 
@@ -126,7 +130,7 @@
      * @returns {Object}
      */
     function compileModule(id, name, file, optional) {
-        console.debug('加载模块 %s 位于 %s Optional %s'.format(name, id, optional.toJson()));
+        console.debug('加载模块', name, '位于', id, 'Optional', JSON.stringify(optional));
         // noinspection JSUnresolvedVariable
         var module = {
             id: id,
@@ -139,10 +143,10 @@
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
             ]);
-            console.debug('模块 %s 编译成功!'.format(name));
+            console.debug('模块', name, '编译成功!');
             module.loaded = true;
         } catch (ex) {
-            console.console("§4警告! §c模块 §a%s §c编译失败! §4ERR: %s".format(name, ex));
+            console.console('§4警告! §c模块§a', name, '§c编译失败! §4ERR:', ex);
             console.ex(ex);
         }
         return module;
@@ -179,7 +183,7 @@
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
         if (file === undefined) {
-            console.console("§c模块 §a%s §c加载失败! §4未找到该模块!".format(name));
+            console.console('§c模块§a', name, '§c加载失败! §4未找到该模块!');
             return {exports: {}};
         }
         if (!optional) optional = {cache: true};
