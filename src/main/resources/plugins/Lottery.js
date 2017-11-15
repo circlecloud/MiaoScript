@@ -76,9 +76,6 @@ var panel = item.create(160, 1, 13);
 var config;
 var items;
 
-var lmap = [];
-var cmap = [];
-
 function load() {
     config = this.config;
     if (config.panel) {
@@ -126,6 +123,9 @@ function newItemFromConfig(config) {
 function enable() {
     command.on(this, 'l', {
         cmd: function (sender, command, args) {
+            if(!sender.openInventory){
+               console.sender(sender, "§4当前用户无法使用该命令!");
+            }
             var inv = bukkit.$.createInventory(null, 54, config.title);
             inv.setContents(items);
             sender.openInventory(inv);
@@ -184,19 +184,14 @@ function enable() {
                         resultlist.push(t);
                     }
                 });
-                console.log(resultlist.toJson());
                 var ri = ext.random(resultlist.length);
-                console.log(ri);
                 var result = resultlist[ri];
-                console.log(result.toJson());
                 box.amount = box.amount - 1;
                 key.amount = key.amount - 1;
                 inv.setItem(10, box);
                 inv.setItem(16, key);
                 inv.setItem(40, newItemFromConfig(result.item));
                 bukkit.console(result.command.replace('%player%', player.name));
-                delete lmap[player.name];
-                delete cmap[player.name];
                 break;
             default:
                 event.cancelled = true;
