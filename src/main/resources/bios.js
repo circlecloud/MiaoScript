@@ -1,29 +1,28 @@
 'use strict';
 var log;
 var boot;
-var loader;
 var disable;
+var global = this;
 /**
  * 初始化框架引擎
  */
 (function () {
+    var loader;
+
     boot = function (root, logger) {
         log = logger;
         // 开发环境下初始化
         root = root || "src/main/resources";
-        var debug = false;
         if (__FILE__ !== "<eval>") {
             logger.info('载入自定义 BIOS 文件 ' + __FILE__);
-            debug = true;
+            global.debug = true;
         }
         // 检查类加载器 防止找不到核心文件
         loader = checkClassLoader();
         // 解压文件到根目录 非调试模式直接从jar解压覆盖
-        release(root, "[api|core|internal|modules]/.*", !debug);
+        release(root, "[api|core|internal|modules]/.*", !global.debug);
         release(root, "plugins/.*");
         load(root + '/core/init.js');
-        // 初始化必须在load之后 不然global找不到
-        global.debug = debug;
         try {
             init(root);
         } catch (ex) {

@@ -9,16 +9,17 @@
         return str.format(this, Array.prototype.slice.call(arguments, 0))
     };
 
-    // JSON快捷方法
-    Object.prototype.toJson = function () {
-        return JSON.stringify(this);
-    };
+    // ========== 暂不扩展Object ==========
+    // // JSON快捷方法
+    // Object.prototype.toJson = function () {
+    //     return JSON.stringify(this);
+    // };
 
-    // YAML快速生成
-    var yaml = require('modules/yaml');
-    Object.prototype.toYaml = function () {
-        return yaml.safeDump(this);
-    };
+    // // YAML快速生成
+    // var yaml = require('modules/yaml');
+    // Object.prototype.toYaml = function () {
+    //     return yaml.safeDump(this);
+    // };
 
     /**
      * 日期格式化

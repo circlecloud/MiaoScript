@@ -1,5 +1,4 @@
 'use strict';
-var global = this;
 /*global base*/
 
 (function (global) {
