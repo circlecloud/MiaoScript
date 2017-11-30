@@ -9,18 +9,20 @@
  *     2. 如果模块以 `./` `../` 开头
  *       a. 尝试使用 resolveAsFile(dir/xx) 加载文件
  *       b. 尝试使用 resolveAsDirectory(dir/xx) 加载目录
- *     3. 尝试去 root root/core root/modules 用方法2加载模块
+ *     3. 尝试去 root root/core root/modules => xx 加载模块
+ *       a. 尝试使用 resolveAsFile(xx/xx) 加载文件
+ *       b. 尝试使用 resolveAsDirectory(xx/xx) 加载目录
  *     4. 抛出 not found 异常
  *   b) resolveAsFile 解析流程
  *     1. 如果 xx 是一个文件 则作为 `javascript` 文本加载 并停止执行
  *     2. 如果 xx.js 是一个文件 则作为 `javascript` 文本加载 并停止执行
- *     暂不支持 3. 如果 xx.json 是一个文件 则使用 `JSON.parse(xx.json)` 解析为对象加载 并停止执行
- *     暂不支持 4. 如果 xx.ms 是一个文件 则使用MScript解析器解析 并停止执行
+ *     3. 如果 xx.json 是一个文件 则使用 `JSON.parse(xx.json)` 解析为对象加载 并停止执行
+ *     暂不支持 4. 如果 xx.msm 是一个文件 则使用MScript解析器解析 并停止执行
  *   c) resolveAsDirectory 解析流程
  *     1. 如果 xx/package.json 存在 则使用 `JSON.parse(xx/package.json)` 解析并取得 main 字段使用 resolveAsFile(main) 加载
  *     2. 如果 xx/index.js 存在 则使用 resolveAsFile(xx/index.js) 加载
- *     暂不支持 3. 如果 xx/index.json 存在 则使用 `xx/index.json` 解析为对象加载 并停止执行
- *     暂不支持 4. 如果 xx/index.ms 是一个文件 则使用MScript解析器解析 并停止执行
+ *     3. 如果 xx/index.json 存在 则使用 `xx/index.json` 解析为对象加载 并停止执行
+ *     暂不支持 4. 如果 xx/index.msm 是一个文件 则使用MScript解析器解析 并停止执行
  *   注: MiaoScript 暂不支持多层 modules 加载 暂时不需要(估计以后也不会需要)
  */
 /*global Java, base*/
@@ -28,7 +30,45 @@
     'use strict';
     var File = Java.type("java.io.File");
     var separatorChar = File.separatorChar;
+    var cacheDir = parent + separatorChar + "runtime";
     var paths = [parent, parent + separatorChar + 'core', parent + separatorChar + 'modules'];
+
+    try{
+        base.delete(cacheDir);
+    } catch (ex) {
+        console.ex(ex);
+    }
+    
+    /**
+     * 判断是否为一个文件
+     * @param file
+     * @returns {*}
+     * @private
+     */
+    function _isFile(file) {
+        return file.isFile && file.isFile();
+    }
+
+    /**
+     * 获得文件规范路径
+     * @param file
+     * @returns {*}
+     * @private
+     */
+    function _canonical(file) {
+        // noinspection JSUnresolvedVariable
+        return file.canonicalPath;
+    }
+
+    /**
+     * 获得缓存的文件名称
+     * @param file
+     * @returns {string}
+     * @private
+     */
+    function _cacheFile(file) {
+        return _canonical(file).replace(parent, cacheDir);
+    }
 
     /**
      * 解析模块名称为文件
@@ -64,12 +104,20 @@
      */
     function resolveAsFile(dir, file) {
         file = ext.notNull(dir) ? new File(dir, file) : new File(file);
+        // 直接文件
         if (file.isFile()) {
+            console.log(file);
             return file;
         }
-        var ef = new File(normalizeName(_canonical(file)));
-        if (ef.isFile()) {
-            return ef;
+        // JS文件
+        var js = new File(normalizeName(_canonical(file), ".js"));
+        if (js.isFile()) {
+            return js;
+        }
+        // JSON文件
+        var json = new File(normalizeName(_canonical(file), ".json"));
+        if (json.isFile()) {
+            return json;
         }
     }
 
@@ -90,35 +138,18 @@
         return resolveAsFile(dir, 'index.js');
     }
 
+    /**
+     * 后缀检测和添加
+     * @param fileName 文件名称
+     * @param ext 后缀
+     * @returns {*}
+     */
     function normalizeName(fileName, ext) {
         var extension = ext || '.js';
         if (fileName.endsWith(extension)) {
             return fileName;
         }
         return fileName + extension;
-    }
-
-    /**
-     * 预编译模块
-     * @param file JS文件
-     * @param optional 附加选项
-     * @returns {Object}
-     */
-    function compileJs(file, optional) {
-        var cacheFile = _cacheFile(file);
-        var origin = base.read(file);
-        if (optional.hook) {
-            origin = optional.hook(origin);
-        }
-        base.save(cacheFile, "(function (module, exports, require, __dirname, __filename) {" + origin + "});");
-        // 使用 load 可以保留行号和文件名称
-        var obj = load(cacheFile);
-        try {
-            base.delete(cacheFile);
-        } catch (ex) {
-            cacheFile.deleteOnExit();
-        }
-        return obj;
     }
 
     /**
@@ -129,22 +160,31 @@
      * @param optional 附加选项
      * @returns {Object}
      */
-    function compileModule(id, name, file, optional) {
+    function getCacheModule(id, name, file, optional) {
+        var module = cacheModules[id];
+        if (optional.cache && module) {
+            return module;
+        }
         console.debug('加载模块', name, '位于', id, 'Optional', JSON.stringify(optional));
         // noinspection JSUnresolvedVariable
-        var module = {
+        module = {
             id: id,
             exports: {},
             loaded: false,
             require: exports(file.parentFile)
         };
+        cacheModules[id] = module;
         try {
-            var compiledWrapper = compileJs(file, optional);
-            compiledWrapper.apply(module.exports, [
-                module, module.exports, module.require, file.parentFile, file
-            ]);
+            if (_canonical(file).endsWith('.js')) {
+                compileJs(module, file, optional);
+            }
+            if (_canonical(file).endsWith('.json')) {
+                compileJson(module, file, optional);
+            }
+            if (_canonical(file).endsWith('.msm')) {
+                throw Error("暂不支持解析 MiaoScript 模块");
+            }
             console.debug('模块', name, '编译成功!');
-            module.loaded = true;
         } catch (ex) {
             console.console('§4警告! §c模块§a', name, '§c编译失败! §4ERR:', ex);
             console.ex(ex);
@@ -152,23 +192,41 @@
         return module;
     }
 
-    function _isFile(file) {
-        return file.isFile && file.isFile();
+    /**
+     * 预编译JS
+     * @param file JS文件
+     * @param optional 附加选项
+     * @returns {Object}
+     */
+    function compileJs(module, file, optional) {
+        var cacheFile = _cacheFile(file);
+        var origin = base.read(file);
+        if (optional.hook) {
+            origin = optional.hook(origin);
+        }
+        base.save(cacheFile, "(function (module, exports, require, __dirname, __filename) {" + origin + "});");
+        // 使用 load 可以保留行号和文件名称
+        var compiledWrapper = load(cacheFile);
+        try {
+            base.delete(cacheFile);
+        } catch (ex) {
+            cacheFile.deleteOnExit();
+        }
+        compiledWrapper.apply(module.exports, [
+            module, module.exports, module.require, file.parentFile, file
+        ]);
+        module.loaded = true;
     }
 
     /**
-     * 获得文件规范路径
-     * @param file
-     * @returns {*}
-     * @private
+     * 预编译Json
+     * @param file Json 文件
+     * @param optional 附加选项
+     * @returns {Object}
      */
-    function _canonical(file) {
-        // noinspection JSUnresolvedVariable
-        return file.canonicalPath;
-    }
-
-    function _cacheFile(file) {
-        return cacheDir + separatorChar + file.name;
+    function compileJson(module, file, optional) {
+        module.exports = JSON.parse(base.read(file));
+        module.loaded = true;
     }
 
     /**
@@ -183,19 +241,12 @@
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
         if (file === undefined) {
-            console.console('§c模块§a', name, '§c加载失败! §4未找到该模块!');
+            console.console('§c目录§b', path, '§c下模块§a', name, '§c加载失败! §4未找到该模块!');
             return {exports: {}};
         }
         if (!optional) optional = {cache: true};
         // 重定向文件名称和类型
-        name = file.name.split(".")[0];
-        var id = _canonical(file);
-        var module = cacheModules[id];
-        if (optional.cache && module) {
-            return module;
-        }
-        cacheModules[id] = module = compileModule(id, name, file, optional);
-        return module;
+        return getCacheModule(_canonical(file), file.name.split(".")[0], file, optional);
     }
 
     /**
@@ -208,8 +259,6 @@
             return _require(path, parent, optional).exports;
         };
     }
-
-    var cacheDir = parent + separatorChar + "runtime";
 
     // 判断是否存在 isFile 不存在说明 parent 是一个字符串 需要转成File
     if (parent.isFile) {
