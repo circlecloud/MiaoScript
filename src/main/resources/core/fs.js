@@ -57,7 +57,7 @@ exports.create = function (file) {
  * @param file
  * @returns {*}
  */
-exports.canonical = function (file) {
+exports.path = exports.canonical = function (file) {
     // noinspection JSUnresolvedVariable
     return file.canonicalPath;
 };
