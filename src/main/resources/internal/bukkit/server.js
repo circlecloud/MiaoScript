@@ -27,9 +27,9 @@ exports.player = function () {
         case 0:
             return undefined;
         case 1:
-            return Bukkit.getPlayer(arguments[0]);
+            return Server.getPlayer(arguments[0]);
         default:
-            return Bukkit.getPlayerExtra(arguments[0]);
+            return Server.getPlayerExtra(arguments[0]);
     }
 };
 /**
@@ -38,9 +38,9 @@ exports.player = function () {
 exports.players = function () {
     switch (arguments.length) {
         case 1:
-            return Bukkit.onlinePlayers.forEach(arguments[0]);
+            return Server.onlinePlayers.forEach(arguments[0]);
         default:
-            return Bukkit.onlinePlayers;
+            return Server.onlinePlayers;
     }
 };
 /**

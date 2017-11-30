@@ -40,3 +40,27 @@ exports.plugin = {
     },
     self: PluginManager.getPlugin('miaoscript').get()
 };
+/**
+ * 获取玩家
+ */
+exports.player = function () {
+    switch (arguments.length) {
+        case 0:
+            return undefined;
+        case 1:
+            return Server.getPlayer(arguments[0]).get();
+        default:
+            return Server.getPlayer(arguments[0]).get();
+    }
+};
+/**
+ * 获取在线玩家
+ */
+exports.players = function () {
+    switch (arguments.length) {
+        case 1:
+            return Server.onlinePlayers.forEach(arguments[0]);
+        default:
+            return Server.onlinePlayers;
+    }
+};
