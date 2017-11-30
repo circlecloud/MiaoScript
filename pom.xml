@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>1.1.6</version>
+    <version>1.2.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -84,6 +84,7 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §617-11-30 §afeat: 新增Sponge的兼容;
             §617-11-03 §afeat: 新增抽奖插件;
             §617-10-16 §cfix: 修复关闭MiaoScript时task异常;
             §617-10-15 §6alpha: 第一个版本发布;
