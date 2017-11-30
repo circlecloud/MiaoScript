@@ -8,6 +8,7 @@ import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
@@ -58,7 +59,7 @@ public class MiaoScriptSponge {
                           .arguments(GenericArguments.onlyOne(GenericArguments.remainingJoinedStrings(Text.of("js"))))
                           .executor((src, args) -> {
                               try {
-                                  engine.getEngine().eval(args.<String>getOne("js").orElse(""));
+                                  result(src, engine.getEngine().eval(args.<String>getOne("js").orElse("")));
                               } catch (ScriptException e) {
                                   e.printStackTrace();
                               }
@@ -73,7 +74,7 @@ public class MiaoScriptSponge {
                           .arguments(GenericArguments.onlyOne(GenericArguments.remainingJoinedStrings(Text.of("js"))))
                           .executor((src, args) -> {
                               try {
-                                  engine.getEngine().eval(new FileReader(new File(pluginConfigDir, args.<String>getOne("js").orElse(""))));
+                                  result(src, engine.getEngine().eval(new FileReader(new File(pluginConfigDir, args.<String>getOne("js").orElse("")))));
                               } catch (ScriptException | IOException e) {
                                   e.printStackTrace();
                               }
@@ -95,6 +96,14 @@ public class MiaoScriptSponge {
                           .build();
     }
 
+    private void result(CommandSource sender, Object result) {
+        if (result == null) {
+            sender.sendMessage(Text.of("§a运行成功! §c没有返回结果!"));
+        } else {
+            sender.sendMessage(Text.of(String.format("§a运行成功! §b数据类型: §r%s §d结果: §r%s", result.getClass().getName(), result)));
+        }
+    }
+    
     @Listener
     @SneakyThrows
     public void onStart(GameStartedServerEvent event) {
