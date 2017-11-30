@@ -33,6 +33,11 @@
             console.debug = global.debug ? console.debug : global.noop;
             console.sender = console.info;
             console.console = console.info;
+            console.object = function (obj) {
+                for (var i in obj) {
+                    console.log(i, '=>', obj[i])
+                }
+            }
             console.ex = function (ex) {
                 this.console('§4' + ex);
                 var track = ex.getStackTrace();
