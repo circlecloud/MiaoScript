@@ -6,8 +6,8 @@
 
 var event = require('api/event');
 var command = require('api/command');
+var server = require('api/server')
 var fs = require('fs');
-var papi = require('./ext/papi');
 var join;
 
 var description = {
@@ -37,7 +37,7 @@ function enable() {
         console.debug('玩家', event.player.name, "触发事件", event.name);
         setTimeout(function () {
             // noinspection JSUnresolvedVariable
-            event.player.sendMessage(papi.$(event.player, "§a欢迎来到 §bMiaoScript §a的世界! 当前在线: %server_online%"));
+            event.player.sendMessage("§a欢迎来到 §bMiaoScript §a的世界! 当前在线: " + server.players.length);
         }, 10);
     });
 }

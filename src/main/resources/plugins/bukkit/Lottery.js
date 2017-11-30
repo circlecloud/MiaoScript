@@ -16,7 +16,7 @@ var description = {
     name: 'Lottery',
     version: '1.0',
     commands: {
-        'l': {
+        'lottery': {
             description: 'Lottery主命令'
         }
     },
