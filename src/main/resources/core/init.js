@@ -83,7 +83,7 @@
     function loadPlugins() {
         // 初始化本体插件
         global.manager = require('api/plugin');
-        if (global.manager) {
+        if (global.manager && global.manager.$) {
             global.manager.init('plugins');
             // 只有当在正式环境运行的时候才加载
             global.manager.load();
