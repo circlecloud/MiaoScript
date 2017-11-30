@@ -7,7 +7,7 @@
 var fs = require('core/fs');
 var yaml = require('modules/yaml');
 var event = require('./event');
-var bukkit = require('./server');
+var server = require('./server');
 var command = require('./command');
 var permission = require('./permission');
 
@@ -24,6 +24,9 @@ function loadPlugins(dir) {
         createUpdate(plugin);
         var files = [];
         fs.list(plugin).forEach(function (file) {
+            files.push(file.toFile());
+        });
+        fs.list(fs.file(plugin, DetectServerType)).forEach(function (file) {
             files.push(file.toFile());
         });
         loadZipPlugins(files);
@@ -64,7 +67,12 @@ function loadJsPlugins(files) {
     files.filter(function (file) {
         return file.name.endsWith(".js")
     }).forEach(function (file) {
-        loadPlugin(file);
+        try {
+            loadPlugin(file);
+        } catch (ex) {
+            console.console('§6插件 §b%s §6初始化时发生错误 §4%s'.format(fs.path(file), ex.message));
+            console.ex(ex);
+        }
     })
 }
 
@@ -226,13 +234,13 @@ function checkAndGet(args) {
 
 var plugins = [];
 
+exports.$ = server.plugin.self;
 exports.plugins = plugins;
 exports.init = function (path) {
-    var plugin = bukkit.plugin.self;
+    var plugin = exports.$
     if (plugin !== null) {
         // 如果过plugin不等于null 则代表是正式环境
-        exports.$ = plugin;
-        console.info("初始化 MiaoScript 插件系统 版本: %s".format(plugin.description.version));
+        console.info("初始化 MiaoScript 插件系统: %s".format(plugin));
     }
     loadPlugins(path);
 };
