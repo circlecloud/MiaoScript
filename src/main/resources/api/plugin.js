@@ -143,8 +143,8 @@ function initPlugin(file, plugin) {
     // 初始化插件配置相关方法
     initPluginConfig(plugin);
 
-    command.enable(plugin);
-    permission.enable(plugin);
+    if (command.enable) command.enable(plugin);
+    if (permission.enable) permission.enable(plugin);
 }
 
 /**

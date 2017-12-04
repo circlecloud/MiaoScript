@@ -1,2 +1,2 @@
 /*global Java, base, module, exports, require*/
-module.exports = require('./mserver').command;
+module.exports = require('./msp.js').command;
