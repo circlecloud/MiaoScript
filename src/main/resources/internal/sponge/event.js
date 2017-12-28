@@ -3,13 +3,11 @@
  * Bukkit 事件相关类
  */
 /*global Java, base, module, exports, require, __FILE__*/
+var Sponge = MServer;
 var Thread = Java.type("java.lang.Thread");
-var Bukkit = Java.type("org.bukkit.Bukkit");
-var Listener = Java.type("org.bukkit.event.Listener");
+var EventListener = Java.type("org.spongepowered.api.event.EventListener");
 var Modifier = Java.type("java.lang.reflect.Modifier");
-var Event = Java.type("org.bukkit.event.Event");
-var EventPriority = Java.type("org.bukkit.event.EventPriority");
-var EventExecutor = Java.type("org.bukkit.plugin.EventExecutor");
+var Event = Java.type("org.spongepowered.api.event.Event");
 
 var plugin = require('./server').plugin.self;
 
@@ -18,11 +16,11 @@ var ref = require('reflect');
 var listenerMap = [];
 
 /**
- * 扫描包 org.bukkit.event 下的所有事件
- * 映射简写名称 org.bukkit.event.player.PlayerLoginEvent => playerloginevent
+ * 扫描包 org.spongepowered.api.event 下的所有事件
+ * 映射简写名称 org.spongepowered.api.event.game.state.GameInitializationEvent => gameinitializationevent
  */
 function mapEventName() {
-    var eventPackageDir = "org/bukkit/event";
+    var eventPackageDir = "org/spongepowered/api/event";
     var count = 0;
     var dirs = Thread.currentThread().getContextClassLoader().getResources(eventPackageDir);
     while (dirs.hasMoreElements()) {
@@ -35,15 +33,16 @@ function mapEventName() {
             while (entries.hasMoreElements()) {
                 var entry = entries.nextElement();
                 var name = entry.name;
-                // 以 org/bukkit/event 开头 并且以 .class 结尾
+                // 以 org/spongepowered/api/event 开头 并且以 .class 结尾
                 if (name.startsWith(eventPackageDir) && name.endsWith(".class")) {
                     var i = name.replaceAll('/', '.');
                     try {
                         var clz = base.getClass(i.substring(0, i.length - 6));
-                        // 继承于 org.bukkit.event.Event 访问符为Public
+                        // 继承于 org.spongepowered.api.event.Event 访问符为 Public 并且不是抽象类
                         if (isVaildEvent(clz)) {
                             // noinspection JSUnresolvedVariable
-                            var simpleName = clz.simpleName.toLowerCase();
+                            var clzName = clz.name;
+                            var simpleName = clzName.substring(clzName.lastIndexOf(".") + 1).replace(/\$/g, '.').toLowerCase();
                             console.debug("Mapping Event [%s] => %s".format(clz.name, simpleName));
                             mapEvent[simpleName] = clz;
                             count++;
@@ -64,12 +63,12 @@ function mapEventName() {
  * @returns {*|boolean}
  */
 function isVaildEvent(clz) {
-    // noinspection JSUnresolvedVariable 继承于 org.bukkit.event.Event
+    // noinspection JSUnresolvedVariable 继承于 org.spongepowered.api.event.Event
     return Event.class.isAssignableFrom(clz) &&
         // 访问符为Public
         Modifier.isPublic(clz.getModifiers()) &&
-        // 不是抽象类
-        !Modifier.isAbstract(clz.getModifiers());
+        // Sponge的事件都是接口
+        Modifier.isAbstract(clz.getModifiers());
 }
 
 /**
@@ -83,47 +82,18 @@ function isVaildEvent(clz) {
 function listen(jsp, event, exec, priority, ignoreCancel) {
     var name = jsp.description.name;
     if (ext.isNull(name)) throw new TypeError('插件名称为空 请检查传入参数!');
-    var eventCls = mapEvent[event] || mapEvent[event.toLowerCase()] || mapEvent[event + 'Event'] || mapEvent[event.toLowerCase() + 'event'];
-    if (!eventCls) {
-        try {
-            eventCls = base.getClass(eventCls);
-            mapEvent[event] = eventCls;
-        } catch (ex) {
-            console.warn("事件 %s 未找到!".format(event));
-            return;
-        }
-    }
+    var eventCls = name2Class(event);
     if (typeof priority === 'boolean') {
         ignoreCancel = priority
     }
     priority = priority || 'NORMAL';
     ignoreCancel = ignoreCancel || false;
-    var listener = new Listener({});
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param event Event type to register
-     * @param listener Listener to register
-     * @param priority Priority to register this event at
-     * @param executor EventExecutor to register
-     * @param plugin Plugin to register
-     * @param ignoreCancel
-     */
-    Bukkit.getPluginManager().registerEvent(
-        eventCls,
-        listener,
-        EventPriority[priority],
-        new EventExecutor({
-            execute: function (listener, event) {
-                try {
-                    exec(event);
-                } catch (ex) {
-                    console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, event.class.simpleName, ex));
-                    console.ex(ex);
-                }
-            }
-        }),
-        plugin,
-        ignoreCancel);
+    var listener = new EventListener({
+        handle: function handle(event) {
+            exec(event);
+        }
+    });
+    Sponge.getEventManager().registerListener(plugin, eventCls, listener)
     // 添加到缓存 用于关闭插件的时候关闭事件
     if (!listenerMap[name]) listenerMap[name] = [];
     var listeners = listenerMap[name];
@@ -131,14 +101,29 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
         event: eventCls,
         listener: listener,
         off: function () {
-            ref.on(this.event).call('getHandlerList').get().unregister(this.listener);
+            Sponge.getEventManager().unregisterListeners(this.listener);
             console.debug('插件 %s 注销事件 %s'.format(name, this.event.simpleName));
         }
     };
     listeners.push(off);
     // noinspection JSUnresolvedVariable
-    console.debug('插件 %s 注册事件 %s => %s'.format(name, eventCls.simpleName, exec.name === '' ? '匿名方法' : exec.name));
+    console.debug('插件 %s 注册事件 %s => %s'.format(name, eventCls.name.substring(eventCls.name.lastIndexOf(".") + 1), exec.name === '' ? '匿名方法' : exec.name));
     return off;
+}
+
+function name2Class(event) {
+    var eventCls = mapEvent[event] || mapEvent[event.toLowerCase()] || mapEvent[event + 'Event'] || mapEvent[event.toLowerCase() + 'event'];
+    if (!eventCls) {
+        try {
+            eventCls = base.getClass(eventCls);
+            mapEvent[event] = eventCls;
+        } catch (ex) {
+            console.console("§6插件 §b%s §6注册事件 §c%s §6失败 §4事件未找到!".format(name, event));
+            console.ex(new Error("插件 %s 注册事件 %s 失败 事件未找到!".format(name, event)))
+            return;
+        }
+    }
+    return eventCls;
 }
 
 var mapEvent = [];

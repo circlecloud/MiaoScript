@@ -4,6 +4,7 @@
  */
 
 /*global Java, base, module, exports, require, __FILE__*/
+var Sponge = MServer;
 var server = require('./server');
 var plugin = server.plugin.self;
 
@@ -11,6 +12,7 @@ var CommandManager = server.CommandManager;
 
 var CommandSpec = Java.type('org.spongepowered.api.command.spec.CommandSpec');
 var CommandCallable = Java.type('org.spongepowered.api.command.CommandCallable');
+var CommandResult = Java.type('org.spongepowered.api.command.CommandResult');
 
 var Text = Java.type('org.spongepowered.api.text.Text');
 
@@ -19,75 +21,84 @@ var Optional = Java.type('java.util.Optional');
 var ArrayList = Java.type('java.util.ArrayList');
 var Arrays = Java.type('java.util.Arrays');
 
-var SimpleCommandCallable = function () {
-    this.process = function (source, args) {
+var commandMap=[];
 
+var SimpleCommandCallable = function (name) {
+    var that = this;
+    this.name = name;
+    this.cmd = noop;
+    this.tab = function() { return new ArrayList(); };
+    this.callable = new CommandCallable({
+        //CommandResult process(CommandSource source, String arguments) throws CommandException;
+        process: function (src, args) {
+            return that.cmd(src, null, name, args.split(" ")) ? CommandResult.success() : CommandResult.empty();
+        },
+        //List<String> getSuggestions(CommandSource source, String arguments, @Nullable  Location<World> targetPosition) throws CommandException;
+        getSuggestions: function (src, args, target) {
+            return that.tab(src, null, name, args.split(" "));
+        },
+        //boolean testPermission(CommandSource source);
+        testPermission: function () {
+            return true;
+        },
+        //Optional<Text> getShortDescription(CommandSource source);
+        getShortDescription: function () {
+            return Optional.of(Text.of(""));
+        },
+        //Optional<Text> getHelp(CommandSource source);
+        getHelp: function () {
+            return Optional.of(Text.of(""));
+        },
+        //Text getUsage(CommandSource source);
+        getUsage: function () {
+            return Text.of('');
+        }
+    });
+    this.setExecutor = function (exec) {
+        that.cmd = exec;
     };
-    this.getSuggestions = function (source, args, targetPosition) {
-        return Arrays.asList('');
-    };
-    this.testPermission = function (source) {
-        return true;
-    };
-    this.getShortDescription = function (source) {
-        return Optional.ofNullable('');
-    };
-    this.getHelp = function (source) {
-
+    this.setTabCompleter = function (exec) {
+        that.tab = exec;
     }
-};
+}
 
 function enable(jsp) {
+    var pname = jsp.description.name;
     var commands = jsp.description.commands;
     if (commands) {
         var pluginCmds = [];
         for (var name in commands) {
             var command = commands[name];
             if (typeof command !== 'object') continue;
-            var newCmd = CommandSpec.builder();
-            if (command.description) newCmd.description(Text.of(command.description));
-            // if (command.usage) newCmd.setUsage(command.usage);
-            if (command.aliases) newCmd.setAliases(Arrays.asList(command.aliases));
-            if (command.permission) newCmd.setPermission(command.permission);
-            if (command['permission-message']) newCmd.setPermissionMessage(command['permission-message']);
-            pluginCmds.push(newCmd);
+            create(jsp, name)
             console.debug('插件 %s 注册命令 %s ...'.format(jsp.description.name, name));
         }
-        commandMap.registerAll(jsp.description.name, Arrays.asList(pluginCmds));
     }
 }
 
 function get(name) {
-    return commandMap.getCommand(name);
 }
 
 function create(jsp, name) {
-    return register(jsp, ref.on(PluginCommand).create(name, plugin).get());
+    var commandKey = jsp.description.name.toLowerCase() + ":" + name;
+    if(!commandMap[commandKey]){
+        commandMap[commandKey] = new SimpleCommandCallable();
+        commandMap[commandKey].name = name;
+        Sponge.getCommandManager().register(plugin, commandMap[commandKey].callable, name, commandKey);
+    }
+    return commandMap[commandKey];
 }
-
-function register(jsp, cmd) {
-    commandMap.register(jsp.description.name, cmd);
-    return cmd;
-}
-
-// var exec = {
-//     cmd: function (sender, command, args) {
-//
-//     },
-//     tab: function (sender, command, args) {
-//
-//     }
-// };
 
 function on(jsp, name, exec) {
-    var c = get(name) || create(jsp, name);
-    console.debug('插件 %s 设置命令 %s(%s) 执行器 ...'.format(jsp.description.name, name, c));
+    var c = create(jsp, name);
+    console.debug('插件 %s 设置命令 %s 执行器 ...'.format(jsp.description.name, name));
     if (exec.cmd) {
         c.setExecutor(function (sender, cmd, command, args) {
             try {
                 return exec.cmd(sender, command, args);
             } catch (ex) {
-                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
+                console.log(args)
+                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'.format(sender.name, jsp.description.name, command, args, ex));
                 console.ex(ex);
             }
         });
@@ -100,16 +111,22 @@ function on(jsp, name, exec) {
                 StringUtil.copyPartialMatches(token, Arrays.asList(exec.tab(sender, command, args)), completions);
                 return completions;
             } catch (ex) {
-                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
+                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, args, ex));
                 console.ex(ex);
             }
         });
     }
 }
 
-exports.enable = enable;
+var exist = Sponge.getCommandManager().getOwnedBy(plugin);
+exist.forEach(function(commandMapping) { 
+    if (!commandMapping.getAllAliases().contains("ms")) {
+        Sponge.getCommandManager().removeMapping(commandMapping);
+    }
+});
 
-exports.on = on;
-exports.off = function () {
-
-};
+exports = module.exports = {
+    enable: enable,
+    on: on,
+    off: noop
+}

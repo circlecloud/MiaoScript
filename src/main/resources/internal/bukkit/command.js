@@ -39,7 +39,7 @@ function disable(jsp) {
     var commands = jsp.description.commands;
     if (commands) {
         for (var name in commands) {
-
+            //TODO 删除插件命令
         }
     }
 }

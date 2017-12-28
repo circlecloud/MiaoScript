@@ -5,10 +5,10 @@
 /*global Java, base, module, exports, require*/
 
 var event = require('api/event');
+var wrapper = require('api/wrapper');
 var command = require('api/command');
-var server = require('api/server')
+var server = require('api/server');
 var fs = require('fs');
-var join;
 
 var description = {
     name: 'HelloWorld',
@@ -20,37 +20,49 @@ var description = {
     }
 };
 
-// function load() {
-//     console.log('载入 Hello Wrold 测试插件!');
-// }
+function load() {
+    console.log('载入 Hello Wrold 测试插件!');
+}
 
 function enable() {
     command.on(this, 'hello', {
         cmd: function (sender, command, args) {
-            load(fs.file(root, 'test.js'));
+            global.load(fs.file(root, 'test.js'));
             return true;
         }
     });
-    console.log('启用 Hello Wrold 测试插件!');
-    join = event.on(this, 'playerloginevent', function join(event) {
+    console.log('启用 Hello World 测试插件!');
+    switch (DetectServerType) {
+        case ServerType.Bukkit:
+            event.on(this, 'playerloginevent', function join(event) {
+                send(event, wrapper.player(event.player));
+            });
+            break;
+        case ServerType.Sponge:
+            // clientconnectionevent.join
+            event.on(this, 'clientconnectionevent.join', function join(event) {
+                send(event, wrapper.player(event.targetEntity));
+            });
+            break;
+    }
+}
+
+function send(event, player){
+    // noinspection JSUnresolvedVariable
+    console.debug('玩家', player.name, "触发事件", event.class.simpleName);
+    setTimeout(function () {
         // noinspection JSUnresolvedVariable
-        console.debug('玩家', event.player.name, "触发事件", event.name);
-        setTimeout(function () {
-            // noinspection JSUnresolvedVariable
-            event.player.sendMessage("§a欢迎来到 §bMiaoScript §a的世界! 当前在线: " + server.players.length);
-        }, 10);
-    });
+        player.sendMessage("§a欢迎来到 §bMiaoScript §a的世界! 当前在线: " + server.players.length)
+    }, 10);
 }
 
 function disable() {
-    console.log('卸载 Hello Wrold 测试插件!');
-    // 可以不用关闭事件 程序将自动处理
-    // event.off(join);
+    console.log('卸载 Hello World 测试插件!');
 }
 
 module.exports = {
     description: description,
-    // load: load,
+    load: load,
     enable: enable,
     disable: disable
 };

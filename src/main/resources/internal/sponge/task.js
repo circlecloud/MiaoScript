@@ -12,7 +12,13 @@ var Task = Java.type("org.spongepowered.api.scheduler.Task");
  * @param func 任务
  */
 exports.create = function (func) {
-    return Task.builder().execute(new Comsumer(func));
+    return Task.builder().execute(new Comsumer(function () {
+        try {
+            func();
+        } catch (ex) {
+            console.ex('§4插件执行任务时发生错误', ex);
+        }
+    }));
 };
 /**
  * 运行任务
