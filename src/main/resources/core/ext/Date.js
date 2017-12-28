@@ -3,24 +3,6 @@
  */
 
 (function () {
-    // Java格式化方法
-    var str = Java.type('java.lang.String');
-    String.prototype.format = function () {
-        return str.format(this, Array.prototype.slice.call(arguments, 0))
-    };
-
-    // ========== 暂不扩展Object ==========
-    // // JSON快捷方法
-    // Object.prototype.toJson = function () {
-    //     return JSON.stringify(this);
-    // };
-
-    // // YAML快速生成
-    // var yaml = require('modules/yaml');
-    // Object.prototype.toYaml = function () {
-    //     return yaml.safeDump(this);
-    // };
-
     /**
      * 日期格式化
      * 例: new Date().format('yyyy-MM-dd hh:mm:ss.s') => "2017-08-24 16:15:40.693"

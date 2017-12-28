@@ -106,7 +106,6 @@
         file = ext.notNull(dir) ? new File(dir, file) : new File(file);
         // 直接文件
         if (file.isFile()) {
-            console.log(file);
             return file;
         }
         // JS文件
@@ -184,7 +183,6 @@
             if (_canonical(file).endsWith('.msm')) {
                 throw Error("暂不支持解析 MiaoScript 模块");
             }
-            console.debug('模块', name, '编译成功!');
         } catch (ex) {
             console.console('§4警告! §c模块§a', name, '§c编译失败! §4ERR:', ex);
             console.ex(ex);
@@ -240,11 +238,13 @@
     function _require(name, path, optional) {
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
+        optional = Object.assign({cache: true, warnNotFound: true}, optional);
         if (file === undefined) {
-            console.console('§c目录§b', path, '§c下模块§a', name, '§c加载失败! §4未找到该模块!');
+            if (optional.warnNotFound) {
+                console.console('§c目录§b', path, '§c下模块§a', name, '§c加载失败! §4未找到该模块!');
+            }
             return {exports: {}};
         }
-        if (!optional) optional = {cache: true};
         // 重定向文件名称和类型
         return getCacheModule(_canonical(file), file.name.split(".")[0], file, optional);
     }

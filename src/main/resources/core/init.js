@@ -8,9 +8,9 @@
         global.noop = function () {
         };
         loadCore();
+        loadExt();
         loadRequire();
         try {
-            loadExt();
             loadServerLib();
             loadPlugins();
         } catch (ex) {
@@ -43,8 +43,7 @@
      * 加载补丁
      */
     function loadExt() {
-        var fs = require('core/fs');
-        fs.list(fs.file(root, 'core/ext')).forEach(function (path) {
+        java.nio.file.Files.list(new java.io.File(root, 'core/ext').toPath()).forEach(function (path) {
             console.log('加载扩展类库', path);
             try {
                 load(path.toFile());
@@ -59,7 +58,7 @@
     }
 
     /**
-     * 加载Bukkit的类库
+     * 加载系统类库
      */
     function loadServerLib() {
         var task = require('api/task');
