@@ -38,8 +38,13 @@
                     console.log(i, '=>', obj[i])
                 }
             }
-            console.ex = function (ex) {
-                this.console('§4' + ex);
+            console.ex = function (message, ex) {
+                if (!ex) {
+                    this.console('§4' + message);
+                    ex = message;
+                } else {
+                    this.console('§4' + message + ' ' + ex);
+                }
                 var track = ex.getStackTrace();
                 if (track.class) {
                     track = Arrays.asList(track)

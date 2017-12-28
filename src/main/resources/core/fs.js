@@ -1,7 +1,6 @@
 'use strict';
 
 /*global Java, base, module, exports, require, __FILE__*/
-var String = Java.type("java.lang.String");
 var File = Java.type("java.io.File");
 var Files = Java.type("java.nio.file.Files");
 var separatorChar = File.separatorChar;
@@ -10,7 +9,7 @@ var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
 /**
  * 用文件分割符合并路径
  */
-exports.concat = function () {
+function concat() {
     return Array.prototype.join.call(arguments, separatorChar);
 };
 /**
@@ -19,13 +18,13 @@ exports.concat = function () {
  * @constructor(dir,file)
  * @returns {*}
  */
-exports.file = function () {
+function file() {
     if (!arguments[0]) {
         console.warn("文件名称不得为 undefined 或者 null !");
     }
     switch (arguments.length) {
         case 1:
-            if (exports.canonical(arguments[0])) {
+            if (path(arguments[0])) {
                 return arguments[0];
             }
             return new File(arguments[0]);
@@ -37,7 +36,7 @@ exports.file = function () {
  * 创建目录
  * @param file
  */
-exports.mkdirs = function (file) {
+function mkdirs(file) {
     // noinspection JSUnresolvedVariable
     file.parentFile.mkdirs();
 };
@@ -45,11 +44,11 @@ exports.mkdirs = function (file) {
  * 创建文件
  * @param file
  */
-exports.create = function (file) {
-    file = exports.file(file);
-    if (!file.exists()) {
-        exports.mkdirs(file);
-        file.createNewFile();
+function create(file) {
+    f = file(file);
+    if (!f.exists()) {
+        mkdirs(f);
+        f.createNewFile();
     }
 };
 /**
@@ -57,7 +56,7 @@ exports.create = function (file) {
  * @param file
  * @returns {*}
  */
-exports.path = exports.canonical = function (file) {
+function path(file) {
     // noinspection JSUnresolvedVariable
     return file.canonicalPath;
 };
@@ -67,21 +66,21 @@ exports.path = exports.canonical = function (file) {
  * @param target 目标文件
  * @param override 是否覆盖
  */
-exports.copy = function (inputStream, target, override) {
+function copy(inputStream, target, override) {
     Files.copy(inputStream, target.toPath(), StandardCopyOption[override ? 'REPLACE_EXISTING' : 'ATOMIC_MOVE']);
 };
 /**
  * 读取文件
  * @param file 文件路径
  */
-exports.read = function (file) {
-    file = exports.file(file);
-    if (!file.exists()) {
-        console.warn('读取文件', file, '错误 文件不存在!');
+function read(file) {
+    f = file(file);
+    if (!f.exists()) {
+        console.warn('读取文件', f, '错误 文件不存在!');
         return;
     }
     // noinspection JSPrimitiveTypeWrapperUsage
-    return new String(Files.readAllBytes(file.toPath()), "UTF-8");
+    return new java.lang.String(Files.readAllBytes(f.toPath()), "UTF-8");
 };
 /**
  * 保存内容文件
@@ -89,7 +88,7 @@ exports.read = function (file) {
  * @param content 内容
  * @param override 是否覆盖
  */
-exports.save = function (path, content, override) {
+function save(path, content, override) {
     Files.write(new File(path).toPath(),
         content.getBytes("UTF-8"),
         override ? StandardCopyOption['REPLACE_EXISTING'] : StandardCopyOption['ATOMIC_MOVE']);
@@ -98,12 +97,12 @@ exports.save = function (path, content, override) {
  * 列出目录文件
  * @param path
  */
-exports.list = function (path) {
-    var dir = exports.file(path);
+function list(path) {
+    var dir = file(path);
     if (dir.isDirectory()) {
         return Files.list(dir.toPath());
     }
-    console.warn('路径', path, '不是一个目录 返回空数组!');
+    console.debug('路径', path, '不是一个目录 返回空数组!');
     return [];
 };
 /**
@@ -112,8 +111,21 @@ exports.list = function (path) {
  * @param des 目标目录
  * @param override 是否覆盖
  */
-exports.move = function (src, des, override) {
-    Files.move(exports.file(src).toPath(),
-        exports.file(des).toPath(),
+function move(src, des, override) {
+    Files.move(file(src).toPath(), file(des).toPath(),
         override ? StandardCopyOption['REPLACE_EXISTING'] : StandardCopyOption['ATOMIC_MOVE'])
 };
+
+exports = module.exports = {
+    canonical: path,
+    concat: concat,
+    create: create,
+    mkdirs: mkdirs,
+    file: file,
+    path: path,
+    copy: copy,
+    read: read,
+    save: save,
+    list: list,
+    move: move
+}

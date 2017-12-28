@@ -8,8 +8,6 @@ var global = this;
  */
 (function () {
     var loader;
-    var Files = Java.type("java.nio.file.Files");
-    var Paths = Java.type("java.nio.file.Paths");
     boot = function (root, logger) {
         log = logger;
         // 开发环境下初始化
@@ -18,7 +16,7 @@ var global = this;
             logger.info('载入自定义 BIOS 文件 ' + __FILE__);
             global.debug = true;
         }
-        if (Files.exists(Paths.get(root, "debug"))) {
+        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "debug"))) {
             logger.info('已开启调试模式!');
             global.debug = true;
         }
@@ -49,11 +47,9 @@ var global = this;
     }
 
     function release(root, regex, replace) {
-        var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
-
         var upath = pluginYml.getFile().substring(pluginYml.getFile().indexOf("/") + 1);
         var jarPath = java.net.URLDecoder.decode(upath.substring(0, upath.indexOf('!')));
-        if (!Files.exists(Paths.get(jarPath))) {
+        if (!java.nio.file.Files.exists(java.nio.file.Paths.get(jarPath))) {
             jarPath = "/" + jarPath;
         }
         var jar = new java.util.jar.JarFile(jarPath);
@@ -62,11 +58,11 @@ var global = this;
             try {
                 if (!entry.isDirectory()) {
                     if (r.test(entry.name)) {
-                        var path = Paths.get(root, entry.name);
+                        var path = java.nio.file.Paths.get(root, entry.name);
                         var parentFile = path.toFile().parentFile;
                         if (!parentFile.exists()) { parentFile.mkdirs(); }
-                        if (!Files.exists(path) || replace) {
-                            Files.copy(loader.getResourceAsStream(entry.name), path, StandardCopyOption['REPLACE_EXISTING']);
+                        if (!java.nio.file.Files.exists(path) || replace) {
+                            java.nio.file.Files.copy(loader.getResourceAsStream(entry.name), path, java.nio.file.StandardCopyOption['REPLACE_EXISTING']);
                         }
                     }
                 }

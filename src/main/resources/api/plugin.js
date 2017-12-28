@@ -118,9 +118,7 @@ function afterLoadHook(plugin) {
     // 给 console 添加插件名称
     plugin.console.name = plugin.description.name;
     // 赋值 self
-    for (var i in plugin) {
-        plugin.self[i] = plugin[i];
-    }
+    Object.assign(plugin.self, plugin);
 }
 
 /**
@@ -202,16 +200,15 @@ function initPluginConfig(plugin) {
     }
 }
 
-function runAndCatch(jsp, exec, ext) {
+function runAndCatch(jsp, name, ext) {
+    var exec = jsp[name];
     if (exec) {
         try {
             // 绑定方法的this到插件自身
             exec.bind(jsp)();
-            if (ext) {
-                ext();
-            }
+            if (ext) ext();
         } catch (ex) {
-            console.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s'.format(jsp.description.name, exec.name, ex.message));
+            console.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s'.format(jsp.description.name, name, ex.message));
             console.ex(ex);
         }
     }
@@ -234,9 +231,7 @@ function checkAndGet(args) {
 
 var plugins = [];
 
-exports.$ = server.plugin.self;
-exports.plugins = plugins;
-exports.init = function (path) {
+function init(path) {
     var plugin = exports.$
     if (plugin !== null) {
         // 如果过plugin不等于null 则代表是正式环境
@@ -244,23 +239,36 @@ exports.init = function (path) {
     }
     loadPlugins(path);
 };
-exports.load = function () {
-    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.load));
+
+function load() {
+    checkAndGet(arguments).forEach(function (p) runAndCatch(p, 'init'));
 };
-exports.enable = function () {
-    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.enable));
+
+function enable() {
+    checkAndGet(arguments).forEach(function (p) runAndCatch(p, 'enable'));
 };
-exports.disable = function () {
-    checkAndGet(arguments).forEach(function (p) runAndCatch(p, p.disable, function () {
+
+function disable() {
+    checkAndGet(arguments).forEach(function (p) runAndCatch(p, 'disable', function () {
         event.disable(p);
-        // task.cancel();
     }));
 };
-exports.reload = function () {
+
+function reload() {
     checkAndGet(arguments).forEach(function (p) {
-        exports.disable(p);
+        disable(p);
         p = loadPlugin(p.__FILE__);
-        exports.load(p);
-        exports.enable(p);
+        load(p);
+        enable(p);
     });
 };
+
+exports = module.exports = {
+    $: server.plugin.self,
+    plugins: plugins,
+    init: init,
+    load: load,
+    enable: enable,
+    disable: disable,
+    reload: reload
+}
