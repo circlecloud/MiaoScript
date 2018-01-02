@@ -77,7 +77,7 @@ function isVaildEvent(clz) {
  * @param jsp
  * @param event
  * @param exec {function}
- * @param priority
+ * @param priority [LOWEST,LOW,NORMAL,HIGH,HIGHEST,MONITOR]
  * @param ignoreCancel
  */
 function listen(jsp, event, exec, priority, ignoreCancel) {
@@ -94,7 +94,8 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
         }
     }
     if (typeof priority === 'boolean') {
-        ignoreCancel = priority
+        ignoreCancel = priority;
+        priority = 'NORMAL';
     }
     priority = priority || 'NORMAL';
     ignoreCancel = ignoreCancel || false;
@@ -113,7 +114,7 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
         listener,
         EventPriority[priority],
         new EventExecutor({
-            execute: function (listener, event) {
+            execute: function execute(listener, event) {
                 try {
                     exec(event);
                 } catch (ex) {

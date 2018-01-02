@@ -8,6 +8,7 @@ var Thread = Java.type("java.lang.Thread");
 var EventListener = Java.type("org.spongepowered.api.event.EventListener");
 var Modifier = Java.type("java.lang.reflect.Modifier");
 var Event = Java.type("org.spongepowered.api.event.Event");
+var Order = Java.type("org.spongepowered.api.event.Order");
 
 var plugin = require('./server').plugin.self;
 
@@ -76,7 +77,7 @@ function isVaildEvent(clz) {
  * @param jsp
  * @param event
  * @param exec {function}
- * @param priority
+ * @param priority [PRE,AFTER_PRE,FIRST,EARLY,DEFAULT,LATE,LAST,BEFORE_POST,POST]
  * @param ignoreCancel
  */
 function listen(jsp, event, exec, priority, ignoreCancel) {
@@ -85,15 +86,21 @@ function listen(jsp, event, exec, priority, ignoreCancel) {
     var eventCls = name2Class(event);
     if (typeof priority === 'boolean') {
         ignoreCancel = priority
+        priority = 'DEFAULT'
     }
-    priority = priority || 'NORMAL';
+    priority = priority || 'DEFAULT';
     ignoreCancel = ignoreCancel || false;
     var listener = new EventListener({
         handle: function handle(event) {
-            exec(event);
+            try {
+                exec(event);
+            } catch (ex) {
+                console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, event.class.simpleName, ex));
+                console.ex(ex);
+            }
         }
     });
-    Sponge.getEventManager().registerListener(plugin, eventCls, listener)
+    Sponge.getEventManager().registerListener(plugin, eventCls, Order[priority], listener)
     // 添加到缓存 用于关闭插件的时候关闭事件
     if (!listenerMap[name]) listenerMap[name] = [];
     var listeners = listenerMap[name];
