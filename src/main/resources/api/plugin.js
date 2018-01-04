@@ -95,7 +95,6 @@ function loadPlugin(file) {
     } else {
         initPlugin(file, plugin);
         afterLoadHook(plugin);
-        plugins.push(plugin);
         plugins[plugin.description.name] = plugin;
         console.info('载入插件 %s 版本 %s By %s'.format(desc.name, desc.version || '未知', desc.author || '未知'));
     }
@@ -107,7 +106,7 @@ function beforeLoadHook(origin) {
     // 处理 event 为了不影响 正常逻辑 event 还是手动require吧
     // result = result + 'var event = {}; module.exports.event = event;';
     // 注入 console 对象         // 给插件注入单独的 console
-    result = result + 'var console = Console.createNew(); module.exports.console = console;';
+    result = result + 'var console = new Console(); module.exports.console = console;';
     // 插件注入 self 对象
     result = result + 'var self = {}; module.exports.self = self;';
     return result;
@@ -201,17 +200,7 @@ function initPluginConfig(plugin) {
 }
 
 function runAndCatch(jsp, name, ext) {
-    var exec = jsp[name];
-    if (exec) {
-        try {
-            // 绑定方法的this到插件自身
-            exec.bind(jsp)();
-            if (ext) ext();
-        } catch (ex) {
-            console.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s'.format(jsp.description.name, name, ex.message));
-            console.ex(ex);
-        }
-    }
+
 }
 
 function checkAndGet(args) {
@@ -229,6 +218,24 @@ function checkAndGet(args) {
     return [exports.plugins[name]];
 }
 
+function checkAndRun(args, name, ext) {
+    var pls = checkAndGet(args);
+    for (var i in pls) {
+        var jsp = pls[i];
+        var exec = jsp[name];
+        if (exec) {
+            try {
+                // 绑定方法的this到插件自身
+                exec.bind(jsp)();
+                if (ext) ext.bind(jsp)();
+            } catch (ex) {
+                console.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s'.format(jsp.description.name, name, ex.message));
+                console.ex(ex);
+            }
+        }
+    }
+}
+
 var plugins = [];
 
 function init(path) {
@@ -241,21 +248,21 @@ function init(path) {
 };
 
 function load() {
-    checkAndGet(arguments).forEach(function (p) runAndCatch(p, 'init'));
+    checkAndRun(arguments, 'init');
 };
 
 function enable() {
-    checkAndGet(arguments).forEach(function (p) runAndCatch(p, 'enable'));
+    checkAndRun(arguments, 'enable');
 };
 
 function disable() {
-    checkAndGet(arguments).forEach(function (p) runAndCatch(p, 'disable', function () {
-        event.disable(p);
-    }));
+    checkAndRun(arguments, 'disable', function eventDisable() {
+        event.disable(this);
+    });
 };
 
 function reload() {
-    checkAndGet(arguments).forEach(function (p) {
+    checkAndRun(arguments, function (p) {
         disable(p);
         p = loadPlugin(p.__FILE__);
         load(p);

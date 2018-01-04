@@ -57,15 +57,6 @@ function register(jsp, cmd) {
     return cmd;
 }
 
-// var exec = {
-//     cmd: function (sender, command, args) {
-//
-//     },
-//     tab: function (sender, command, args) {
-//
-//     }
-// };
-
 function on(jsp, name, exec) {
     var c = get(name) || create(jsp, name);
     console.debug('插件 %s 设置命令 %s(%s) 执行器 ...'.format(jsp.description.name, name, c));

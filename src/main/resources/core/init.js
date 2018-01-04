@@ -25,10 +25,10 @@
     function loadCore() {
         // 加载基础模块
         load(root + '/core/ext.js');
-        // 探测服务器类型
-        load(root + '/core/detect.js');
         // 加载Console
         load(root + '/core/console.js');
+        // 探测服务器类型
+        load(root + '/core/detect.js');
     }
 
     /**
@@ -37,6 +37,9 @@
     function loadRequire() {
         // 初始化加载器
         global.require = load(root + '/core/require.js')(root);
+        global.requireInternal = function (name) {
+            return require(root + '/internal/' + DetectServerType + '/' + name + '.js');
+        }
     }
 
     /**
@@ -51,10 +54,6 @@
                 console.ex(ex);
             }
         })
-        // 加载补丁和扩展
-        // load(root + '/core/patch.js');
-        // 加载underscore类库
-        // load('https://cdn.bootcss.com/underscore.js/1.8.3/underscore-min.js');
     }
 
     /**
