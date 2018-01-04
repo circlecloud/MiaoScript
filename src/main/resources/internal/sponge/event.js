@@ -35,16 +35,9 @@ function class2Name(clazz) {
     return clazz.name.substring(clazz.name.lastIndexOf(".") + 1).replace(/\$/g, '.').toLowerCase();
 }
 
-function register(eventCls, priority, ignoreCancel) {
+function register(eventCls, exec, priority, ignoreCancel) {
     var listener = new EventListener({
-        handle: function handle(event) {
-            try {
-                exec(event);
-            } catch (ex) {
-                console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, event.class.simpleName, ex));
-                console.ex(ex);
-            }
-        }
+        handle: exec
     });
     MServer.getEventManager().registerListener(this.plugin, eventCls, Order[priorityMap[priority]], listener);
     return listener;

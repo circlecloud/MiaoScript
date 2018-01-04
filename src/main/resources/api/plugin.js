@@ -248,7 +248,7 @@ function init(path) {
 };
 
 function load() {
-    checkAndRun(arguments, 'init');
+    checkAndRun(arguments, 'load');
 };
 
 function enable() {

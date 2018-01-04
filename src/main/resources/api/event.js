@@ -83,7 +83,7 @@ function EventHandlerDefault() {
         throw new Error("当前服务器不支持事件系统!");
     }
 
-    this.register = function register(eventCls, listener, priority, ignoreCancel) {
+    this.register = function register(eventCls, exec, priority, ignoreCancel) {
         throw new Error("当前服务器不支持事件系统!");
     }
     
@@ -111,17 +111,25 @@ function EventHandlerDefault() {
         priority = priority || 'NORMAL';
         ignoreCancel = ignoreCancel || false;
         // noinspection JSUnusedGlobalSymbols
-        var listener = this.register(eventCls, priority, ignoreCancel);
+        var listener = this.register(eventCls, function execute() {
+            try {
+                exec(arguments[arguments.length -1 ]);
+            } catch (ex) {
+                console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, this.class2Name(eventCls), ex));
+                console.ex(ex);
+            }
+        }.bind(this), priority, ignoreCancel);
         var listenerMap = this.listenerMap;
         // 添加到缓存 用于关闭插件的时候关闭事件
         if (!listenerMap[name]) listenerMap[name] = [];
+        var offExec = function () {
+            this.unregister(eventCls, listener);
+            console.debug('插件 %s 注销事件 %s'.format(name, this.class2Name(eventCls)));
+        }.bind(this);
         var off = {
             event: eventCls,
             listener: listener,
-            off: function () {
-                this.unregister(eventCls, listener);
-                console.debug('插件 %s 注销事件 %s'.format(name, this.class2Name(eventCls)));
-            }
+            off: offExec
         };
         listenerMap[name].push(off);
         // noinspection JSUnresolvedVariable

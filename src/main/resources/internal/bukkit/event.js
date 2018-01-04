@@ -24,21 +24,14 @@ function isVaildEvent(clz) {
         !Modifier.isAbstract(clz.getModifiers());
 }
 
-function register(eventCls, priority, ignoreCancel) {
+function register(eventCls, exec, priority, ignoreCancel) {
     var listener = new Listener({});
     MServer.getPluginManager().registerEvent(
         eventCls,
         listener,
         EventPriority[priority],
         new EventExecutor({
-            execute: function execute(listener, event) {
-                try {
-                    exec(event);
-                } catch (ex) {
-                    console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, event.class.simpleName, ex));
-                    console.ex(ex);
-                }
-            }
+            execute: exec
         }),
         this.plugin,
         ignoreCancel);
