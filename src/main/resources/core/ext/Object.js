@@ -31,7 +31,7 @@
     
     // // JSON快捷方法
     if(!Object.toJson){
-        Object.defineProperty(Object, "toJson", {
+        Object.defineProperty(Object.prototype, "toJson", {
             enumerable: false,
             value: function() {
                 return JSON.stringify(this);
