@@ -91,6 +91,17 @@ function EventHandlerDefault() {
         throw new Error("当前服务器不支持事件系统!");
     }
     
+    this.execute = function execute(exec) {
+        return function execute() {
+            try {
+                exec(arguments[arguments.length - 1]);
+            } catch (ex) {
+                console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, this.class2Name(eventCls), ex));
+                console.ex(ex);
+            }
+        }
+    }
+    
     /**
      * 添加事件监听
      * @param jsp
@@ -111,14 +122,7 @@ function EventHandlerDefault() {
         priority = priority || 'NORMAL';
         ignoreCancel = ignoreCancel || false;
         // noinspection JSUnusedGlobalSymbols
-        var listener = this.register(eventCls, function execute() {
-            try {
-                exec(arguments[arguments.length -1 ]);
-            } catch (ex) {
-                console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, this.class2Name(eventCls), ex));
-                console.ex(ex);
-            }
-        }.bind(this), priority, ignoreCancel);
+        var listener = this.register(eventCls, this.execute(exec), priority, ignoreCancel);
         var listenerMap = this.listenerMap;
         // 添加到缓存 用于关闭插件的时候关闭事件
         if (!listenerMap[name]) listenerMap[name] = [];
@@ -137,7 +141,7 @@ function EventHandlerDefault() {
         return off;
     }
 }
-var EventHandler = Object.assign({}, new EventHandlerDefault(), requireInternal('event'));
+var EventHandler = Object.assign(new EventHandlerDefault(), requireInternal('event'));
 // 映射事件名称
 console.info('%s 事件映射完毕 共计 %s 个事件!'.format(DetectServerType, EventHandler.mapEventName().toFixed(0)));
 module.exports = {
@@ -145,7 +149,7 @@ module.exports = {
     disable: function (jsp) {
         var jspl = EventHandler.listenerMap[jsp.description.name];
         if (jspl) {
-            jspl.forEach(function (t) t.off.bind(EventHandler)());
+            jspl.forEach(function (t) t.off.call(EventHandler));
             delete EventHandler.listenerMap[jsp.description.name];
         }
     }
