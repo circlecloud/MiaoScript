@@ -33,26 +33,10 @@ function Reflect(obj) {
         }
     };
 
-    this.method = function (name, clazzs) {
-        try {
-            return this.class.getMethod(name, clazzs);
-        } catch (ex) {
-            return this.class.getDeclaredMethod(name, clazzs);
-        }
-    };
-
-    this.cacheMethod = function (name, clazzs) {
-        var mkey = this.class.name + '.' + name + ':' + clazzs.join(':');
-        if (!methodCache[mkey]) {
-            methodCache[mkey] = this.method(name, clazzs);
-        }
-        return methodCache[mkey];
-    };
-
     this.call = function () {
         var name = arguments[0];
         var params = Array.prototype.slice.call(arguments, 1);
-        var method = this.cacheMethod(name, types(params));
+        var method = declaredMethod(this.class, name, types(params));
         return on(method.invoke(this.get(), params));
     };
 
@@ -61,11 +45,7 @@ function Reflect(obj) {
     };
 
     this.set = function (name, value) {
-        try {
-            this.class.getField(name).set(this.obj, value);
-        } catch (ex) {
-            accessible(this.class.getDeclaredField(name)).set(this.obj, value);
-        }
+        accessible(declaredField(this.class, name)).set(this.obj, value);
         return this;
     };
 
@@ -132,9 +112,74 @@ function declaredField(clazz, name) {
     return field;
 }
 
+function declaredMethod(clazz, name, clazzs) {
+    var mkey = clazz.name + '.' + name + ':' + (clazzs || []).join(':');
+    if (!methodCache[mkey]) {
+        try {
+            methodCache[mkey] = clazz.getMethod(name, clazzs);
+        } catch (ex) {
+            methodCache[mkey] = clazz.getDeclaredMethod(name, clazzs);
+        }
+    }
+    return methodCache[mkey];
+}
+
+function declaredMethod(clazz, name, clazzs) {
+    var mkey = clazz.name + '.' + name + ':' + (clazzs || []).join(':');
+    if (!methodCache[mkey]) {
+        try {
+            methodCache[mkey] = clazz.getMethod(name, clazzs);
+        } catch (ex) {
+            methodCache[mkey] = clazz.getDeclaredMethod(name, clazzs);
+        }
+    }
+    return methodCache[mkey];
+}
+
+function declaredMethods(clazz) {
+    return clazz.declaredMethods;
+}
+
+var classMethodsCache = [];
+
+function mapToObject(javaObj) {
+    if (!javaObj || !javaObj.class) { throw new TypeError('参数 %s 不是一个Java对象!'.format(javaObj)) }
+    var target = {};
+    getJavaObjectMethods(javaObj).forEach(function proxyMethod(t){ mapMethod(target, javaObj, t) })
+    return target;
+}
+
+function getJavaObjectMethods(javaObj) {
+    var className = javaObj.class.name
+    if (!classMethodsCache[className]) {
+        var names = [];
+        var methods = javaObj.class.methods;
+        for (var i in methods){
+            names.push(methods[i].name);
+        }
+        classMethodsCache[className] = names;
+    }
+    return classMethodsCache[className];
+}
+
+function mapMethod (target, source, name) {
+    target[name] = function __SimpleDynamicMethod__() {
+        if (arguments.length > 0) {
+            return source[name](Array.prototype.slice.call(arguments));
+        } else {
+            return source[name]();
+        }
+    };
+}
+
 function on(obj) {
+    if (!obj || !obj.class) { throw new TypeError('参数 %s 不是一个Java对象!'.format(obj)) }
     return new Reflect(obj);
 }
 
-exports.on = on;
-exports.accessible = accessible;
+exports = module.exports = {
+    on: on,
+    accessible: accessible,
+    declaredMethods: declaredMethods,
+    mapToObject: mapToObject
+}
