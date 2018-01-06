@@ -91,7 +91,7 @@ function EventHandlerDefault() {
         throw new Error("当前服务器不支持事件系统!");
     }
     
-    this.execute = function execute(exec) {
+    this.execute = function execute(name, exec, eventCls) {
         return function execute() {
             try {
                 exec(arguments[arguments.length - 1]);
@@ -99,7 +99,7 @@ function EventHandlerDefault() {
                 console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, this.class2Name(eventCls), ex));
                 console.ex(ex);
             }
-        }
+        }.bind(this);
     }
     
     /**
@@ -122,7 +122,7 @@ function EventHandlerDefault() {
         priority = priority || 'NORMAL';
         ignoreCancel = ignoreCancel || false;
         // noinspection JSUnusedGlobalSymbols
-        var listener = this.register(eventCls, this.execute(exec), priority, ignoreCancel);
+        var listener = this.register(eventCls, this.execute(name, exec, eventCls), priority, ignoreCancel);
         var listenerMap = this.listenerMap;
         // 添加到缓存 用于关闭插件的时候关闭事件
         if (!listenerMap[name]) listenerMap[name] = [];
