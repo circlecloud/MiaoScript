@@ -241,7 +241,7 @@ var plugins = [];
 function init(path) {
     var plugin = exports.$
     if (plugin !== null) {
-        // 如果过plugin不等于null 则代表是正式环境
+        // 如果plugin不等于null 则代表是正式环境
         console.info("初始化 MiaoScript 插件系统: %s".format(plugin));
     }
     loadPlugins(path);
@@ -262,7 +262,7 @@ function disable() {
 };
 
 function reload() {
-    checkAndRun(arguments, function (p) {
+    checkAndGet(arguments).forEach(function (p) {
         disable(p);
         p = loadPlugin(p.__FILE__);
         load(p);
