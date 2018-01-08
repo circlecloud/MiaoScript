@@ -49,7 +49,7 @@ function enable() {
 
 function send(event, player){
     // noinspection JSUnresolvedVariable
-    console.debug('玩家', player.name, "触发事件", event.class.simpleName);
+    console.debug('玩家', player.getName(), "触发事件", event.class.simpleName);
     setTimeout(function () {
         // noinspection JSUnresolvedVariable
         player.sendMessage("§a欢迎来到 §bMiaoScript §a的世界! 当前在线: " + server.players.length)
