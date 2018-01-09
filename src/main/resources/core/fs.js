@@ -5,6 +5,9 @@ var File = Java.type("java.io.File");
 var Files = Java.type("java.nio.file.Files");
 var separatorChar = File.separatorChar;
 var StandardCopyOption = Java.type("java.nio.file.StandardCopyOption");
+var _toString = function (obj) {
+    return Object.prototype.toString.call(obj);
+}
 
 /**
  * 用文件分割符合并路径
@@ -24,10 +27,16 @@ function file() {
     }
     switch (arguments.length) {
         case 1:
-            if (path(arguments[0])) {
-                return arguments[0];
+            var f = arguments[0]
+            if (f instanceof File) {
+                return f;
             }
-            return new File(arguments[0]);
+            if (typeof f === "string") {
+                return new File(f);
+            }
+            if (f instanceof Path) {
+                return f.toFile();
+            }
         case 2:
             return new File(exports.file(arguments[0]), arguments[1]);
     }
@@ -73,14 +82,14 @@ function copy(inputStream, target, override) {
  * 读取文件
  * @param file 文件路径
  */
-function read(file) {
-    f = file(file);
-    if (!f.exists()) {
-        console.warn('读取文件', f, '错误 文件不存在!');
+function read(f) {
+    var file = exports.file(f);
+    if (!file.exists()) {
+        console.warn('读取文件', file, '错误 文件不存在!');
         return;
     }
     // noinspection JSPrimitiveTypeWrapperUsage
-    return new java.lang.String(Files.readAllBytes(f.toPath()), "UTF-8");
+    return new java.lang.String(Files.readAllBytes(file.toPath()), "UTF-8");
 };
 /**
  * 保存内容文件
@@ -89,7 +98,9 @@ function read(file) {
  * @param override 是否覆盖
  */
 function save(path, content, override) {
-    Files.write(new File(path).toPath(),
+    var file = new File(path);
+    file.getParentFile().mkdirs();
+    Files.write(file.toPath(),
         content.getBytes("UTF-8"),
         override ? StandardCopyOption['REPLACE_EXISTING'] : StandardCopyOption['ATOMIC_MOVE']);
 };
@@ -116,6 +127,15 @@ function move(src, des, override) {
         override ? StandardCopyOption['REPLACE_EXISTING'] : StandardCopyOption['ATOMIC_MOVE'])
 };
 
+function del(file) {
+    file = exports.file(file);
+    if (!file.exists()) { return; }
+    if (file.isDirectory()) {
+        Files.list(file.toPath()).collect(Collectors.toList()).forEach(function (f) { del(f); })
+    }
+    Files.delete(file.toPath());
+}
+
 exports = module.exports = {
     canonical: path,
     concat: concat,
@@ -127,5 +147,6 @@ exports = module.exports = {
     read: read,
     save: save,
     list: list,
-    move: move
+    move: move,
+    del: del
 }

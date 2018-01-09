@@ -260,8 +260,7 @@
         };
     }
 
-    // 判断是否存在 isFile 不存在说明 parent 是一个字符串 需要转成File
-    if (parent.isFile) {
+    if (typeof parent === "string") {
         parent = new File(parent);
     }
     var cacheModules = [];
