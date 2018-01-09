@@ -47,7 +47,7 @@ function open(url, method, header) {
     var conn = new URL(url).openConnection();
     if (conn instanceof HttpsURLConnection) {
         conn.setHostnameVerifier(TrustAnyHostnameVerifier);
-        conn.setSSLSocketFactory(TrustAnyHostnameVerifier);
+        conn.setSSLSocketFactory(SSLSocketFactory);
     }
     conn.setRequestMethod(method);
     conn.setDoOutput(true);
@@ -81,10 +81,12 @@ function request(url, method, header, params, body) {
     var conn = open(buildUrl(url, params), method, header);
     try {
         conn.connect();
-        var out = conn.getOutputStream();
-        out.write(new String(body).getBytes(config.Charset));
-        out.flush();
-        out.close();
+        if (body) {
+            var out = conn.getOutputStream();
+            out.write(new String(body).getBytes(config.Charset));
+            out.flush();
+            out.close();
+        }
         return response(conn);
     } finally {
         conn.disconnect();

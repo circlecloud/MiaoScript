@@ -2,7 +2,7 @@
 /**
  * MiaoScript脚本插件加载类
  */
-/*global Java, base, module, exports, require, __FILE__*/
+/*global Java, module, exports, require, __FILE__*/
 // var zip = require("core/zip");
 var fs = require('core/fs');
 var yaml = require('modules/yaml');
@@ -87,7 +87,7 @@ function loadPlugin(file) {
         hook: function (origin) {
             return beforeLoadHook(origin);
         }
-    });
+    })
     console.debug("插件编译结果: %s".format(JSON.stringify(plugin)));
     var desc = plugin.description;
     if (!desc || !desc.name) {
@@ -127,16 +127,15 @@ function initPlugin(file, plugin) {
     // 初始化 __FILE__
     plugin.__FILE__ = file;
     // 初始化 __DATA__
-    plugin.__DATA__ = fs.file(file.parentFile, plugin.description.name);
+    plugin.__DATA__ = plugin.dataFolder = fs.file(file.parentFile, plugin.description.name);
     // 初始化 getDataFolder()
-    plugin.getDataFolder = function () {
+    plugin.getDataFolder = function getDataFolder() {
         return plugin.__DATA__;
-    };
+    }
     // 初始化 getFile()
-    plugin.getFile = function (name) {
+    plugin.getFile = plugin.file = function getFile(name) {
         return fs.file(plugin.getDataFolder(), name);
     };
-
     // 初始化插件配置相关方法
     initPluginConfig(plugin);
 
@@ -164,9 +163,9 @@ function initPluginConfig(plugin) {
                 if (!file.isFile) {
                     file = plugin.getFile(file);
                 }
-                return yaml.safeLoad(base.read(file));
+                return yaml.safeLoad(fs.read(file), { json: true });
         }
-    };
+    }
     /**
      * 重载配置文件
      * @constructor
@@ -174,7 +173,7 @@ function initPluginConfig(plugin) {
      */
     plugin.reloadConfig = function () {
         plugin.config = plugin.getConfig(plugin.configFile);
-    };
+    }
     /**
      * 保存配置文件
      * @constructor
@@ -184,23 +183,19 @@ function initPluginConfig(plugin) {
         switch (arguments.length) {
             case 0:
                 plugin.configFile.parentFile.mkdirs();
-                base.save(plugin.configFile, yaml.safeDump(plugin.config));
+                fs.save(plugin.configFile, yaml.safeDump(plugin.config));
                 break;
             case 2:
-                base.save(arguments[0], yaml.safeDump(arguments[1]));
+                fs.save(fs.file(plugin.__DATA__, arguments[0]), yaml.safeDump(arguments[1]));
                 break;
         }
-    };
+    }
     if (plugin.configFile.isFile()) {
         plugin.config = plugin.getConfig('config.yml');
     } else if (plugin.description.config) {
         plugin.config = plugin.description.config;
         plugin.saveConfig();
     }
-}
-
-function runAndCatch(jsp, name, ext) {
-
 }
 
 function checkAndGet(args) {
@@ -223,15 +218,13 @@ function checkAndRun(args, name, ext) {
     for (var i in pls) {
         var jsp = pls[i];
         var exec = jsp[name];
-        if (exec) {
-            try {
-                // 绑定方法的this到插件自身
-                exec.bind(jsp)();
-                if (ext) ext.bind(jsp)();
-            } catch (ex) {
-                console.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s'.format(jsp.description.name, name, ex.message));
-                console.ex(ex);
-            }
+        try {
+            // 绑定方法的this到插件自身
+            if (typeof exec === "function") exec.call(jsp);
+            if (ext) ext.call(jsp);
+        } catch (ex) {
+            console.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s'.format(jsp.description.name, name, ex.message));
+            console.ex(ex);
         }
     }
 }

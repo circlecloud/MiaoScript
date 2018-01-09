@@ -111,8 +111,8 @@ function EventHandlerDefault() {
      * @param ignoreCancel
      */
     this.listen = function listen(jsp, event, exec, priority, ignoreCancel) {
+        if (!jsp || !jsp.description || !jsp.description.name) throw new TypeError('插件名称为空 请检查传入参数!');
         var name = jsp.description.name;
-        if (ext.isNull(name)) throw new TypeError('插件名称为空 请检查传入参数!');
         var eventCls = this.name2Class(name, event);
         if (!eventCls) { return; }
         if (typeof priority === 'boolean') {
@@ -128,7 +128,7 @@ function EventHandlerDefault() {
         if (!listenerMap[name]) listenerMap[name] = [];
         var offExec = function () {
             this.unregister(eventCls, listener);
-            console.debug('插件 %s 注销事件 %s'.format(name, this.class2Name(eventCls)));
+            console.debug('插件 %s 注销事件 %s'.format(name, eventCls.name.substring(eventCls.name.lastIndexOf(".") + 1)));
         }.bind(this);
         var off = {
             event: eventCls,
