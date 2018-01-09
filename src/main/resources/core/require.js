@@ -204,7 +204,7 @@
         }
         base.save(cacheFile, "(function __init__(module, exports, require, __dirname, __filename) {" + origin + "});");
         // 使用 load 可以保留行号和文件名称
-        var compiledWrapper = load(cacheFile);
+        var compiledWrapper = engineLoad(cacheFile);
         try {
             base.delete(cacheFile);
         } catch (ex) {

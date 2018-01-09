@@ -35,9 +35,13 @@
      * 初始化模块
      */
     function loadRequire() {
+        global.engineLoad = load;
+        global.load = function __denyGlobalLoad__() {
+            throw new Error('系统内部不许允许使用 load 如需执行脚本 请使用 engineLoad !');
+        }
         // 初始化加载器
-        global.require = load(root + '/core/require.js')(root);
-        global.requireInternal = function (name) {
+        global.require = engineLoad(root + '/core/require.js')(root);
+        global.requireInternal = function requireInternal(name) {
             return require(root + '/internal/' + DetectServerType + '/' + name + '.js');
         }
     }
@@ -61,16 +65,16 @@
      */
     function loadServerLib() {
         var task = require('api/task');
-        global.setTimeout = function (func, time, _async) {
+        global.setTimeout = function setTimeout(func, time, _async) {
             return _async ? task.laterAsync(func, time) : task.later(func, time);
         };
-        global.clearTimeout = function (task) {
+        global.clearTimeout = function clearTimeout(task) {
             task.cancel();
         };
-        global.setInterval = function (func, time, _async) {
+        global.setInterval = function setInterval(func, time, _async) {
             return _async ? task.timerAsync(func, time) : task.timer(func, time);
         };
-        global.clearInterval = function (task) {
+        global.clearInterval = function clearInterval(task) {
             task.cancel();
         };
     }
@@ -95,7 +99,7 @@
     /**
      * 关闭插件Hook
      */
-    global.disable = function disable() {
+    global.engineDisable = function disable() {
         if (global.manager && global.manager.$) {
             global.manager.disable();
         }

@@ -43,7 +43,7 @@ public class ScriptEngine {
 
     @SneakyThrows
     public void disableEngine() {
-        engine.invokeFunction("disable");
+        engine.invokeFunction("engineDisable");
     }
 
     public MiaoScriptEngine getEngine() {
