@@ -27,7 +27,7 @@ function load() {
 function enable() {
     command.on(this, 'hello', {
         cmd: function (sender, command, args) {
-            global.load(fs.file(root, 'test.js'));
+            engineLoad(fs.file(root, 'test.js'));
             return true;
         }
     });
