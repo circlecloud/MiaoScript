@@ -23,19 +23,19 @@ var Arrays = Java.type('java.util.Arrays');
 
 var commandMap=[];
 
-var SimpleCommandCallable = function (name) {
+var SimpleCommandCallable = function (command) {
     var that = this;
-    this.name = name;
+    this.name = command.name;
     this.cmd = noop;
     this.tab = function() { return new ArrayList(); };
     this.callable = new CommandCallable({
         //CommandResult process(CommandSource source, String arguments) throws CommandException;
         process: function (src, args) {
-            return that.cmd(src, name, args.split(" ")) ? CommandResult.success() : CommandResult.empty();
+            return that.cmd(src, that.name, args.split(" ")) ? CommandResult.success() : CommandResult.empty();
         },
         //List<String> getSuggestions(CommandSource source, String arguments, @Nullable  Location<World> targetPosition) throws CommandException;
         getSuggestions: function (src, args, target) {
-            return that.tab(src, name, args.split(" "));
+            return that.tab(src, that.name, args.split(" "));
         },
         //boolean testPermission(CommandSource source);
         testPermission: function () {
@@ -43,7 +43,7 @@ var SimpleCommandCallable = function (name) {
         },
         //Optional<Text> getShortDescription(CommandSource source);
         getShortDescription: function () {
-            return Optional.of(Text.of(""));
+            return Optional.of(Text.of(command.description || '暂无描述!'));
         },
         //Optional<Text> getHelp(CommandSource source);
         getHelp: function () {
@@ -70,7 +70,8 @@ function enable(jsp) {
         for (var name in commands) {
             var command = commands[name];
             if (typeof command !== 'object') continue;
-            create(jsp, name)
+            command.name = name
+            create(jsp, command)
             console.debug('插件 %s 注册命令 %s ...'.format(jsp.description.name, name));
         }
     }
@@ -79,18 +80,17 @@ function enable(jsp) {
 function get(name) {
 }
 
-function create(jsp, name) {
-    var commandKey = jsp.description.name.toLowerCase() + ":" + name;
+function create(jsp, command) {
+    var commandKey = jsp.description.name.toLowerCase() + ":" + command.name;
     if(!commandMap[commandKey]){
-        commandMap[commandKey] = new SimpleCommandCallable();
-        commandMap[commandKey].name = name;
-        Sponge.getCommandManager().register(plugin, commandMap[commandKey].callable, name, commandKey);
+        commandMap[commandKey] = new SimpleCommandCallable(command);
+        Sponge.getCommandManager().register(plugin, commandMap[commandKey].callable, command.name, commandKey);
     }
     return commandMap[commandKey];
 }
 
 function on(jsp, name, exec) {
-    var c = create(jsp, name);
+    var c = create(jsp, {name: name});
     console.debug('插件 %s 设置命令 %s 执行器 ...'.format(jsp.description.name, name));
     if (exec.cmd) {
         c.setExecutor(function (sender, command, args) {
@@ -107,7 +107,8 @@ function on(jsp, name, exec) {
         c.setTabCompleter(function (sender, command, args) {
             try {
                 var token = args[args.length - 1];
-                return Arrays.asList(exec.tab(sender, command, args));
+                var complate = exec.tab(sender, command, args) || []
+                return Arrays.asList(complate.copyPartialMatches(token, []));
             } catch (ex) {
                 console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, args, ex));
                 console.ex(ex);

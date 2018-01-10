@@ -67,16 +67,23 @@ function loadJsPlugins(files) {
     files.filter(function (file) {
         return file.name.endsWith(".js")
     }).forEach(function (file) {
-        try {
-            loadPlugin(file);
-        } catch (ex) {
-            console.console('§6插件 §b%s §6初始化时发生错误 §4%s'.format(fs.path(file), ex.message));
-            console.ex(ex);
-        }
+        loadPlugin(file)
     })
 }
 
 function loadPlugin(file) {
+    try {
+        var plugin = readPlugin(file);
+        initPlugin(plugin);
+        plugins[plugin.description.name] = plugin;
+        return plugin
+    } catch (ex) {
+        console.console('§6插件 §b%s §6初始化时发生错误 §4%s'.format(file.name, ex.message));
+        console.ex(ex);
+    }
+}
+
+function readPlugin(file) {
     var update = fs.file(fs.file(file.parentFile, 'update'), file.name);
     if (update.exists()) {
         console.info('自动升级插件 %s'.format(file.name));
@@ -89,13 +96,17 @@ function loadPlugin(file) {
         }
     })
     console.debug("插件编译结果: %s".format(JSON.stringify(plugin)));
+    plugin.__FILE__ = file;
+    return plugin;
+}
+
+function initPlugin(plugin) {
     var desc = plugin.description;
     if (!desc || !desc.name) {
-        console.warn("文件 %s 不存在 description 描述信息 无法加载插件!".format(file));
+        throw new Error("文件 %s 不存在 description 描述信息 无法加载插件!".format(plugin.__FILE__));
     } else {
-        initPlugin(file, plugin);
+        internalInitPlugin(plugin);
         afterLoadHook(plugin);
-        plugins[plugin.description.name] = plugin;
         console.info('载入插件 %s 版本 %s By %s'.format(desc.name, desc.version || '未知', desc.author || '未知'));
     }
     return plugin;
@@ -106,9 +117,9 @@ function beforeLoadHook(origin) {
     // 处理 event 为了不影响 正常逻辑 event 还是手动require吧
     // result = result + 'var event = {}; module.exports.event = event;';
     // 注入 console 对象         // 给插件注入单独的 console
-    result = result + 'var console = new Console(); module.exports.console = console;';
+    result = result + '\nvar console = new Console(); module.exports.console = console;';
     // 插件注入 self 对象
-    result = result + 'var self = {}; module.exports.self = self;';
+    result = result + '\nvar self = {}; module.exports.self = self;';
     return result;
 }
 
@@ -123,11 +134,9 @@ function afterLoadHook(plugin) {
 /**
  * 初始化插件内容(提供config,__DATA__等参数)
  */
-function initPlugin(file, plugin) {
-    // 初始化 __FILE__
-    plugin.__FILE__ = file;
+function internalInitPlugin(plugin) {
     // 初始化 __DATA__
-    plugin.__DATA__ = plugin.dataFolder = fs.file(file.parentFile, plugin.description.name);
+    plugin.__DATA__ = plugin.dataFolder = fs.file(plugin.__FILE__.parentFile, plugin.description.name);
     // 初始化 getDataFolder()
     plugin.getDataFolder = function getDataFolder() {
         return plugin.__DATA__;
@@ -204,7 +213,7 @@ function checkAndGet(args) {
     }
     var name = args[0];
     // 如果是插件 则直接返回
-    if (name.description) {
+    if (name && name.description) {
         return [name];
     }
     if (!exports.plugins[name]) {
@@ -221,7 +230,7 @@ function checkAndRun(args, name, ext) {
         try {
             // 绑定方法的this到插件自身
             if (typeof exec === "function") exec.call(jsp);
-            if (ext) ext.call(jsp);
+            if (typeof ext === "function") ext.call(jsp);
         } catch (ex) {
             console.console('§6插件 §b%s §6执行 §d%s §6方法时发生错误 §4%s'.format(jsp.description.name, name, ex.message));
             console.ex(ex);
@@ -270,5 +279,6 @@ exports = module.exports = {
     load: load,
     enable: enable,
     disable: disable,
-    reload: reload
+    reload: reload,
+    loadPlugin: loadPlugin
 }

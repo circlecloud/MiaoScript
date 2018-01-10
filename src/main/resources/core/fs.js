@@ -98,11 +98,9 @@ function read(f) {
  * @param override 是否覆盖
  */
 function save(path, content, override) {
-    var file = new File(path);
-    file.getParentFile().mkdirs();
-    Files.write(file.toPath(),
-        content.getBytes("UTF-8"),
-        override ? StandardCopyOption['REPLACE_EXISTING'] : StandardCopyOption['ATOMIC_MOVE']);
+    var f = file(path);
+    f.getParentFile().mkdirs();
+    Files.write(f.toPath(), new java.lang.String(content).getBytes("UTF-8"));
 };
 /**
  * 列出目录文件

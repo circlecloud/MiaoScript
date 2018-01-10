@@ -78,10 +78,9 @@ function on(jsp, name, exec) {
         c.setTabCompleter(new org.bukkit.command.TabCompleter({
             onTabComplete: function (sender, cmd, command, args) {
                 try {
-                    var completions = new ArrayList();
                     var token = args[args.length - 1];
-                    StringUtil.copyPartialMatches(token, Arrays.asList(exec.tab(sender, command, args)), completions);
-                    return completions;
+                    var complate = exec.tab(sender, command, args) || []
+                    return Arrays.asList(complate.copyPartialMatches(token, []));
                 } catch (ex) {
                     console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
                     console.ex(ex);
