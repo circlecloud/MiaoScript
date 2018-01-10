@@ -20,8 +20,6 @@
 /dist
 /manifest.mf
 
-/world
-
 # Mac filesystem dust
 *.DS_Store
 
@@ -37,8 +35,19 @@
 # Atlassian Stuff
 /atlassian-ide-plugin.xml
 
-/src/main/resources/cache/
+# Eclipse
+.project
+.classpath
+.settings
 
-# ThinkPHP
+# Visual Studio Code
+.vscode
+
+# NodeJs PHP LOCK File
+*.lock
+
+# PHP Vendor
 vendor/
-composer.lock
+
+# Minecraft Data
+/world
