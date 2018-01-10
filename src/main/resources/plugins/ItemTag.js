@@ -1,14 +1,11 @@
 'use strict';
 /*global Java, base, module, exports, require*/
 
-var event = require('api/event');
-var wrapper = require('api/wrapper');
-var command = require('api/command');
 var server = require('api/server');
+var event = require('api/event');
+var task = require('api/task');
 var http = require('http');
 var fs = require('fs');
-
-var nameMap = [];
 
 var description = {
     name: 'ItemTag',
@@ -20,10 +17,12 @@ var itemConfig;
 
 function load() {
     var itemFile = self.file('item.yml');
-    if (!itemFile.exists()) {
-        base.save(itemFile, http.get('https://data.yumc.pw/config/Item_zh_CN.yml'));
-    }
-    itemConfig = self.getConfig('item.yml');
+    task.async(function () {
+        if (!itemFile.exists()) {
+            fs.save(itemFile, http.get('https://data.yumc.pw/config/Item_zh_CN.yml'))
+        }
+        itemConfig = self.getConfig('item.yml')
+    })
 }
 
 function enable() {
@@ -62,7 +61,7 @@ function bukkit(item , amount) {
 }
 
 function sponge(entity) {
-    var itemOptional = entity.get(Keys.REPRESENTED_ITEM);
+    var itemOptional = entity.get(org.spongepowered.api.data.key.Keys.REPRESENTED_ITEM);
     if (itemOptional.isPresent()) {
         var item = itemOptional.get();
         var amounts = item.count == 1 ? "" : "*" + item.count;
