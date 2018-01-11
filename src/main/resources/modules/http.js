@@ -39,7 +39,8 @@ var SSLSocketFactory = function initSSLSocketFactory() {
 var config = {
     Charset: 'UTF-8',
     ConnectTimeout: 10000,
-    ReadTimeout: 10000
+    ReadTimeout: 10000,
+    Debug: false
 }
 
 function open(url, method, header) {
@@ -54,8 +55,10 @@ function open(url, method, header) {
     conn.setDoInput(true);
     conn.setConnectTimeout(config.ConnectTimeout);
     conn.setReadTimeout(config.ReadTimeout);
-    for (var key in header) {
-        conn.setRequestProperty(key, header[key]);
+    if (header) {
+        for (var key in header) {
+            conn.setRequestProperty(key, header[key]);
+        }
     }
     return conn;
 }
@@ -66,24 +69,28 @@ function buildUrl(url, params) {
         if (queryStart == -1) {
             url += '?';
         }
-        for (var key in params) {
-            url += key;
-            url += '=';
-            url += params[key];
-            url += '&';
-        }
-        return url.substr(0, url.length - 1);
+        return url += object2URLSearchParams(params);
     }
     return url;
 }
 
-function request(url, method, header, params, body) {
-    var conn = open(buildUrl(url, params), method, header);
+function request(config) {
+    var conn = open(buildUrl(config.url, config.query), config.method, config.header);
     try {
         conn.connect();
-        if (body) {
+        var data = config.data;
+        if (data) {
             var out = conn.getOutputStream();
-            out.write(new String(body).getBytes(config.Charset));
+            if (typeof data === "object") {
+                var type = config.header['Content-Type'];
+                switch (type) {
+                    case "application/x-www-form-urlencoded":
+                        data = object2URLSearchParams(params);
+                    default:
+                        data = JSON.stringify(data)
+                }
+            }
+            out.write(new String(data).getBytes(config.Charset));
             out.flush();
             out.close();
         }
@@ -102,14 +109,36 @@ function response (conn) {
     return result;
 }
 
+function object2URLSearchParams (params) {
+    var temp = []
+    for (var key in params) {
+        temp.push('%s=%s'.format(encodeURIComponent(key), encodeURIComponent(params[key])))
+    }
+    return temp.join('&')
+}
+
 var http = {
-    config: config
+    config: config,
+    request: request
 };
 
-['GET', 'POST', 'PUT', 'DELETE', 'HEADER'].forEach(function(method){
-    http[method.toLowerCase()] = function (url, header, params, body) {
-        return request(url, method, header, params, body);
+['GET', 'DELETE', 'HEAD', 'OPTIONS'].forEach(function (method) {
+    http[method.toLowerCase()] = function __likeGet__(url, config) {
+        return this.request(Object.assign(config || {}, {
+            url: url,
+            method: method
+        }));
     }
-})
+});
+
+['POST', 'PUT', 'PATCH'].forEach(function (method) {
+    http[method.toLowerCase()] = function __likePost__(url, data, config) {
+        return this.request(Object.assign(config || {}, {
+            url: url,
+            method: method,
+            data: data
+        }));
+    }
+});
 
 exports = module.exports = http;

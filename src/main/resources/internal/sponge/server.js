@@ -38,7 +38,7 @@ exports.plugin = {
         }
         return PluginManager.isPluginEnabled(name);
     },
-    self: PluginManager.getPlugin('miaoscript').get()
+    self: PluginManager.getPlugin('miaoscript').orElse(undefined)
 };
 /**
  * 获取玩家
@@ -48,9 +48,9 @@ exports.player = function () {
         case 0:
             return undefined;
         case 1:
-            return Server.getPlayer(arguments[0]).get();
+            return Server.getPlayer(arguments[0]).orElse(undefined);
         default:
-            return Server.getPlayer(arguments[0]).get();
+            return Server.getPlayer(arguments[0]).orElse(undefined);
     }
 };
 /**
@@ -59,8 +59,10 @@ exports.player = function () {
 exports.players = function () {
     switch (arguments.length) {
         case 1:
+            // 此处的forEach是Collection接口的
             return Server.onlinePlayers.forEach(arguments[0]);
         default:
-            return Server.onlinePlayers;
+            // 此处会转换为JS原生的Array
+            return Java.from(Server.onlinePlayers.toArray());
     }
 };
