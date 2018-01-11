@@ -5,6 +5,7 @@ var wrapper = require('api/wrapper')
 var command = require('api/command')
 var manager = require('api/plugin')
 var task = require('api/task')
+
 var http = require('http')
 var fs = require('fs')
 
@@ -61,12 +62,12 @@ function enable() {
                             if (pkg) {
                                 task.async(function install() {
                                     var pfile = fs.file(__dirname, pname + '.js')
-                                    console.sender(sender, '§a开始下载插件: §b%s'.format(pkg.name))
-                                    console.sender(sender, '§a插件下载地址: §b%s'.format(pkg.url))
+                                    console.sender(sender, '§6开始下载插件: §b%s'.format(pkg.name))
+                                    console.sender(sender, '§6插件下载地址: §b%s'.format(pkg.url))
                                     fs.save(pfile, http.get(pkg.url))
-                                    console.sender(sender, '§a插件 §b%s §a下载完毕 开始加载 ...'.format(pname))
+                                    console.sender(sender, '§6插件 §b%s §a下载完毕 开始加载 ...'.format(pname))
                                     manager.loadPlugin(pfile)
-                                    console.sender(sender, '§a插件 §b%s §a安装成功!'.format(pname))
+                                    console.sender(sender, '§6插件 §b%s §a安装成功!'.format(pname))
                                 })
                             } else {
                                 console.log(sender, '§c插件 %s 不存在!'.format(pname))
