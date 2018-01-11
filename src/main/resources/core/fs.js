@@ -45,19 +45,19 @@ function file() {
  * 创建目录
  * @param file
  */
-function mkdirs(file) {
+function mkdirs(path) {
     // noinspection JSUnresolvedVariable
-    file.parentFile.mkdirs();
+    fs.file(path).parentFile.mkdirs();
 };
 /**
  * 创建文件
  * @param file
  */
-function create(file) {
-    f = file(file);
-    if (!f.exists()) {
-        mkdirs(f);
-        f.createNewFile();
+function create(path) {
+    var file = fs.file(path)
+    if (!file.exists()) {
+        mkdirs(file);
+        file.createNewFile();
     }
 };
 /**
@@ -67,7 +67,7 @@ function create(file) {
  */
 function path(file) {
     // noinspection JSUnresolvedVariable
-    return file.canonicalPath;
+    return fs.file(file).canonicalPath;
 };
 /**
  * 复制文件
@@ -80,10 +80,10 @@ function copy(inputStream, target, override) {
 };
 /**
  * 读取文件
- * @param file 文件路径
+ * @param path 文件路径
  */
-function read(f) {
-    var file = exports.file(f);
+function read(path) {
+    var file = fs.file(path);
     if (!file.exists()) {
         console.warn('读取文件', file, '错误 文件不存在!');
         return;
@@ -98,9 +98,9 @@ function read(f) {
  * @param override 是否覆盖
  */
 function save(path, content, override) {
-    var f = file(path);
-    f.getParentFile().mkdirs();
-    Files.write(f.toPath(), new java.lang.String(content).getBytes("UTF-8"));
+    var file = fs.file(path);
+    file.getParentFile().mkdirs();
+    Files.write(file.toPath(), new java.lang.String(content).getBytes("UTF-8"));
 };
 /**
  * 列出目录文件
@@ -121,12 +121,12 @@ function list(path) {
  * @param override 是否覆盖
  */
 function move(src, des, override) {
-    Files.move(file(src).toPath(), file(des).toPath(),
+    Files.move(fs.file(src).toPath(), fs.file(des).toPath(),
         override ? StandardCopyOption['REPLACE_EXISTING'] : StandardCopyOption['ATOMIC_MOVE'])
 };
 
 function del(file) {
-    file = exports.file(file);
+    file = fs.file(file);
     if (!file.exists()) { return; }
     if (file.isDirectory()) {
         Files.list(file.toPath()).collect(Collectors.toList()).forEach(function (f) { del(f); })
@@ -134,17 +134,25 @@ function del(file) {
     Files.delete(file.toPath());
 }
 
-exports = module.exports = {
-    canonical: path,
+function exists(file) {
+    return fs.file(file).exists()
+}
+
+var fs = {};
+
+fs.path = fs.canonical = fs.realpath = path
+fs.write = fs.save = save
+fs.readdir = fs.list = list
+fs.rename = fs.move = move
+
+Object.assign(fs, {
     concat: concat,
     create: create,
     mkdirs: mkdirs,
     file: file,
-    path: path,
     copy: copy,
     read: read,
-    save: save,
-    list: list,
-    move: move,
     del: del
-}
+})
+
+exports = module.exports = fs

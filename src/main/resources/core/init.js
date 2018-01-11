@@ -8,7 +8,7 @@
         global.noop = function () {
         };
         loadCore();
-        loadExt();
+        loadPatch();
         loadRequire();
         try {
             loadServerLib();
@@ -49,8 +49,8 @@
     /**
      * 加载补丁
      */
-    function loadExt() {
-        java.nio.file.Files.list(new java.io.File(root, 'core/ext').toPath()).forEach(function (path) {
+    function loadPatch() {
+        java.nio.file.Files.list(new java.io.File(root, 'core/patch').toPath()).forEach(function (path) {
             console.log('加载扩展类库', path);
             try {
                 load(path.toFile());

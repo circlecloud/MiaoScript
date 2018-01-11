@@ -7,7 +7,7 @@
             enumerable: false,
             value: function (token, array) {
                 this.forEach(function (e) {
-                    if (e.startsWith(token)) {
+                    if (e.toLowerCase().startsWith(token.toLowerCase())) {
                         array.push(e)
                     }
                 })
