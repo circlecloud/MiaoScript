@@ -35,7 +35,7 @@ var global = this;
     var pluginYml;
 
     function checkClassLoader() {
-        var classLoader = java.lang.Thread.currentThread().getContextClassLoader();
+        var classLoader = java.lang.Thread.currentThread().contextClassLoader;
         pluginYml = classLoader.getResource("plugin.yml");
         if (pluginYml === null) {
             log.info("==================== ERROR ====================");
