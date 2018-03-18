@@ -7,6 +7,8 @@ var task = require('api/task');
 var http = require('http');
 var fs = require('fs');
 
+var Keys;
+
 var description = {
     name: 'ItemTag',
     version: '1.0',
@@ -38,10 +40,11 @@ function enable() {
             })
             break;
         case ServerType.Sponge:
-            event.on(self, 'itemmergeitemevent', function (event) {
+            Keys = Java.type('org.spongepowered.api.data.key.Keys');
+            event.on(self, 'ItemMergeItemEvent', function (event) {
                 // Sponge 暂未实现当前事件
             })
-            event.on(self, 'spawnentityevent', function (event) {
+            event.on(self, 'SpawnEntityEvent', function (event) {
                 event.entities.forEach(function (entity) {
                     if (entity.type.name === "item") sponge(entity);
                 })
@@ -50,24 +53,27 @@ function enable() {
     }
 }
 
-function getItemName(name) {
-    return itemConfig[(name + '').toUpperCase()] || name;
-}
-
 function bukkit(item , amount) {
-    var amounts = amount == 1 ? "" : "*" + amount;
-    item.setCustomName('§b' + getItemName(item.itemStack.type) + amounts);
+    item.setCustomName('§b' + getItemName(item.itemStack.type) + getItemCount(amount));
     item.setCustomNameVisible(true);
 }
 
 function sponge(entity) {
-    var itemOptional = entity.get(org.spongepowered.api.data.key.Keys.REPRESENTED_ITEM);
+    var itemOptional = entity.get(Keys.REPRESENTED_ITEM);
     if (itemOptional.isPresent()) {
         var item = itemOptional.get();
-        var amounts = item.count == 1 ? "" : "*" + item.count;
-        entity.offer(org.spongepowered.api.data.key.Keys.DISPLAY_NAME, org.spongepowered.api.text.Text.of('§b' + getItemName(item.type.name.split(':')[1]) + amounts));
-        entity.offer(org.spongepowered.api.data.key.Keys.CUSTOM_NAME_VISIBLE, true);
+        var itemName = '§b' + getItemName(item.type.name.split(':')[1]) + getItemCount(item.count);
+        entity.offer(Keys.DISPLAY_NAME, org.spongepowered.api.text.Text.of(itemName));
+        entity.offer(Keys.CUSTOM_NAME_VISIBLE, true);
     }
+}
+
+function getItemName(name) {
+    return itemConfig[(name + '').toUpperCase()] || name;
+}
+
+function getItemCount(amount){
+    return amount == 1 ? "" : "*" + amount;
 }
 
 module.exports = {
