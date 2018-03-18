@@ -123,10 +123,11 @@ var http = {
 };
 
 ['GET', 'DELETE', 'HEAD', 'OPTIONS'].forEach(function (method) {
-    http[method.toLowerCase()] = function __likeGet__(url, config) {
+    http[method.toLowerCase()] = function __likeGet__(url, data, config) {
         return this.request(Object.assign(config || {}, {
             url: url,
-            method: method
+            method: method,
+            query: data
         }));
     }
 });
