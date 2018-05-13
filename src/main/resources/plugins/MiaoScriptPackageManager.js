@@ -22,6 +22,9 @@ var description = {
         'mpm': {
             description: 'MiaoScriptPackageManager主命令'
         }
+    },
+    config: {
+        
     }
 }
 
@@ -57,46 +60,26 @@ function enable() {
                         break
                     case "install":
                         if (args.length > 1) {
-                            var pname = args[1];
-                            var pkg = packageCache[pname]
-                            if (pkg) {
-                                task.async(function install() {
-                                    var pfile = fs.file(__dirname, pname + '.js')
-                                    console.sender(sender, '§6开始下载插件: §b%s'.format(pkg.name))
-                                    console.sender(sender, '§6插件下载地址: §b%s'.format(pkg.url))
-                                    fs.save(pfile, http.get(pkg.url))
-                                    console.sender(sender, '§6插件 §b%s §a下载完毕 开始加载 ...'.format(pname))
-                                    manager.loadPlugin(pfile)
-                                    console.sender(sender, '§6插件 §b%s §a安装成功!'.format(pname))
-                                })
-                            } else {
-                                console.log(sender, '§c插件 %s 不存在!'.format(pname))
-                            }
+                            download(sender, args[1]);
                         } else {
-                            console.log(sender, '§c请输入插件名称!')
+                            console.sender(sender, '§c请输入插件名称!')
                         }
                         break
                     case "update":
                         if (args.length > 1) {
-                            
+                            update(sender, args[1]);
                         } else {
-                            load()
+                            load();
+                            console.sender(sender, "§a仓库缓存刷新成功 共存在 §b" + pluginCache.length + " §a个插件!")
                         }
                         break
                     case "upgrade":
                         break
                     case "delete":
                         if (args.length > 1) {
-                            var pname = args[1]
-                            if (pluginCache.indexOf(pname) !== -1) {
-                                var plugin = manager.plugins[pname]
-                                manager.disable(plugin)
-                                fs.delete(plugin.__FILE__)
-                            } else {
-                                console.log(sender, '§c插件 %s 不存在!'.format(pname))
-                            }
+                            del(sender, args[1]);
                         } else {
-                            console.log(sender, '§c请输入插件名称!')
+                            console.sender(sender, '§c请输入插件名称!')
                         }
                         break
                     case "reload":
@@ -105,15 +88,18 @@ function enable() {
                             if (pluginCache.indexOf(pname) !== -1) {
                                 manager.reload(pname)
                             } else {
-                                console.log(sender, '§c插件 %s 不存在!'.format(pname))
+                                console.sender(sender, '§c插件 %s 不存在!'.format(pname))
                             }
                         } else {
-                            
+
                         }
                         break
+                    case "help":
+                        sendHelp(sender);
+                        break;
                 }
             } else {
-
+                sendHelp(sender);
             }
         },
         tab: function (sender, command, args) {
@@ -121,22 +107,52 @@ function enable() {
             if (args.length > 1) {
                 switch (args[0]) {
                     case "install":
-                        return packageNameCache
+                        return packageNameCache;
                     case "update":
                     case "upgrade":
                     case "reload":
-                        return pluginCache
+                        return pluginCache;
                 }
             }
         }
     })
 }
 
+function sendHelp(sender){
+    [
+        '§6========= §a' + description.name + ' §6帮助 §aBy §b喵♂呜 §6=========',
+        '§6/mpm §ainstall <插件名称> §6- §3安装插件',
+        '§6/mpm §alist §6- §3列出仓库插件',
+        '§6/mpm §aupdate <插件名称> §6- §3更新插件(无插件名称则更新源)',
+        '§6/mpm §aupgrade <插件名称> §6- §3及时更新插件(update需要重启生效)',
+        '§6/mpm §areload <插件名称> §6- §3重载插件(无插件名称则重载自生)',
+    ].forEach(function (msg) {
+        console.sender(sender, msg);
+    })
+}
+
+function del(sender, name) {
+    if (pluginCache.indexOf(name) !== -1) {
+        console.sender(sender, '§c插件 %s 不存在!'.format(name));
+        return;
+    }
+    manager.disable(name);
+    fs.delete(plugin.__FILE__);
+}
+
 function download(sender, name) {
-    var plugin = packageCache[name]
+    var plugin = packageCache[name];
     if (!plugin) {
         console.sender(sender, '§c插件§b', name, '§c不存在')
+        return;
     }
+    var pfile = fs.file(__dirname, pname + '.js')
+    console.sender(sender, '§6开始下载插件: §b%s'.format(pkg.name))
+    console.sender(sender, '§6插件下载地址: §b%s'.format(pkg.url))
+    fs.save(pfile, http.get(pkg.url))
+    console.sender(sender, '§6插件 §b%s §a下载完毕 开始加载 ...'.format(pname))
+    manager.loadPlugin(pfile)
+    console.sender(sender, '§6插件 §b%s §a安装成功!'.format(pname))
 }
 
 function disable() {
