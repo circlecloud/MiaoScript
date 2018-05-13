@@ -28,16 +28,37 @@
             }
         });
     }
-    
-    // // JSON快捷方法
+
+    if (!Object.values) {
+        Object.defineProperty(Object, "values", {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: function(target) {
+                "use strict";
+                var vals = [];
+                for (var key in target) {
+                    var desc = Object.getOwnPropertyDescriptor(target, key);
+                    if (desc !== undefined && desc.enumerable) vals.push(target[key]);
+                }
+                return vals;
+            }
+        });
+    }
+
+    // JSON快捷方法
     if(!Object.toJson){
         Object.defineProperty(Object.prototype, "toJson", {
             enumerable: false,
+            configurable: true,
+            writable: true,
             value: function() {
                 return JSON.stringify(this);
             }
         });
     }
+    
+    
     // Object.prototype.toJson = function () {
     //     return JSON.stringify(this);
     // };
