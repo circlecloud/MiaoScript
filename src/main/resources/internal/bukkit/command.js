@@ -67,7 +67,8 @@ function on(jsp, name, exec) {
                 try {
                     return exec.cmd(sender, command, args);
                 } catch (ex) {
-                    console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
+                    console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'
+                                    .format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
                     console.ex(ex);
                 }
             }
@@ -82,7 +83,8 @@ function on(jsp, name, exec) {
                     var complate = exec.tab(sender, command, args) || []
                     return Arrays.asList(complate.copyPartialMatches(token, []));
                 } catch (ex) {
-                    console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
+                    console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'
+                                    .format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
                     console.ex(ex);
                 }
             }

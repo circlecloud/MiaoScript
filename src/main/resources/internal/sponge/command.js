@@ -31,11 +31,11 @@ var SimpleCommandCallable = function (command) {
     this.callable = new CommandCallable({
         //CommandResult process(CommandSource source, String arguments) throws CommandException;
         process: function (src, args) {
-            return that.cmd(src, that.name, args.split(" ")) ? CommandResult.success() : CommandResult.empty();
+            return that.cmd(src, that.name, args.length === 0 ? [] : args.split(" ")) ? CommandResult.success() : CommandResult.empty();
         },
         //List<String> getSuggestions(CommandSource source, String arguments, @Nullable  Location<World> targetPosition) throws CommandException;
         getSuggestions: function (src, args, target) {
-            return that.tab(src, that.name, args.split(" "));
+            return that.tab(src, that.name, args.length === 0 ? [] : args.split(" "));
         },
         //boolean testPermission(CommandSource source);
         testPermission: function () {
@@ -93,24 +93,25 @@ function on(jsp, name, exec) {
     var c = create(jsp, {name: name});
     console.debug('插件 %s 设置命令 %s 执行器 ...'.format(jsp.description.name, name));
     if (exec.cmd) {
-        c.setExecutor(function (sender, command, args) {
+        c.setExecutor(function execCmd(sender, command, args) {
             try {
                 return exec.cmd(sender, command, args);
             } catch (ex) {
-                console.log(args)
-                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'.format(sender.name, jsp.description.name, command, args, ex));
+                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常'
+                                .format(sender.name, jsp.description.name, command, args.join(' ')));
                 console.ex(ex);
             }
         });
     }
     if (exec.tab) {
-        c.setTabCompleter(function (sender, command, args) {
+        c.setTabCompleter(function execTab(sender, command, args) {
             try {
                 var token = args[args.length - 1];
                 var complate = exec.tab(sender, command, args) || []
                 return Arrays.asList(complate.copyPartialMatches(token, []));
             } catch (ex) {
-                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, args, ex));
+                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常'
+                                .format(sender.name, jsp.description.name, command, args.join(' ')));
                 console.ex(ex);
             }
         });
