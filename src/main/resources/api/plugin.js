@@ -50,14 +50,15 @@ function createUpdate(path) {
  * @param files
  */
 function loadZipPlugins(files) {
-    // // TODO ZIP类型插件加载
-    // files.filter(function (file) {
-    //     return file.name.endsWith(".zip");
-    // }).forEach(function (file) {
-    //     zip.unzip(fs.file(plugins_dir, file));
-    //     var dir = new File(plugins_dir, file.name.split(".")[0]);
-    //     // TODO 添加文件夹类型的插件兼容
-    // });
+    files.filter(function (file) {
+        return file.name.endsWith(".zip");
+    }).forEach(function (file) {
+        // console.log(file);
+        // console.log(fs.file(file,"!package.json"))
+        // zip.unzip(fs.file(plugins_dir, file));
+        // var dir = new File(plugins_dir, file.name.split(".")[0]);
+        // TODO 添加文件夹类型的插件兼容
+    });
 }
 
 /**
@@ -117,9 +118,9 @@ function beforeLoadHook(origin) {
     // 处理 event 为了不影响 正常逻辑 event 还是手动require吧
     // result = result + 'var event = {}; module.exports.event = event;';
     // 注入 console 对象         // 给插件注入单独的 console
-    result = result + '\nvar console = new Console(); module.exports.console = console;';
+    result += '\nvar console = new Console(); module.exports.console = console;';
     // 插件注入 self 对象
-    result = result + '\nvar self = {}; module.exports.self = self;';
+    result += '\nvar self = {}; module.exports.self = self;';
     return result;
 }
 
@@ -189,9 +190,13 @@ function initPluginConfig(plugin) {
      * @constructor (file, content)
      */
     plugin.saveConfig = function () {
+        // 判断插件目录是否存在 并且不为文件 否则删除重建
+        if (!plugin.configFile.parentFile.isDirectory()) {
+            fs.del(plugin.configFile.parentFile);
+        }
+        plugin.configFile.parentFile.mkdirs();
         switch (arguments.length) {
             case 0:
-                plugin.configFile.parentFile.mkdirs();
                 fs.save(plugin.configFile, yaml.safeDump(plugin.config));
                 break;
             case 2:
@@ -216,10 +221,11 @@ function checkAndGet(args) {
     if (name && name.description) {
         return [name];
     }
-    if (!exports.plugins[name]) {
+    var plugin = exports.plugins[name];
+    if (!plugin) {
         throw new Error("插件 " + name + " 不存在!");
     }
-    return [exports.plugins[name]];
+    return [plugin];
 }
 
 function checkAndRun(args, name, ext) {

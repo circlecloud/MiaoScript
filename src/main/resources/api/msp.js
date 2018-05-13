@@ -9,5 +9,6 @@ exports = module.exports = {
     permission: impl('permission'),
     server: impl('server'),
     task: impl('task'),
-    item: impl('item')
+    item: impl('item'),
+    chat: impl('chat')
 };
