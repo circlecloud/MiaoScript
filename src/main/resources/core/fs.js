@@ -144,6 +144,7 @@ fs.path = fs.canonical = fs.realpath = path
 fs.write = fs.save = save
 fs.readdir = fs.list = list
 fs.rename = fs.move = move
+fs.delete = fs.del = del
 
 Object.assign(fs, {
     concat: concat,
@@ -151,8 +152,7 @@ Object.assign(fs, {
     mkdirs: mkdirs,
     file: file,
     copy: copy,
-    read: read,
-    del: del
+    read: read
 })
 
 exports = module.exports = fs
