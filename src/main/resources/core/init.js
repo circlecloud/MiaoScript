@@ -42,7 +42,7 @@
         // 初始化加载器
         global.require = engineLoad(root + '/core/require.js')(root);
         global.requireInternal = function requireInternal(name) {
-            return require(root + '/internal/' + DetectServerType + '/' + name + '.js');
+            return require(root + '/internal/' + DetectServerType + '/' + name + '.js', arguments[1]);
         }
     }
 
