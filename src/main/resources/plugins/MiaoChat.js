@@ -23,6 +23,16 @@ var description = {
             description: 'MiaoChat登录命令'
         }
     },
+    permissions: {
+        'MiaoChat.default': {
+            default: true,
+            description: '默认权限 赋予玩家'
+        },
+        'MiaoChat.admin': {
+            default: false,
+            description: '管理权限'
+        }
+    },
     config: {
         "Version":"1.8.5",
         "BungeeCord":true,
@@ -146,22 +156,39 @@ function mchat(sender, command, args) {
 }
 
 function registerEvent() {
-    // event.on(self, 'AsyncPlayerChatEvent', handlerChat);
-    event.on(self, 'MessageChannelEvent.Chat', handlerChat);
+    switch (DetectServerType) {
+        case ServerType.Bukkit:
+            event.on(self, 'AsyncPlayerChatEvent', handlerBukkitChat);
+            break;
+        case ServerType.Sponge:
+            event.on(self, 'MessageChannelEvent.Chat', handlerSpongeChat);
+            break;
+    }
 }
 
 var DuplicateChar = '§卐';
 
-function handlerChat(event) {
+function handlerBukkitChat(event) {
+    sendChat(event.player, event.message, function() { event.setCancelled(true); });
+}
+
+function handlerSpongeChat(event) {
     var player = event.getCause().first(org.spongepowered.api.entity.living.player.Player.class).orElse(null);
     if (player == null) { return; }
     var plain = event.getRawMessage().toPlain();
     if (plain.startsWith(DuplicateChar)) {
         return;
     }
+    sendChat(player, plain, function() { event.setMessageCancelled(true) });
+}
+
+function sendChat(player, plain, callback) {
     var chat_format = getChatFormat(player);
-    if (!chat_format) { return; }
-    event.setMessageCancelled(true);
+    if (!chat_format) {
+        console.debug('未获得用户', player.name, '的 ChatRule 跳过执行...')
+        return;
+    }
+    callback();
     var tr = new Tellraw().then(DuplicateChar);
     chat_format.format_list.forEach(function setStyle(format) {
         var style = style_formats[format];
