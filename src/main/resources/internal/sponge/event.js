@@ -32,7 +32,7 @@ function isVaildEvent(clz) {
 }
 
 function class2Name(clazz) {
-    return clazz.name.substring(clazz.name.lastIndexOf(".") + 1).replace(/\$/g, '.').toLowerCase();
+    return clazz.canonicalName.substring(clazz.name.lastIndexOf(".") + 1);
 }
 
 function register(eventCls, exec, priority, ignoreCancel) {

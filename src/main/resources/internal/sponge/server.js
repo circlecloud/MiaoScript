@@ -24,7 +24,7 @@ exports.plugin = {
      * @returns {*}
      */
     get: function (name) {
-        return PluginManager.getPlugin(name);
+        return PluginManager.getPlugin(name).orElse(undefined);
     },
     /**
      * 载入插件 并且返回结果

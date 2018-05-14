@@ -20,6 +20,12 @@ exports.nmsCls = function (name) {
     return Java.type(['net.minecraft.server', exports.nmsVersion, name].join('.'));
 };
 /**
+ * 获取OBC类
+ */
+exports.obcCls = function (name) {
+    return Java.type(['org.bukkit.craftbukkit', exports.nmsVersion, name].join('.'));
+};
+/**
  * 获取玩家
  */
 exports.player = function () {

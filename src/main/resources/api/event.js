@@ -12,6 +12,8 @@ function EventHandlerDefault() {
     this.listenerMap = [];
     this.baseEventDir = '';
 
+    var self = this;
+
     /**
      * 扫描包 org.bukkit.event 下的所有事件
      * 映射简写名称 org.bukkit.event.player.PlayerLoginEvent => playerloginevent
@@ -40,8 +42,8 @@ function EventHandlerDefault() {
                             // 继承于 org.bukkit.event.Event 访问符为Public
                             if (this.isVaildEvent(clz)) {
                                 // noinspection JSUnresolvedVariable
-                                var simpleName = this.class2Name(clz);
-                                console.debug("Mapping Event [%s] => %s".format(clz.name, simpleName));
+                                var simpleName = this.class2Name(clz).toLowerCase();
+                                console.debug("Mapping Event [%s] => %s".format(clz.canonicalName, simpleName));
                                 this.mapEvent[simpleName] = clz;
                                 count++;
                             }
@@ -56,11 +58,11 @@ function EventHandlerDefault() {
     }
 
     this.class2Name = function class2Name(clazz) {
-        return clazz.simpleName.toLowerCase();
+        return clazz.simpleName;
     }
 
     this.name2Class = function name2Class(name, event) {
-        var eventCls = this.mapEvent[event] || this.mapEvent[event.toLowerCase()] || this.mapEvent[event + 'Event'] || this.mapEvent[event.toLowerCase() + 'event'];
+        var eventCls = this.mapEvent[event.toLowerCase()] || this.mapEvent[event.toLowerCase() + 'event'];
         if (!eventCls) {
             try {
                 eventCls = base.getClass(eventCls);
@@ -128,7 +130,7 @@ function EventHandlerDefault() {
         if (!listenerMap[name]) listenerMap[name] = [];
         var offExec = function () {
             this.unregister(eventCls, listener);
-            console.debug('插件 %s 注销事件 %s'.format(name, eventCls.name.substring(eventCls.name.lastIndexOf(".") + 1)));
+            console.debug('插件 %s 注销事件 %s'.format(name, this.class2Name(eventCls)));
         }.bind(this);
         var off = {
             event: eventCls,
@@ -137,7 +139,7 @@ function EventHandlerDefault() {
         };
         listenerMap[name].push(off);
         // noinspection JSUnresolvedVariable
-        console.debug('插件 %s 注册事件 %s => %s'.format(name, eventCls.name.substring(eventCls.name.lastIndexOf(".") + 1), exec.name === '' ? '匿名方法' : exec.name));
+        console.debug('插件 %s 注册事件 %s => %s'.format(name, this.class2Name(eventCls), exec.name === '' ? '匿名方法' : exec.name));
         return off;
     }
 }
@@ -147,9 +149,9 @@ console.info('%s 事件映射完毕 共计 %s 个事件!'.format(DetectServerTyp
 module.exports = {
     on: EventHandler.listen.bind(EventHandler),
     disable: function (jsp) {
-        var jspl = EventHandler.listenerMap[jsp.description.name];
-        if (jspl) {
-            jspl.forEach(function (t) t.off.call(EventHandler));
+        var eventCache = EventHandler.listenerMap[jsp.description.name];
+        if (eventCache) {
+            eventCache.forEach(function (t) t.off.call(EventHandler));
             delete EventHandler.listenerMap[jsp.description.name];
         }
     }
