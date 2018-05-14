@@ -1,2 +1,2 @@
 /*global Java, base, module, exports, require*/
-module.exports = require('./msp.js').permission;
+module.exports = requireInternal('permission', {warnNotFound: false});
