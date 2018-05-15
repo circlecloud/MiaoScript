@@ -24,21 +24,22 @@ var description = {
         }
     },
     config: {
-        
+        center: 'https://ms.yumc.pw/api/package/list'
     }
 }
 
 var help = [
-    '==========   MiaoScript包管理工具   ==========',
-    '/mpm list 查看现有插件列表',
-    '/mpm install [插件名称] 安装插件',
-    '/mpm update [插件名称] 更新缓存/更新插件'
+    '§6========= §a' + description.name + ' §6帮助 §aBy §b喵♂呜 §6=========',
+    '§6/mpm §ainstall <插件名称> §6- §3安装插件',
+    '§6/mpm §alist §6- §3列出仓库插件',
+    '§6/mpm §aupdate <插件名称> §6- §3更新插件(无插件名称则更新源)',
+    '§6/mpm §aupgrade <插件名称> §6- §3及时更新插件(update需要重启生效)',
+    '§6/mpm §areload <插件名称> §6- §3重载插件(无插件名称则重载自生)',
 ]
 
 function load() {
     task.async(function () {
-        var result = http.get('https://ms.yumc.pw/api/package/list')
-        JSON.parse(result).data.forEach(function cachePackageName(pkg) {
+        JSON.parse(http.get(self.config.center)).data.forEach(function cachePackageName(pkg) {
             packageCache[pkg.name] = pkg
             packageNameCache.push(pkg.name)
         })
@@ -91,7 +92,8 @@ function enable() {
                                 console.sender(sender, '§c插件 %s 不存在!'.format(pname))
                             }
                         } else {
-
+                            self.reloadConfig();
+                            load();
                         }
                         break
                     case "help":
@@ -119,14 +121,7 @@ function enable() {
 }
 
 function sendHelp(sender){
-    [
-        '§6========= §a' + description.name + ' §6帮助 §aBy §b喵♂呜 §6=========',
-        '§6/mpm §ainstall <插件名称> §6- §3安装插件',
-        '§6/mpm §alist §6- §3列出仓库插件',
-        '§6/mpm §aupdate <插件名称> §6- §3更新插件(无插件名称则更新源)',
-        '§6/mpm §aupgrade <插件名称> §6- §3及时更新插件(update需要重启生效)',
-        '§6/mpm §areload <插件名称> §6- §3重载插件(无插件名称则重载自生)',
-    ].forEach(function (msg) {
+    help.forEach(function (msg) {
         console.sender(sender, msg);
     })
 }
