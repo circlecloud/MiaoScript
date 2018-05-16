@@ -138,16 +138,16 @@ function del(sender, name) {
 function download(sender, name) {
     var plugin = packageCache[name];
     if (!plugin) {
-        console.sender(sender, '§c插件§b', name, '§c不存在')
+        console.sender(sender, '§c插件§b', name, '§c不存在');
         return;
     }
-    var pfile = fs.file(__dirname, pname + '.js')
-    console.sender(sender, '§6开始下载插件: §b%s'.format(pkg.name))
-    console.sender(sender, '§6插件下载地址: §b%s'.format(pkg.url))
-    fs.save(pfile, http.get(pkg.url))
-    console.sender(sender, '§6插件 §b%s §a下载完毕 开始加载 ...'.format(pname))
-    manager.loadPlugin(pfile)
-    console.sender(sender, '§6插件 §b%s §a安装成功!'.format(pname))
+    var pfile = fs.file(__dirname, name + '.js');
+    console.sender(sender, '§6开始下载插件: §b%s'.format(pkg.name));
+    console.sender(sender, '§6插件下载地址: §b%s'.format(pkg.url));
+    fs.save(pfile, http.get(pkg.url));
+    console.sender(sender, '§6插件 §b%s §a下载完毕 开始加载 ...'.format(name));
+    manager.loadPlugin(pfile);
+    console.sender(sender, '§6插件 §b%s §a安装成功!'.format(name));
 }
 
 function disable() {
