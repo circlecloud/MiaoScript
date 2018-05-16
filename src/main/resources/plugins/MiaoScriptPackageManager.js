@@ -142,9 +142,9 @@ function download(sender, name) {
         return;
     }
     var pfile = fs.file(__dirname, name + '.js');
-    console.sender(sender, '§6开始下载插件: §b%s'.format(pkg.name));
-    console.sender(sender, '§6插件下载地址: §b%s'.format(pkg.url));
-    fs.save(pfile, http.get(pkg.url));
+    console.sender(sender, '§6开始下载插件: §b%s'.format(plugin.name));
+    console.sender(sender, '§6插件下载地址: §b%s'.format(plugin.url));
+    fs.save(pfile, http.get(plugin.url));
     console.sender(sender, '§6插件 §b%s §a下载完毕 开始加载 ...'.format(name));
     manager.loadPlugin(pfile);
     console.sender(sender, '§6插件 §b%s §a安装成功!'.format(name));
