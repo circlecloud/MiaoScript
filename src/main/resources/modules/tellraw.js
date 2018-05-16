@@ -17,7 +17,6 @@ var ChatMessagePart = function () {
     this.hover = function (action, value) {
         this.hoverEventAction = action;
         this.hoverEventValue = value;
-        console.log(this.toJson());
     }
 
     this.convert = function () {
@@ -122,7 +121,7 @@ var Tellraw = function () {
     this.send = function (player) {
         chat.json(player, self.json());
     }
-    
+
     this.sendAll = function () {
         server.players(function sendAllMessage(p) {
             self.send(p);
