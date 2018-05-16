@@ -15,6 +15,7 @@ PlaceholderAPI = {
 // 尝试加载 Bukkit 的 PlaceholderAPI
 try {
     PlaceholderAPI = ext.getStatic("me.clip.placeholderapi.PlaceholderAPI");
+    console.log('[PAPI] Found Bukkit PlaceholderAPI Hooking...')
 } catch (ex) {
 }
 
@@ -29,6 +30,7 @@ try {
                 return s.serialize(spapi.replacePlaceholders(arguments[1], arguments[0], arguments[0]));
             }
         }
+        console.log('[PAPI] Found Sponge PlaceholderAPI Hooking...')
     }
 } catch (ex) {
 }
