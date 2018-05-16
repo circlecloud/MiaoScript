@@ -39,11 +39,11 @@ var help = [
 
 function load() {
     task.async(function () {
+        pluginCache = Object.keys(manager.plugins);
         JSON.parse(http.get(self.config.center)).data.forEach(function cachePackageName(pkg) {
-            packageCache[pkg.name] = pkg
-            packageNameCache.push(pkg.name)
+            packageCache[pkg.name] = pkg;
+            packageNameCache.push(pkg.name);
         })
-        pluginCache = Object.keys(manager.plugins)
     })
 }
 
