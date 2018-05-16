@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>1.2.1</version>
+    <version>1.3</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -84,11 +84,49 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
-            §618-01-09 §afeat: 优化加载流程 完善事件注册
-            §618-01-02 §afeat: 新增http网络访问模块
-            §617-12-28 §afeat: 完善Sponge事件注册 新增player封装类
+            §618-05-17 §afeat: 新增Hook提示;
+            §618-05-17 §afeat: 调整列表载入顺序;
+            §618-05-17 §afeat: 完善MiaoChat的PAPI的替换;
+            §618-05-17 §afeat: 完善服务获取类;
+            §618-05-17 §afeat: 新增PAPI代理类;
+            §618-05-17 §afeat: 去除调试代码;
+            §618-05-17 §afeat: 迁移配置 完善reload命令;
+            §618-05-15 §afeat: 分离TellRaw类库;
+            §618-05-15 §afeat: 完善MiaoChat的Bukkit版本;
+            §618-05-15 §afeat: 补全内部引入方法的参数;
+            §618-05-15 §afeat: 调整Event载入提示 完善Bukkit的聊天发送;
+            §618-05-15 §afeat: 调整API引入结构;
+            §618-05-15 §afeat: 新增MiaoChat插件;
+            §618-05-14 §afeat: 更新API相关类;
+            §618-05-14 §afeat: 调整相关API名称;
+            §618-05-14 §afeat: 新增Object.values垫片;
+            §618-05-14 §afeat: 新增工具类;
+            §618-05-14 §afeat: 更新MiaoScriptPackageManager;
+            §618-05-14 §cfix: 修复命令执行相关BUG;
+            §618-05-14 §afeat: 新增聊天相关API;
+            §618-05-14 §afeat: 优化方法调用;
+            §618-03-18 §afeat: 调整get方法 data 参数自动转query;
+            §618-03-18 §afeat: 优化插件代码结构;
+            §618-03-18 §cfix: 修复玩家人数获取错误 更新插件;
+            §618-01-11 §afeat: 更新http类库 server通过orElse返回undefined;
+            §618-01-11 §afeat: 更新基础类库;
+            §618-01-11 §afeat: 新增插件管理模块;
+            §618-01-10 §cfix: 修复主线程加载的BUG;
+            §618-01-10 §afeat: 修复fs相关BUG 优化插件加载 优化命令补全;
+            §618-01-10 §afeat: 更新.gitignore文件;
+            §618-01-10 §afeat: 新增案例插件 更新插件版本;
+            §618-01-09 §afeat: 优化API 修复http模块错误;
+            §618-01-09 §afeat: 更新 fs 类库 优化 require;
+            §618-01-09 §afeat: 安全起见暂时屏蔽load方法和disable方法;
+            §618-01-09 §cfix: 修复调试信息错误;
+            §618-01-08 §afeat: require新增基础目录api;
+            §618-01-08 §3doc: 新增README;
+            §618-01-08 §cfix: 修复重载命令无效的BUG
         </update.changes>
         <update.changelog>
+            §618-01-09 §afeat: 优化加载流程 完善事件注册;
+            §618-01-02 §afeat: 新增http网络访问模块;
+            §617-12-28 §afeat: 完善Sponge事件注册 新增player封装类;
             §617-11-30 §afeat: 新增Sponge的兼容;
             §617-11-03 §afeat: 新增抽奖插件;
             §617-10-16 §cfix: 修复关闭MiaoScript时task异常;
