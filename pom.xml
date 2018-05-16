@@ -18,7 +18,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <exclude>plugins/**.js</exclude>
+                    <exclude>plugins/**</exclude>
                 </excludes>
                 <filtering>true</filtering>
             </resource>

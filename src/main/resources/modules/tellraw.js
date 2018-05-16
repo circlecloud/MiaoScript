@@ -1,5 +1,6 @@
 /*global Java, base, module, exports, require*/
 var chat = require('api/chat');
+var server = require('api/server');
 
 var ChatMessagePart = function () {
     var text;
