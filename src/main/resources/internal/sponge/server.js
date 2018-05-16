@@ -32,14 +32,29 @@ exports.plugin = {
      * @returns {*}
      */
     load: function (name) {
-        var plugin = this.get(name);
-        if (ext.notNull(plugin) && !plugin.isEnabled()) {
-            PluginManager.enablePlugin(plugin);
-        }
-        return PluginManager.isPluginEnabled(name);
+        return PluginManager.isLoaded(name);
     },
     self: PluginManager.getPlugin('miaoscript').orElse(undefined)
 };
+/**
+ * 服务管理
+ * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
+ */
+var ServicesManager = Sponge.serviceManager;
+exports.service = {
+    /*
+     * 服务管理工具
+     */
+    manager: ServicesManager,
+    /**
+     * 获得服务实例
+     * @param name 插件名称
+     * @returns {*}
+     */
+    get: function (name) {
+        return ServicesManager.provide(base.getClass(name)).orElse(null);
+    }
+}
 /**
  * 获取玩家
  */

@@ -7,7 +7,6 @@
 /*global Java, base, module, exports, require, __FILE__*/
 var Bukkit = MServer;
 var Server = Bukkit.server;
-var PluginManager = Server.pluginManager;
 exports.$ = Bukkit;
 /**
  * 获取NMS版本
@@ -53,6 +52,7 @@ exports.players = function () {
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
  */
+var PluginManager = Server.pluginManager;
 exports.plugin = {
     /**
      * 插件管理工具
@@ -80,6 +80,26 @@ exports.plugin = {
     },
     self: PluginManager.getPlugin('MiaoScript')
 };
+/**
+ * 服务管理
+ * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
+ */
+var ServicesManager = Server.servicesManager;
+exports.service = {
+    /**
+     * 服务管理工具
+     */
+    manager: ServicesManager,
+    /**
+     * 获得服务实例
+     * @param name 插件名称
+     * @returns {*}
+     */
+    get: function (name) {
+        var reg = ServicesManager.getRegistration(base.getClass(name));
+        return reg && reg.provider || null;
+    }
+}
 /**
  * 公告
  * @param message 消息
