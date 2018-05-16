@@ -11,6 +11,7 @@ var server = require('api/server');
 var fs = require('fs');
 
 var tellraw = require('tellraw');
+var papi = require('papi');
 var utils = require('utils')
 
 var description = {
@@ -190,29 +191,30 @@ function sendChat(player, plain, callback) {
     chat_format.format_list.forEach(function setStyle(format) {
         var style = style_formats[format];
         if (style) {
-           tr.then(style.text);
+           tr.then(replace(player, style.text));
            if (style.hover) {
-               tr.tip(style.hover);
+               tr.tip(replace(player, style.hover));
            }
            if (style.click && style.click.type && style.click.command) {
+               var command = replace(player, style.click.command)
                switch (style.click.type) {
                    case "COMMAND":
-                       tr.command(style.click.command);
+                       tr.command(command);
                        break;
                    case "OPENURL":
-                       tr.link(style.click.command);
+                       tr.link(command);
                        break;
                    case "SUGGEST":
-                       tr.suggest(style.click.command);
+                       tr.suggest(command);
                        break;
                    default:
                }
            }
         } else {
-            tr.then(format);
+            tr.then(replace(player, format));
         }
     })
-    tr.then(plain).sendAll();
+    tr.then(replace(player, plain)).sendAll();
 }
 
 function getChatFormat(player) {
@@ -225,19 +227,19 @@ function getChatFormat(player) {
     return null;
 }
 
-function replace(target) {
+function replace(player, target) {
     if (toString.call(target) === "[object Array]") {
         for (var i in target) {
-            target[i] = replaceStr(target[i]);
+            target[i] = replaceStr(player, target[i]);
         }
     } else {
-        target = replaceStr(target);
+        target = replaceStr(player, target);
     }
     return target;
 }
 
-function replaceStr(target) {
-    return target;
+function replaceStr(player, target) {
+    return papi.$(player, target);
 }
 
 function disable() {
