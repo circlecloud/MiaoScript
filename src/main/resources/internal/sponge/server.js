@@ -7,13 +7,12 @@
 /*global Java, base, module, exports, require, __FILE__*/
 var Sponge = MServer;
 var Server = MServer.server;
-exports.$ = Sponge;
 /**
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
  */
 var PluginManager = Sponge.pluginManager;
-exports.plugin = {
+var plugin = {
     /**
      * 插件管理工具
      */
@@ -41,7 +40,7 @@ exports.plugin = {
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
  */
 var ServicesManager = Sponge.serviceManager;
-exports.service = {
+var service = {
     /*
      * 服务管理工具
      */
@@ -58,7 +57,7 @@ exports.service = {
 /**
  * 获取玩家
  */
-exports.player = function () {
+function player() {
     switch (arguments.length) {
         case 0:
             return undefined;
@@ -71,7 +70,7 @@ exports.player = function () {
 /**
  * 获取在线玩家
  */
-exports.players = function () {
+function players() {
     switch (arguments.length) {
         case 1:
             // 此处的forEach是Collection接口的
@@ -81,3 +80,24 @@ exports.players = function () {
             return Java.from(Server.onlinePlayers.toArray());
     }
 };
+/**
+ * 关闭引擎时执行的操作
+ */
+function shutdown() {
+    Sponge.eventManager.unregisterPluginListeners(plugin.self);
+    Sponge.scheduler.getScheduledTasks(plugin.self).forEach(function (task) { 
+        task.cancel();
+    });
+    Sponge.commandManager.getOwnedBy(plugin.self).forEach(function (commandMapping) {
+        Sponge.commandManager.removeMapping(commandMapping);
+    });
+}
+
+exports = module.exports = {
+    $: Sponge,
+    plugin: plugin,
+    service: service,
+    player: player,
+    players: players,
+    shutdown: shutdown
+}

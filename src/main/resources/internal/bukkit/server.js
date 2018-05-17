@@ -136,3 +136,17 @@ exports.opcommand = function (player, command) {
         player.setOp(origin);
     }
 };
+/**
+ * 关闭引擎时执行的操作
+ */
+function shutdown () {
+    try {
+        Bukkit.getScheduler().cancelTasks(plugin.self);
+        Bukkit.getServicesManager().unregisterAll(plugin.self);
+        org.bukkit.event.HandlerList.unregisterAll(plugin.self);
+        Bukkit.getMessenger().unregisterIncomingPluginChannel(plugin.self);
+        Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin.self);
+    } catch (ex) {
+        console.console();
+    }
+}

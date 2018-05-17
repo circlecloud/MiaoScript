@@ -7,6 +7,7 @@
         global.root = root;
         global.noop = function () {
         };
+        var startTime = new Date().getTime();
         loadCore();
         loadPatch();
         loadRequire();
@@ -17,6 +18,7 @@
             console.console("§4初始化插件基础系统库错误:§c", ex);
             console.ex(ex);
         }
+        console.log('MiaoScript Engine Load Complete... Done (' + (new Date().getTime() - startTime) / 1000 + 's)!');
     };
 
     /**
@@ -100,8 +102,17 @@
      * 关闭插件Hook
      */
     global.engineDisable = function disable() {
-        if (global.manager && global.manager.$) {
-            global.manager.disable();
+        try {
+            if (global.manager && global.manager.$) {
+                global.manager.disable();
+            }
+            var server = require('api/server');
+            if (server.shutdown) {
+                server.shutdown();
+            }
+        } catch (ex) {
+            console.console("§3MiaoScript Engine §aShutDown §4Error... ERR: ", ex);
+            console.ex(ex);
         }
     }
 })(global);
