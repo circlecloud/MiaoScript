@@ -32,7 +32,9 @@ var help = [
     '§6/mpm §alist §6- §3列出仓库插件',
     '§6/mpm §aupdate <插件名称> §6- §3更新插件(无插件名称则更新源)',
     '§6/mpm §aupgrade <插件名称> §6- §3及时更新插件(update需要重启生效)',
-    '§6/mpm §areload <插件名称> §6- §3重载插件(无插件名称则重载自生)',
+    '§6/mpm §areload <插件名称> §6- §3重载插件(无插件名称则重载自身)',
+    '§6/mpm §arun <JS代码> §6- §3运行JS代码',
+    '§6/mpm §4restart §6- §4重启MiaoScript脚本引擎'
 ];
 
 function load() {
@@ -94,6 +96,20 @@ function enable() {
                             load();
                         }
                         break;
+                    case "restart":
+                        try {
+                            ScriptEngineContextHolder.disableEngine();
+                            ScriptEngineContextHolder.enableEngine();
+                            console.sender(sender, '§3MiaoScript Engine §6Reload §aSuccessful...');
+                        } catch (ex) {
+                            console.sender(sender, "§3MiaoScript Engine §6Reload §cError! ERR: " + ex);
+                            console.ex(ex);
+                        }
+                        break;
+                    case "run":
+                        args.shift(1);
+                        console.sender(sender, eval(args.join(' ')));
+                        break;
                     case "help":
                         sendHelp(sender);
                         break;
@@ -103,7 +119,7 @@ function enable() {
             }
         },
         tab: function (sender, command, args) {
-            if (args.length === 1) return ['list', 'install', 'update', 'upgrade', 'reload'];
+            if (args.length === 1) return ['list', 'install', 'update', 'upgrade', 'reload', 'restart', 'run', 'help'];
             if (args.length > 1) {
                 switch (args[0]) {
                     case "install":
