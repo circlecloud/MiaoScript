@@ -31,11 +31,11 @@ var SimpleCommandCallable = function (command) {
     this.callable = new CommandCallable({
         //CommandResult process(CommandSource source, String arguments) throws CommandException;
         process: function (src, args) {
-            return that.cmd(src, that.name, args.length === 0 ? [] : args.split(" ")) ? CommandResult.success() : CommandResult.empty();
+            return that.cmd(src, that.name, args.length === 0 ? [] : args.split(" ").filter(function (e) { return e; })) ? CommandResult.success() : CommandResult.empty();
         },
         //List<String> getSuggestions(CommandSource source, String arguments, @Nullable  Location<World> targetPosition) throws CommandException;
         getSuggestions: function (src, args, target) {
-            return that.tab(src, that.name, args.length === 0 ? [] : args.split(" "));
+            return that.tab(src, that.name, args.length === 0 ? [] : args.split(" ").filter(function (e) { return e; }));
         },
         //boolean testPermission(CommandSource source);
         testPermission: function () {
@@ -120,12 +120,6 @@ function on(jsp, name, exec) {
         });
     }
 }
-
-Sponge.getCommandManager().getOwnedBy(plugin).forEach(function (commandMapping) {
-    if (!commandMapping.getAllAliases().contains("ms")) {
-        Sponge.getCommandManager().removeMapping(commandMapping);
-    }
-});
 
 exports = module.exports = {
     enable: enable,
