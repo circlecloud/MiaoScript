@@ -16,9 +16,9 @@ function unzip(zipFile, target) {
         return;
     }
     if (target === undefined) {
-        var fname = zipFile.name;
+        var fileName = zipFile.name;
         // noinspection JSUnresolvedVariable
-        target = fs.file(zipFile.parentFile.canonicalPath, fname.substring(0, fname.length() - 4));
+        target = fs.file(zipFile.parentFile.canonicalPath, fileName.substring(0, fileName.length() - 4));
     }
     console.debug("解压文件 %s 到目录 %s".format(zipFile.canonicalPath, target));
     var zipObj = new ZipFile(zipFile);

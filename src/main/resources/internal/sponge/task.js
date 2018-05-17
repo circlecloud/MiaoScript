@@ -5,14 +5,14 @@
  * Created by 蒋天蓓 on 2017/2/9 0009.
  */
 var plugin = require('./server').plugin.self;
-var Comsumer = Java.type('java.util.function.Consumer');
+var Consumer = Java.type('java.util.function.Consumer');
 var Task = Java.type("org.spongepowered.api.scheduler.Task");
 /**
  * 创建任务对象
  * @param func 任务
  */
 exports.create = function (func) {
-    return Task.builder().execute(new Comsumer(function () {
+    return Task.builder().execute(new Consumer(function () {
         try {
             func();
         } catch (ex) {

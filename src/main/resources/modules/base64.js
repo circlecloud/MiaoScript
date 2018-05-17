@@ -22,8 +22,8 @@
         }
     }
     // constants
-    var b64chars
-        = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    // noinspection SpellCheckingInspection
+    var b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     var b64tab = function (bin) {
         var t = {};
         for (var i = 0, l = bin.length; i < l; i++) t[bin.charAt(i)] = i;
@@ -39,7 +39,7 @@
                     + fromCharCode(0x80 | (cc & 0x3f)))
                     : (fromCharCode(0xe0 | ((cc >>> 12) & 0x0f))
                         + fromCharCode(0x80 | ((cc >>> 6) & 0x3f))
-                        + fromCharCode(0x80 | ( cc & 0x3f)));
+                        + fromCharCode(0x80 | (cc & 0x3f)));
         } else {
             var ccc = 0x10000
                 + (c.charCodeAt(0) - 0xD800) * 0x400
@@ -47,7 +47,7 @@
             return (fromCharCode(0xf0 | ((ccc >>> 18) & 0x07))
                 + fromCharCode(0x80 | ((ccc >>> 12) & 0x3f))
                 + fromCharCode(0x80 | ((ccc >>> 6) & 0x3f))
-                + fromCharCode(0x80 | ( ccc & 0x3f)));
+                + fromCharCode(0x80 | (ccc & 0x3f)));
         }
     };
     var re_utob = /[\uD800-\uDBFF][\uDC00-\uDFFFF]|[^\x00-\x7F]/g;
@@ -173,6 +173,7 @@
         return Base64;
     };
     // export Base64
+    // noinspection JSUnusedGlobalSymbols
     global.Base64 = {
         VERSION: version,
         atob: atob,

@@ -14,6 +14,7 @@
         this.console = function () {
             this.sender(MServer.server.console, Array.prototype.join.call(arguments, ' '));
         };
+        // noinspection JSUnusedGlobalSymbols
         this.warn = function () {
             log.warn(this.name + Array.prototype.join.call(arguments, ' '));
         };

@@ -44,6 +44,7 @@ function Reflect(obj) {
         return arguments.length === 1 ? this.field(arguments[0]) : this.obj;
     };
 
+    // noinspection JSUnusedGlobalSymbols
     this.set = function (name, value) {
         accessible(declaredField(this.class, name)).set(this.obj, value);
         return this;
@@ -113,27 +114,15 @@ function declaredField(clazz, name) {
 }
 
 function declaredMethod(clazz, name, clazzs) {
-    var mkey = clazz.name + '.' + name + ':' + (clazzs || []).join(':');
-    if (!methodCache[mkey]) {
+    var key = clazz.name + '.' + name + ':' + (clazzs || []).join(':');
+    if (!methodCache[key]) {
         try {
-            methodCache[mkey] = clazz.getMethod(name, clazzs);
+            methodCache[key] = clazz.getMethod(name, clazzs);
         } catch (ex) {
-            methodCache[mkey] = clazz.getDeclaredMethod(name, clazzs);
+            methodCache[key] = clazz.getDeclaredMethod(name, clazzs);
         }
     }
-    return methodCache[mkey];
-}
-
-function declaredMethod(clazz, name, clazzs) {
-    var mkey = clazz.name + '.' + name + ':' + (clazzs || []).join(':');
-    if (!methodCache[mkey]) {
-        try {
-            methodCache[mkey] = clazz.getMethod(name, clazzs);
-        } catch (ex) {
-            methodCache[mkey] = clazz.getDeclaredMethod(name, clazzs);
-        }
-    }
-    return methodCache[mkey];
+    return methodCache[key];
 }
 
 function declaredMethods(clazz) {
@@ -143,18 +132,22 @@ function declaredMethods(clazz) {
 var classMethodsCache = [];
 
 function mapToObject(javaObj) {
-    if (!javaObj || !javaObj.class) { throw new TypeError('参数 %s 不是一个Java对象!'.format(javaObj)) }
+    if (!javaObj || !javaObj.class) {
+        throw new TypeError('参数 %s 不是一个Java对象!'.format(javaObj))
+    }
     var target = {};
-    getJavaObjectMethods(javaObj).forEach(function proxyMethod(t){ mapMethod(target, javaObj, t) })
+    getJavaObjectMethods(javaObj).forEach(function proxyMethod(t) {
+        mapMethod(target, javaObj, t)
+    });
     return target;
 }
 
 function getJavaObjectMethods(javaObj) {
-    var className = javaObj.class.name
+    var className = javaObj.class.name;
     if (!classMethodsCache[className]) {
         var names = [];
         var methods = javaObj.class.methods;
-        for (var i in methods){
+        for (var i in methods) {
             names.push(methods[i].name);
         }
         classMethodsCache[className] = names;
@@ -162,7 +155,7 @@ function getJavaObjectMethods(javaObj) {
     return classMethodsCache[className];
 }
 
-function mapMethod (target, source, name) {
+function mapMethod(target, source, name) {
     target[name] = function __SimpleDynamicMethod__() {
         if (arguments.length > 0) {
             return source[name](Array.prototype.slice.call(arguments));
@@ -173,13 +166,16 @@ function mapMethod (target, source, name) {
 }
 
 function on(obj) {
-    if (!obj || !obj.class) { throw new TypeError('参数 %s 不是一个Java对象!'.format(obj)) }
+    if (!obj || !obj.class) {
+        throw new TypeError('参数 %s 不是一个Java对象!'.format(obj))
+    }
     return new Reflect(obj);
 }
 
+// noinspection JSUnusedGlobalSymbols
 exports = module.exports = {
     on: on,
     accessible: accessible,
     declaredMethods: declaredMethods,
     mapToObject: mapToObject
-}
+};

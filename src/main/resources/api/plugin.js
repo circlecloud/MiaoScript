@@ -1,9 +1,9 @@
 'use strict';
 /**
  * MiaoScript脚本插件加载类
+ * @namespace plugin.configFile.parentFile, command.enable, permission.enable
  */
 /*global Java, module, exports, require, __FILE__*/
-// var zip = require("core/zip");
 var fs = require('core/fs');
 var yaml = require('modules/yaml');
 var event = require('./event');
@@ -95,7 +95,7 @@ function readPlugin(file) {
         hook: function (origin) {
             return beforeLoadHook(origin);
         }
-    })
+    });
     console.debug("插件编译结果: %s".format(JSON.stringify(plugin)));
     plugin.__FILE__ = file;
     return plugin;
@@ -141,7 +141,7 @@ function internalInitPlugin(plugin) {
     // 初始化 getDataFolder()
     plugin.getDataFolder = function getDataFolder() {
         return plugin.__DATA__;
-    }
+    };
     // 初始化 getFile()
     plugin.getFile = plugin.file = function getFile(name) {
         return fs.file(plugin.getDataFolder(), name);
@@ -149,7 +149,9 @@ function internalInitPlugin(plugin) {
     // 初始化插件配置相关方法
     initPluginConfig(plugin);
 
+    /** @namespace command.enable */
     if (command.enable) command.enable(plugin);
+    /** @namespace permission.enable */
     if (permission.enable) permission.enable(plugin);
 }
 
@@ -173,9 +175,9 @@ function initPluginConfig(plugin) {
                 if (!file.isFile) {
                     file = plugin.getFile(file);
                 }
-                return yaml.safeLoad(fs.read(file), { json: true });
+                return yaml.safeLoad(fs.read(file), {json: true});
         }
-    }
+    };
     /**
      * 重载配置文件
      * @constructor
@@ -183,7 +185,7 @@ function initPluginConfig(plugin) {
      */
     plugin.reloadConfig = function () {
         plugin.config = plugin.getConfig(plugin.configFile);
-    }
+    };
     /**
      * 保存配置文件
      * @constructor
@@ -191,6 +193,7 @@ function initPluginConfig(plugin) {
      */
     plugin.saveConfig = function () {
         // 判断插件目录是否存在 并且不为文件 否则删除重建
+        // noinspection JSValidateTypes
         if (!plugin.configFile.parentFile.isDirectory()) {
             fs.del(plugin.configFile.parentFile);
         }
@@ -203,7 +206,8 @@ function initPluginConfig(plugin) {
                 fs.save(fs.file(plugin.__DATA__, arguments[0]), yaml.safeDump(arguments[1]));
                 break;
         }
-    }
+    };
+    // noinspection JSValidateTypes
     if (plugin.configFile.isFile()) {
         plugin.config = plugin.getConfig('config.yml');
     } else if (plugin.description.config) {
@@ -247,27 +251,27 @@ function checkAndRun(args, name, ext) {
 var plugins = [];
 
 function init(path) {
-    var plugin = exports.$
+    var plugin = exports.$;
     if (plugin !== null) {
         // 如果plugin不等于null 则代表是正式环境
         console.info("初始化 MiaoScript 插件系统: %s".format(plugin));
     }
     loadPlugins(path);
-};
+}
 
 function load() {
     checkAndRun(arguments, 'load');
-};
+}
 
 function enable() {
     checkAndRun(arguments, 'enable');
-};
+}
 
 function disable() {
     checkAndRun(arguments, 'disable', function eventDisable() {
         event.disable(this);
     });
-};
+}
 
 function reload() {
     checkAndGet(arguments).forEach(function (p) {
@@ -276,8 +280,9 @@ function reload() {
         load(p);
         enable(p);
     });
-};
+}
 
+// noinspection JSUnresolvedVariable
 exports = module.exports = {
     $: server.plugin.self,
     plugins: plugins,
@@ -287,4 +292,4 @@ exports = module.exports = {
     disable: disable,
     reload: reload,
     loadPlugin: loadPlugin
-}
+};

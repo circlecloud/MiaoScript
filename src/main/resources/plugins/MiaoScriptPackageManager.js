@@ -1,17 +1,15 @@
-'use strict'
-/*global Java, base, module, exports, require*/
+'use strict';
+/*global Java, base, module, exports, require, __dirname, __filename*/
+var command = require('api/command');
+var manager = require('api/plugin');
+var task = require('api/task');
 
-var wrapper = require('api/wrapper')
-var command = require('api/command')
-var manager = require('api/plugin')
-var task = require('api/task')
+var http = require('http');
+var fs = require('fs');
 
-var http = require('http')
-var fs = require('fs')
-
-var pluginCache = []
-var packageCache = []
-var packageNameCache = []
+var pluginCache = [];
+var packageCache = [];
+var packageNameCache = [];
 
 var description = {
     name: 'MiaoScriptPackageManager',
@@ -26,7 +24,7 @@ var description = {
     config: {
         center: 'https://ms.yumc.pw/api/package/list'
     }
-}
+};
 
 var help = [
     '§6========= §a' + description.name + ' §6帮助 §aBy §b喵♂呜 §6=========',
@@ -35,7 +33,7 @@ var help = [
     '§6/mpm §aupdate <插件名称> §6- §3更新插件(无插件名称则更新源)',
     '§6/mpm §aupgrade <插件名称> §6- §3及时更新插件(update需要重启生效)',
     '§6/mpm §areload <插件名称> §6- §3重载插件(无插件名称则重载自生)',
-]
+];
 
 function load() {
     task.async(function () {
@@ -53,19 +51,19 @@ function enable() {
             if (args.length > 0) {
                 switch (args[0]) {
                     case "list":
-                        console.sender(sender, '§6当前 §bMiaoScriptPackageCenter §6中存在下列插件:')
+                        console.sender(sender, '§6当前 §bMiaoScriptPackageCenter §6中存在下列插件:');
                         for (var pkgName in packageCache) {
-                            var pkg = packageCache[pkgName]
+                            var pkg = packageCache[pkgName];
                             console.sender(sender, '§6插件名称: §b%s §6版本: §a%s'.format(pkg.name, pkg.version))
                         }
-                        break
+                        break;
                     case "install":
                         if (args.length > 1) {
                             download(sender, args[1]);
                         } else {
                             console.sender(sender, '§c请输入插件名称!')
                         }
-                        break
+                        break;
                     case "update":
                         if (args.length > 1) {
                             update(sender, args[1]);
@@ -73,19 +71,19 @@ function enable() {
                             load();
                             console.sender(sender, "§a仓库缓存刷新成功 共存在 §b" + pluginCache.length + " §a个插件!")
                         }
-                        break
+                        break;
                     case "upgrade":
-                        break
+                        break;
                     case "delete":
                         if (args.length > 1) {
                             del(sender, args[1]);
                         } else {
                             console.sender(sender, '§c请输入插件名称!')
                         }
-                        break
+                        break;
                     case "reload":
                         if (args.length > 1) {
-                            var pname = args[1]
+                            var pname = args[1];
                             if (pluginCache.indexOf(pname) !== -1) {
                                 manager.reload(pname)
                             } else {
@@ -95,7 +93,7 @@ function enable() {
                             self.reloadConfig();
                             load();
                         }
-                        break
+                        break;
                     case "help":
                         sendHelp(sender);
                         break;
@@ -105,7 +103,7 @@ function enable() {
             }
         },
         tab: function (sender, command, args) {
-            if (args.length === 1) return ['list', 'install', 'update', 'upgrade', 'reload']
+            if (args.length === 1) return ['list', 'install', 'update', 'upgrade', 'reload'];
             if (args.length > 1) {
                 switch (args[0]) {
                     case "install":
@@ -120,7 +118,7 @@ function enable() {
     })
 }
 
-function sendHelp(sender){
+function sendHelp(sender) {
     help.forEach(function (msg) {
         console.sender(sender, msg);
     })
@@ -159,4 +157,4 @@ module.exports = {
     load: load,
     enable: enable,
     disable: disable
-}
+};

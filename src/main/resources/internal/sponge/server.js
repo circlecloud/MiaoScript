@@ -6,13 +6,13 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 var Sponge = MServer;
-var Server = Sponge.server;
-var PluginManager = Sponge.pluginManager;
+var Server = MServer.server;
 exports.$ = Sponge;
 /**
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
  */
+var PluginManager = Sponge.pluginManager;
 exports.plugin = {
     /**
      * 插件管理工具
@@ -54,7 +54,7 @@ exports.service = {
     get: function (name) {
         return ServicesManager.provide(base.getClass(name)).orElse(null);
     }
-}
+};
 /**
  * 获取玩家
  */

@@ -2,6 +2,7 @@
 var log;
 var boot;
 var disable;
+// noinspection ThisExpressionReferencesGlobalObjectJS
 var global = this;
 /**
  * 初始化框架引擎
@@ -35,6 +36,7 @@ var global = this;
     var pluginYml;
 
     function checkClassLoader() {
+        // noinspection JSUnresolvedVariable
         var classLoader = java.lang.Thread.currentThread().contextClassLoader;
         pluginYml = classLoader.getResource("plugin.yml");
         if (pluginYml === null) {
@@ -47,8 +49,8 @@ var global = this;
     }
 
     function release(root, regex, replace) {
-        var upath = pluginYml.getFile().substring(pluginYml.getFile().indexOf("/") + 1);
-        var jarPath = java.net.URLDecoder.decode(upath.substring(0, upath.indexOf('!')));
+        var filePath = pluginYml.getFile().substring(pluginYml.getFile().indexOf("/") + 1);
+        var jarPath = java.net.URLDecoder.decode(filePath.substring(0, filePath.indexOf('!')));
         if (!java.nio.file.Files.exists(java.nio.file.Paths.get(jarPath))) {
             jarPath = "/" + jarPath;
         }
@@ -56,9 +58,11 @@ var global = this;
         var r = new RegExp(regex);// "[core|modules]/.*"
         jar.stream().forEach(function (entry) {
             try {
+                // noinspection JSValidateTypes
                 if (!entry.isDirectory()) {
                     if (r.test(entry.name)) {
                         var path = java.nio.file.Paths.get(root, entry.name);
+                        // noinspection JSUnresolvedVariable
                         var parentFile = path.toFile().parentFile;
                         if (!parentFile.exists()) { parentFile.mkdirs(); }
                         if (!java.nio.file.Files.exists(path) || replace) {

@@ -9,29 +9,32 @@
 var URL = Java.type("java.net.URL");
 var Files = Java.type("java.nio.file.Files");
 var Paths = Java.type("java.nio.file.Paths");
-var String = Java.type("java.lang.String");
+var Str = Java.type("java.lang.String");
 
-var HttpURLConnection = Java.type("java.net.HttpURLConnection");
 var HttpsURLConnection = Java.type("javax.net.ssl.HttpsURLConnection");
 var SSLContext = Java.type("javax.net.ssl.SSLContext");
 
 var HostnameVerifier = Java.type("javax.net.ssl.HostnameVerifier");
 var X509TrustManager = Java.type("javax.net.ssl.X509TrustManager");
 
+// noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
 var TrustAnyHostnameVerifier = new HostnameVerifier({
     verify: function (hostname, session) {
         return true;
     }
-})
+});
 
 var SSLSocketFactory = function initSSLSocketFactory() {
     var sslContext = SSLContext.getInstance("TLS");
+    // noinspection JSUnusedGlobalSymbols
     sslContext.init(null, [new X509TrustManager({
         getAcceptedIssuers: function () {
             return null;
         },
-        checkClientTrusted: function (chain, authType) {},
-        checkServerTrusted: function (chain, authType) {}
+        checkClientTrusted: function (chain, authType) {
+        },
+        checkServerTrusted: function (chain, authType) {
+        }
     })], new java.security.SecureRandom());
     return sslContext.getSocketFactory();
 }();
@@ -41,7 +44,7 @@ var config = {
     ConnectTimeout: 10000,
     ReadTimeout: 10000,
     Debug: false
-}
+};
 
 function open(url, method, header) {
     // conn.setRequestProperty
@@ -57,6 +60,7 @@ function open(url, method, header) {
     conn.setReadTimeout(config.ReadTimeout);
     if (header) {
         for (var key in header) {
+            // noinspection JSUnfilteredForInLoop
             conn.setRequestProperty(key, header[key]);
         }
     }
@@ -66,7 +70,7 @@ function open(url, method, header) {
 function buildUrl(url, params) {
     if (params && Object.keys(params).length > 0) {
         var queryStart = url.indexOf('?');
-        if (queryStart == -1) {
+        if (queryStart === -1) {
             url += '?';
         }
         return url += object2URLSearchParams(params);
@@ -85,12 +89,13 @@ function request(config) {
                 var type = config.header['Content-Type'];
                 switch (type) {
                     case "application/x-www-form-urlencoded":
-                        data = object2URLSearchParams(params);
+                        data = object2URLSearchParams(data);
+                        break;
                     default:
                         data = JSON.stringify(data)
                 }
             }
-            out.write(new String(data).getBytes(config.Charset));
+            out.write(new Str(data).getBytes(config.Charset));
             out.flush();
             out.close();
         }
@@ -100,17 +105,17 @@ function request(config) {
     }
 }
 
-function response (conn) {
+function response(conn) {
     var temp = Paths.get(java.lang.System.getProperty("java.io.tmpdir"), java.util.UUID.randomUUID().toString());
     Files.copy(conn.getInputStream(), temp);
-    var result = new String(Files.readAllBytes(temp), config.Charset);
+    var result = new Str(Files.readAllBytes(temp), config.Charset);
     var tempFile = temp.toFile();
     tempFile.delete() || tempFile.deleteOnExit();
     return result;
 }
 
-function object2URLSearchParams (params) {
-    var temp = []
+function object2URLSearchParams(params) {
+    var temp = [];
     for (var key in params) {
         temp.push('%s=%s'.format(encodeURIComponent(key), encodeURIComponent(params[key])))
     }

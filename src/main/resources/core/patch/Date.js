@@ -9,7 +9,7 @@
      * @param fmt 格式化字符串
      * @returns {*}
      */
-    Date.prototype.format = function (fmt) { //author: meizz
+    Date.prototype.format = function (fmt) {
         var o = {
             "M+": this.getMonth() + 1, //月份
             "d+": this.getDate(), //日

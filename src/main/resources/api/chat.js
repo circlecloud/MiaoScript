@@ -1,5 +1,6 @@
 /*global Java, base, module, exports, require*/
 function ChatHandlerDefault() {
+    // noinspection JSUnusedGlobalSymbols
     this.tellraw = function(sender, raw) {
         this.json(sender, JSON.stringify(raw));
     }

@@ -8,9 +8,9 @@ var server = require('api/server');
 
 PlaceholderAPI = {
     setPlaceholders: function () {
-        return arguments[1].replace(/&([1-9a-fA-F])/,'§$1');
+        return arguments[1].replace(/&([1-9a-fA-F])/, '§$1');
     }
-}
+};
 
 // 尝试加载 Bukkit 的 PlaceholderAPI
 try {
@@ -21,15 +21,16 @@ try {
 
 // 尝试加载 Sponge 的 PlaceholderAPI
 try {
-    var spapi = server.service.get('me.rojo8399.placeholderapi.PlaceholderService');
+    /** @namespace server.service */
+    var spongePapi = server.service.get('me.rojo8399.placeholderapi.PlaceholderService');
     var TextSerializers = Java.type('org.spongepowered.api.text.serializer.TextSerializers');
     var s = TextSerializers.formattingCode('§');
-    if (spapi) {
+    if (spongePapi) {
         PlaceholderAPI = {
             setPlaceholders: function () {
-                return s.serialize(spapi.replacePlaceholders(arguments[1], arguments[0], arguments[0]));
+                return s.serialize(spongePapi.replacePlaceholders(arguments[1], arguments[0], arguments[0]));
             }
-        }
+        };
         console.log('[PAPI] Found Sponge PlaceholderAPI Hooking...')
     }
 } catch (ex) {
@@ -45,4 +46,4 @@ function replace() {
 
 exports = module.exports = {
     $: replace
-}
+};

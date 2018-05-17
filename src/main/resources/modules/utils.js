@@ -26,10 +26,10 @@ function compare(prop) {
             return 1;
         } else {
             return 0;
-        }            
-    } 
+        }
+    }
 }
 
 exports = module.exports = {
     compare: compare
-}
+};

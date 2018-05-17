@@ -1,7 +1,6 @@
 /**
  * 补丁和方法扩展
  */
-
 (function () {
     // Java格式化方法
     var str = Java.type('java.lang.String');

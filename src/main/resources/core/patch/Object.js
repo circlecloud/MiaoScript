@@ -9,7 +9,7 @@
             enumerable: false,
             configurable: true,
             writable: true,
-            value: function(target) {
+            value: function (target) {
                 "use strict";
                 if (target === undefined || target === null)
                     throw new TypeError("Cannot convert first argument to object");
@@ -34,31 +34,31 @@
             enumerable: false,
             configurable: true,
             writable: true,
-            value: function(target) {
+            value: function (target) {
                 "use strict";
-                var vals = [];
+                var values = [];
                 for (var key in target) {
                     var desc = Object.getOwnPropertyDescriptor(target, key);
-                    if (desc !== undefined && desc.enumerable) vals.push(target[key]);
+                    if (desc !== undefined && desc.enumerable) values.push(target[key]);
                 }
-                return vals;
+                return values;
             }
         });
     }
 
     // JSON快捷方法
-    if(!Object.toJson){
+    if (!Object.toJson) {
         Object.defineProperty(Object.prototype, "toJson", {
             enumerable: false,
             configurable: true,
             writable: true,
-            value: function() {
+            value: function () {
                 return JSON.stringify(this);
             }
         });
     }
-    
-    
+
+
     // Object.prototype.toJson = function () {
     //     return JSON.stringify(this);
     // };

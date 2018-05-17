@@ -2,7 +2,6 @@
 var bukkit = require('api/server');
 
 var nmsChatSerializerClass;
-var nmsIChatBaseComponentClass;
 var packetTypeClass;
 var nmsChatMessageTypeClass;
 
@@ -10,23 +9,29 @@ var chatMessageTypes;
 
 var String = Java.type('java.lang.String');
 
-function init () {
+function init() {
+    /** @namespace bukkit.nmsVersion */
     nmsChatSerializerClass = bukkit.nmsCls(bukkit.nmsVersion.split("_")[1] > 7 ? "IChatBaseComponent$ChatSerializer" : "ChatSerializer");
-    nmsIChatBaseComponentClass = bukkit.nmsCls('IChatBaseComponent');
     packetTypeClass = bukkit.nmsCls("PacketPlayOutChat");
     var packetTypeConstructor;
     Java.from(packetTypeClass.class.constructors).forEach(function (c) {
-        if (c.parameterTypes.length == 2) { packetTypeConstructor = c };
-    })
+        if (c.parameterTypes.length === 2) {
+            packetTypeConstructor = c
+        }
+    });
+    // noinspection JSUnusedAssignment
     nmsChatMessageTypeClass = packetTypeConstructor.parameterTypes[1];
     if (nmsChatMessageTypeClass.isEnum()) {
         chatMessageTypes = nmsChatMessageTypeClass.getEnumConstants();
     } else {
+        /** @namespace nmsChatMessageTypeClass.name */
         switch (nmsChatMessageTypeClass.name) {
             case "int":
                 nmsChatMessageTypeClass = java.lang.Integer;
+                break;
             case "byte":
                 nmsChatMessageTypeClass = java.lang.Byte;
+                break;
         }
     }
 }
@@ -36,7 +41,8 @@ function json(sender, json) {
 }
 
 function send(sender, json, type) {
-    var serialized = nmsChatSerializerClass.a(json)
+    var serialized = nmsChatSerializerClass.a(json);
+    // noinspection all
     var typeObj = chatMessageTypes == null ? nmsChatMessageTypeClass.valueOf(String.valueOf(type)) : chatMessageTypes[type];
     sendPacket(sender, new packetTypeClass(serialized, typeObj))
 }

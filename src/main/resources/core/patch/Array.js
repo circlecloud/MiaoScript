@@ -2,6 +2,7 @@
  * 补丁和方法扩展
  */
 (function () {
+    // noinspection JSUnresolvedVariable
     if (!Array.prototype.copyPartialMatches) {
         Object.defineProperty(Array.prototype, "copyPartialMatches", {
             enumerable: false,
@@ -10,7 +11,7 @@
                     if (e.toLowerCase().startsWith(token.toLowerCase())) {
                         array.push(e)
                     }
-                })
+                });
                 return array
             }
         });

@@ -38,7 +38,7 @@
         global.engineLoad = load;
         global.load = function __denyGlobalLoad__() {
             throw new Error('系统内部不许允许使用 load 如需执行脚本 请使用 engineLoad !');
-        }
+        };
         // 初始化加载器
         global.require = engineLoad(root + '/core/require.js')(root);
         global.requireInternal = function requireInternal(name) {

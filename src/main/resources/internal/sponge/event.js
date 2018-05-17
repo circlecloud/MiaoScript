@@ -15,14 +15,14 @@ var priorityMap = {
     'HIGH': 'LATE',
     'HIGHEST': 'LAST',
     'MONITOR': 'POST'
-}
+};
 
 /**
-     * 判断是否为一个有效的事件类
-     * @param clz
-     * @returns {*|boolean}
-     */
-function isVaildEvent(clz) {
+ * 判断是否为一个有效的事件类
+ * @param clz
+ * @returns {*|boolean}
+ */
+function isValidEvent(clz) {
     // noinspection JSUnresolvedVariable 继承于 org.spongepowered.api.event.Event
     return Event.class.isAssignableFrom(clz) &&
         // 访问符为Public
@@ -46,9 +46,11 @@ function register(eventCls, exec, priority, ignoreCancel) {
 function unregister(event, listener) {
     MServer.getEventManager().unregisterListeners(listener);
 }
+
+// noinspection JSUnusedGlobalSymbols
 exports = module.exports = {
     baseEventDir: 'org/spongepowered/api/event',
-    isVaildEvent: isVaildEvent,
+    isValidEvent: isValidEvent,
     class2Name: class2Name,
     register: register,
     unregister: unregister

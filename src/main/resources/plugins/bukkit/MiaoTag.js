@@ -46,8 +46,8 @@ function load() {
 function enable() {
     command.on(self, 'mtag', {
         cmd: function cmd(sender, command, args) {
-            var subcommand = args[0];
-            switch (subcommand) {
+            var subCommand = args[0];
+            switch (subCommand) {
                 case 'reload':
                     self.reloadConfig();
                     fakeTag = new FakeTag(config.format);

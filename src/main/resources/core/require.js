@@ -33,12 +33,12 @@
     var cacheDir = parent + separatorChar + "runtime";
     var paths = [parent, parent + separatorChar + 'core', parent + separatorChar + 'api', parent + separatorChar + 'modules'];
 
-    try{
+    try {
         base.delete(cacheDir);
     } catch (ex) {
         console.ex(ex);
     }
-    
+
     /**
      * 判断是否为一个文件
      * @param file
@@ -129,6 +129,7 @@
         var _package = new File(dir, 'package.json');
         if (_package.exists()) {
             var json = JSON.parse(base.read(_package));
+            /** @namespace json.main */
             if (json.main) {
                 return resolveAsFile(dir, json.main);
             }
@@ -181,6 +182,7 @@
                 compileJson(module, file, optional);
             }
             if (_canonical(file).endsWith('.msm')) {
+                // noinspection ExceptionCaughtLocallyJS
                 throw Error("暂不支持解析 MiaoScript 模块");
             }
         } catch (ex) {
@@ -192,6 +194,7 @@
 
     /**
      * 预编译JS
+     * @param module JS模块
      * @param file JS文件
      * @param optional 附加选项
      * @returns {Object}
@@ -218,6 +221,7 @@
 
     /**
      * 预编译Json
+     * @param module Json模块
      * @param file Json 文件
      * @param optional 附加选项
      * @returns {Object}

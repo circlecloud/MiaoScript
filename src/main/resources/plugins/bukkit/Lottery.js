@@ -121,12 +121,13 @@ function newItemFromConfig(config) {
 }
 
 function enable() {
+    // noinspection JSUnusedLocalSymbols
     command.on(this, 'l', {
         cmd: function (sender, command, args) {
             if (!sender.openInventory) {
                 console.sender(sender, "§4当前用户无法使用该命令!");
             }
-            var inv = bukkit.$.createInventory(null, 54, config.title);
+            var inv = MServer.createInventory(null, 54, config.title);
             inv.setContents(items);
             sender.openInventory(inv);
             return true;
@@ -178,14 +179,14 @@ function enable() {
                     console.sender(player, '§c抽奖物品和钥匙不匹配!');
                     return;
                 }
-                var resultlist = [];
+                var resultList = [];
                 litem.result.forEach(function (t) {
                     for (var i = 0; i < t.percent; i++) {
-                        resultlist.push(t);
+                        resultList.push(t);
                     }
                 });
-                var ri = ext.random(resultlist.length);
-                var result = resultlist[ri];
+                var ri = ext.random(resultList.length);
+                var result = resultList[ri];
                 box.amount = box.amount - 1;
                 key.amount = key.amount - 1;
                 inv.setItem(10, box);

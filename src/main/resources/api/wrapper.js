@@ -2,4 +2,4 @@
 var player = requireInternal('wrapper/player');
 module.exports = {
     player: player.$
-}
+};

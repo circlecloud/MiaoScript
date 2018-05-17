@@ -2,16 +2,19 @@
 /**
  * Bukkit 事件相关类
  */
+
 /*global Java, base, module, exports, require, __FILE__*/
 
 function EventHandlerDefault() {
     var Thread = Java.type("java.lang.Thread");
 
+    // noinspection JSUnresolvedVariable
     this.plugin = require('./server').plugin.self;
     this.mapEvent = [];
     this.listenerMap = [];
     this.baseEventDir = '';
 
+    // noinspection JSUnusedLocalSymbols
     var self = this;
 
     /**
@@ -40,9 +43,10 @@ function EventHandlerDefault() {
                         try {
                             var clz = base.getClass(i.substring(0, i.length - 6));
                             // 继承于 org.bukkit.event.Event 访问符为Public
-                            if (this.isVaildEvent(clz)) {
+                            if (this.isValidEvent(clz)) {
                                 // noinspection JSUnresolvedVariable
                                 var simpleName = this.class2Name(clz).toLowerCase();
+                                /** @namespace clz.canonicalName */
                                 console.debug("Mapping Event [%s] => %s".format(clz.canonicalName, simpleName));
                                 this.mapEvent[simpleName] = clz;
                                 count++;
@@ -55,11 +59,11 @@ function EventHandlerDefault() {
             }
         }
         return count;
-    }
+    };
 
     this.class2Name = function class2Name(clazz) {
         return clazz.simpleName;
-    }
+    };
 
     this.name2Class = function name2Class(name, event) {
         var eventCls = this.mapEvent[event.toLowerCase()] || this.mapEvent[event.toLowerCase() + 'event'];
@@ -69,30 +73,31 @@ function EventHandlerDefault() {
                 this.mapEvent[event] = eventCls;
             } catch (ex) {
                 console.console("§6插件 §b%s §6注册事件 §c%s §6失败 §4事件未找到!".format(name, event));
-                console.ex(new Error("插件 %s 注册事件 %s 失败 事件未找到!".format(name, event)))
+                console.ex(new Error("插件 %s 注册事件 %s 失败 事件未找到!".format(name, event)));
                 return;
             }
         }
         return eventCls;
-    }
+    };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      * 判断是否为一个有效的事件类
      * @param clz
      * @returns {*|boolean}
      */
-    this.isVaildEvent = function isVaildEvent(clz) {
+    this.isValidEvent = function isValidEvent(clz) {
         throw new Error("当前服务器不支持事件系统!");
-    }
-
+    };
+    // noinspection JSUnusedLocalSymbols
     this.register = function register(eventCls, exec, priority, ignoreCancel) {
         throw new Error("当前服务器不支持事件系统!");
-    }
-    
+    };
+    // noinspection JSUnusedLocalSymbols
     this.unregister = function unregister(event, listener) {
         throw new Error("当前服务器不支持事件系统!");
-    }
-    
+    };
+
     this.execute = function execute(name, exec, eventCls) {
         return function execute() {
             try {
@@ -102,8 +107,8 @@ function EventHandlerDefault() {
                 console.ex(ex);
             }
         }.bind(this);
-    }
-    
+    };
+
     /**
      * 添加事件监听
      * @param jsp
@@ -116,7 +121,9 @@ function EventHandlerDefault() {
         if (!jsp || !jsp.description || !jsp.description.name) throw new TypeError('插件名称为空 请检查传入参数!');
         var name = jsp.description.name;
         var eventCls = this.name2Class(name, event);
-        if (!eventCls) { return; }
+        if (!eventCls) {
+            return;
+        }
         if (typeof priority === 'boolean') {
             ignoreCancel = priority;
             priority = 'NORMAL';
@@ -143,6 +150,7 @@ function EventHandlerDefault() {
         return off;
     }
 }
+
 var EventHandler = Object.assign(new EventHandlerDefault(), requireInternal('event'));
 // 映射事件名称
 console.info('%s 事件映射完毕 共计 %s 个事件!'.format(DetectServerType, EventHandler.mapEventName().toFixed(0)));

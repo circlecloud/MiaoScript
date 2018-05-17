@@ -31,6 +31,7 @@ public class ScriptEngine {
         ScriptEngineManager manager = new ScriptEngineManager();
         this.engine = new MiaoScriptEngine(manager, "nashorn");
         this.engine.put("base", new Base());
+        this.engine.put("ScriptEngineContextHolder", this);
         Path bios = Paths.get(root, "bios.js");
         // 如果存在自定义bios就加载自定义的
         if (Files.exists(bios)) {

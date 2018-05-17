@@ -8,9 +8,6 @@ var Sponge = MServer;
 var server = require('./server');
 var plugin = server.plugin.self;
 
-var CommandManager = server.CommandManager;
-
-var CommandSpec = Java.type('org.spongepowered.api.command.spec.CommandSpec');
 var CommandCallable = Java.type('org.spongepowered.api.command.CommandCallable');
 var CommandResult = Java.type('org.spongepowered.api.command.CommandResult');
 
@@ -21,13 +18,16 @@ var Optional = Java.type('java.util.Optional');
 var ArrayList = Java.type('java.util.ArrayList');
 var Arrays = Java.type('java.util.Arrays');
 
-var commandMap=[];
+var commandMap = [];
 
 var SimpleCommandCallable = function (command) {
     var that = this;
     this.name = command.name;
     this.cmd = noop;
-    this.tab = function() { return new ArrayList(); };
+    this.tab = function () {
+        return new ArrayList();
+    };
+    // noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
     this.callable = new CommandCallable({
         //CommandResult process(CommandSource source, String arguments) throws CommandException;
         process: function (src, args) {
@@ -60,29 +60,32 @@ var SimpleCommandCallable = function (command) {
     this.setTabCompleter = function (exec) {
         that.tab = exec;
     }
-}
+};
 
 function enable(jsp) {
-    var pname = jsp.description.name;
+    // noinspection JSUnusedLocalSymbols
+    var plugin = jsp.description.name;
     var commands = jsp.description.commands;
     if (commands) {
-        var pluginCmds = [];
+        // noinspection JSUnusedLocalSymbols
+        var pluginCommands = [];
         for (var name in commands) {
             var command = commands[name];
             if (typeof command !== 'object') continue;
-            command.name = name
-            create(jsp, command)
+            command.name = name;
+            create(jsp, command);
             console.debug('插件 %s 注册命令 %s ...'.format(jsp.description.name, name));
         }
     }
 }
 
+// noinspection JSUnusedLocalSymbols
 function get(name) {
 }
 
 function create(jsp, command) {
     var commandKey = jsp.description.name.toLowerCase() + ":" + command.name;
-    if(!commandMap[commandKey]){
+    if (!commandMap[commandKey]) {
         commandMap[commandKey] = new SimpleCommandCallable(command);
         Sponge.getCommandManager().register(plugin, commandMap[commandKey].callable, command.name, commandKey);
     }
@@ -98,7 +101,7 @@ function on(jsp, name, exec) {
                 return exec.cmd(sender, command, args);
             } catch (ex) {
                 console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常'
-                                .format(sender.name, jsp.description.name, command, args.join(' ')));
+                    .format(sender.name, jsp.description.name, command, args.join(' ')));
                 console.ex(ex);
             }
         });
@@ -107,19 +110,18 @@ function on(jsp, name, exec) {
         c.setTabCompleter(function execTab(sender, command, args) {
             try {
                 var token = args[args.length - 1];
-                var complate = exec.tab(sender, command, args) || []
-                return Arrays.asList(complate.copyPartialMatches(token, []));
+                var complete = exec.tab(sender, command, args) || [];
+                return Arrays.asList(complete.copyPartialMatches(token, []));
             } catch (ex) {
                 console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常'
-                                .format(sender.name, jsp.description.name, command, args.join(' ')));
+                    .format(sender.name, jsp.description.name, command, args.join(' ')));
                 console.ex(ex);
             }
         });
     }
 }
 
-var exist = Sponge.getCommandManager().getOwnedBy(plugin);
-exist.forEach(function(commandMapping) { 
+Sponge.getCommandManager().getOwnedBy(plugin).forEach(function (commandMapping) {
     if (!commandMapping.getAllAliases().contains("ms")) {
         Sponge.getCommandManager().removeMapping(commandMapping);
     }
@@ -129,4 +131,4 @@ exports = module.exports = {
     enable: enable,
     on: on,
     off: noop
-}
+};

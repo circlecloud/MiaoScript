@@ -25,6 +25,7 @@ function load() {
 }
 
 function enable() {
+    // noinspection JSUnusedLocalSymbols
     command.on(this, 'hello', {
         cmd: function (sender, command, args) {
             engineLoad(fs.file(root, 'test.js'));
@@ -34,20 +35,19 @@ function enable() {
     console.log('启用 Hello World 测试插件!');
     switch (DetectServerType) {
         case ServerType.Bukkit:
-            event.on(this, 'playerloginevent', function join(event) {
+            event.on(this, 'PlayerLoginEvent', function join(event) {
                 send(event, wrapper.player(event.player));
             });
             break;
         case ServerType.Sponge:
-            // clientconnectionevent.join
-            event.on(this, 'clientconnectionevent.join', function join(event) {
+            event.on(this, 'ClientConnectionEvent.Join', function join(event) {
                 send(event, wrapper.player(event.targetEntity));
             });
             break;
     }
 }
 
-function send(event, player){
+function send(event, player) {
     // noinspection JSUnresolvedVariable
     console.debug('玩家', player.getName(), "触发事件", event.class.simpleName);
     setTimeout(function () {

@@ -15,7 +15,7 @@ var EventExecutor = Java.type("org.bukkit.plugin.EventExecutor");
  * @param clz
  * @returns {*|boolean}
  */
-function isVaildEvent(clz) {
+function isValidEvent(clz) {
     // noinspection JSUnresolvedVariable 继承于 org.bukkit.event.Event
     return Event.class.isAssignableFrom(clz) &&
         // 访问符为Public
@@ -44,7 +44,7 @@ function unregister(event, listener) {
 
 exports = module.exports = {
     baseEventDir: 'org/bukkit/event',
-    isVaildEvent: isVaildEvent,
+    isValidEvent: isValidEvent,
     register: register,
     unregister: unregister
 };

@@ -6,7 +6,7 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 var Bukkit = MServer;
-var Server = Bukkit.server;
+var Server = MServer.server;
 exports.$ = Bukkit;
 /**
  * 获取NMS版本
@@ -43,16 +43,16 @@ exports.player = function () {
 exports.players = function () {
     switch (arguments.length) {
         case 1:
-            return Server.onlinePlayers.forEach(arguments[0]);
+            return Bukkit.onlinePlayers.forEach(arguments[0]);
         default:
-            return Server.onlinePlayers;
+            return Bukkit.onlinePlayers;
     }
 };
 /**
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
  */
-var PluginManager = Server.pluginManager;
+var PluginManager = Bukkit.pluginManager;
 exports.plugin = {
     /**
      * 插件管理工具
@@ -84,7 +84,7 @@ exports.plugin = {
  * 服务管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
  */
-var ServicesManager = Server.servicesManager;
+var ServicesManager = Bukkit.servicesManager;
 exports.service = {
     /**
      * 服务管理工具
@@ -99,7 +99,7 @@ exports.service = {
         var reg = ServicesManager.getRegistration(base.getClass(name));
         return reg && reg.provider || null;
     }
-}
+};
 /**
  * 公告
  * @param message 消息
@@ -125,13 +125,13 @@ exports.console = function (command) {
 /**
  * 玩家以OP权限执行命令
  * @param player
- * @param exper
+ * @param command
  */
-exports.opcommand = function (player, exper) {
+exports.opcommand = function (player, command) {
     var origin = player.isOp();
     player.setOp(true);
     try {
-        exports.command(player, exper);
+        exports.command(player, command);
     } finally {
         player.setOp(origin);
     }

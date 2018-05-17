@@ -12,6 +12,7 @@
             }.bind(this),
             set: function (name) {
                 this._name = name ? '[' + name + '] ' : '';
+                // noinspection JSUnusedGlobalSymbols
                 this.prefix = name ? '§6[§cMS§6][§b' + name + '§6]§r ' : '§6[§bMiaoScript§6]§r ';
             }.bind(this)
         });
@@ -19,6 +20,7 @@
         this.log = this.info = function () {
             log.info(this.name + Array.prototype.join.call(arguments, ' '));
         };
+        // noinspection JSUnusedGlobalSymbols
         this.warn = function () {
             log.warning(this.name + Array.prototype.join.call(arguments, ' '));
         };
@@ -35,7 +37,7 @@
             for (var i in obj) {
                 this.log(i, '=>', obj[i])
             }
-        }
+        };
         this.ex = function (message, ex) {
             if (!ex) {
                 this.console('§4' + message);
@@ -55,6 +57,6 @@
                 }
             }.bind(this));
         };
-    }
+    };
     global.Console = ConsoleDefault;
 })(global);
