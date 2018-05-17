@@ -8,14 +8,15 @@ import java.nio.file.Paths;
 import javax.script.ScriptEngineManager;
 
 import lombok.SneakyThrows;
+import pw.yumc.YumCore.annotation.NotProguard;
 import pw.yumc.YumCore.engine.MiaoScriptEngine;
-
 /**
  * Created with IntelliJ IDEA
  *
  * @author 喵♂呜
  * Created on 2017/10/25 21:01.
  */
+@NotProguard
 public class ScriptEngine {
     private String root;
     private Object logger;
