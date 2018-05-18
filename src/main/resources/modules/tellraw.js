@@ -3,13 +3,6 @@ var chat = require('api/chat');
 var server = require('api/server');
 
 var ChatMessagePart = function () {
-    var text;
-    var clickEventAction;
-    var clickEventValue;
-    var hoverEventAction;
-    var hoverEventValue;
-    var insertion;
-
     this.click = function (action, value) {
         this.clickEventAction = action;
         this.clickEventValue = value;
@@ -47,7 +40,6 @@ var ChatMessagePart = function () {
 var Tellraw = function () {
     var parts = [new ChatMessagePart()];
     var self = this;
-    var cache = null;
 
     this.then = function (part) {
         if (typeof part === "string") {
