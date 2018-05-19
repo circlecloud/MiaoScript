@@ -37,11 +37,16 @@ try {
 }
 
 function replace() {
-    if (arguments.length > 1) {
-        return PlaceholderAPI.setPlaceholders(arguments[0], arguments[1]);
-    } else {
-        return PlaceholderAPI.setPlaceholders(null, arguments[0]);
+    var player = arguments[0];
+    var line = [];
+    if (arguments.length === 1) {
+        player = null;
+        line = player;
     }
+    if (toString.call(line) === "[object Array]") {
+        return PlaceholderAPI.setPlaceholders(player, line.join('\n')).split('\n');
+    }
+    return PlaceholderAPI.setPlaceholders(player, line);
 }
 
 exports = module.exports = {
