@@ -1,11 +1,12 @@
 'use strict';
-/*global Java, base, module, exports, require, __dirname, __filename*/
-var command = require('api/command');
-var manager = require('api/plugin');
+/*global Java, base, module, exports, require, __dirname, __filename, ScriptEngineContextHolder*/
 var task = require('api/task');
+var manager = require('api/plugin');
+var command = require('api/command');
 
-var http = require('http');
 var fs = require('fs');
+var http = require('http');
+var template = require('template');
 
 var pluginCache = [];
 var packageCache = [];
@@ -22,19 +23,21 @@ var description = {
         }
     },
     config: {
-        center: 'https://ms.yumc.pw/api/package/list'
+        center: 'https://ms.yumc.pw/api/package/list',
+        template: 'http://paste.yumc.pw/pxus6ap6l/g7di8z/raw'
     }
 };
 
 var help = [
-    '§6========= §a' + description.name + ' §6帮助 §aBy §b喵♂呜 §6=========',
-    '§6/mpm §ainstall <插件名称> §6- §3安装插件',
+    '§6========= §6[§a' + description.name + '§6] 帮助 §aBy §b喵♂呜 §6=========',
+    '§6/mpm §ainstall §e<插件名称> §6- §3安装插件',
     '§6/mpm §alist §6- §3列出仓库插件',
-    '§6/mpm §aupdate <插件名称> §6- §3更新插件(无插件名称则更新源)',
-    '§6/mpm §aupgrade <插件名称> §6- §3及时更新插件(update需要重启生效)',
-    '§6/mpm §areload <插件名称> §6- §3重载插件(无插件名称则重载自身)',
-    '§6/mpm §arun <JS代码> §6- §3运行JS代码',
-    '§6/mpm §4restart §6- §4重启MiaoScript脚本引擎'
+    '§6/mpm §aupdate §e<插件名称> §6- §3更新插件(无插件名称则更新源)',
+    '§6/mpm §aupgrade §e<插件名称> §6- §3及时更新插件(update需要重启生效)',
+    '§6/mpm §areload §e<插件名称> §6- §3重载插件(无插件名称则重载自身)',
+    '§6/mpm §arun §e<JS代码> §6- §3运行JS代码',
+    '§6/mpm §acreate §e<插件名称> [作者] [版本] [主命令] §6- §3通过模板创建名称',
+    '§6/mpm §crestart §6- §4重启MiaoScript脚本引擎'
 ];
 
 function load() {
@@ -42,8 +45,8 @@ function load() {
         pluginCache = Object.keys(manager.plugins);
         JSON.parse(http.get(self.config.center)).data.forEach(function cachePackageName(pkg) {
             packageCache[pkg.name] = pkg;
-            packageNameCache.push(pkg.name);
         })
+        packageNameCache = Object.keys(packageCache);
     })
 }
 
@@ -109,6 +112,21 @@ function enable() {
                     case "run":
                         args.shift(1);
                         console.sender(sender, eval(args.join(' ')));
+                        break;
+                    case "create":
+                        var name = args[1];
+                        if (!name) {
+                            console.sender(sender, '§4参数错误 /mpm create <插件名称> [作者] [版本] [主命令]');
+                            return;
+                        }
+                        var result = template.create(http.get(self.config.template)).render({
+                            name: name,
+                            author: args[2] || 'MiaoWoo',
+                            version: args[3] || '1.0',
+                            command: args[4] || name.toLowerCase(),
+                        });
+                        fs.save(fs.file(__dirname, name + '.js'), result);
+                        console.sender(sender, '§6插件 §a' + name +  ' §6已生成到插件目录...');
                         break;
                     case "help":
                         sendHelp(sender);
