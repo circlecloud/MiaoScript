@@ -23,10 +23,10 @@ function loadPlugins(dir) {
         console.info("开始扫描 %s 下的插件 ...".format(plugin));
         createUpdate(plugin);
         var files = [];
-        fs.list(plugin).forEach(function (file) {
+        fs.list(plugin).forEach(function searchPlugin(file) {
             files.push(file.toFile());
         });
-        fs.list(fs.file(plugin, DetectServerType)).forEach(function (file) {
+        fs.list(fs.file(plugin, DetectServerType)).forEach(function searchDetectServerPlugin(file) {
             files.push(file.toFile());
         });
         loadZipPlugins(files);
@@ -50,9 +50,9 @@ function createUpdate(path) {
  * @param files
  */
 function loadZipPlugins(files) {
-    files.filter(function (file) {
+    files.filter(function filterZipPlugin(file) {
         return file.name.endsWith(".zip");
-    }).forEach(function (file) {
+    }).forEach(function loadZipPlugin(file) {
         // console.log(file);
         // console.log(fs.file(file,"!package.json"))
         // zip.unzip(fs.file(plugins_dir, file));
@@ -65,9 +65,9 @@ function loadZipPlugins(files) {
  * JS类型插件预加载
  */
 function loadJsPlugins(files) {
-    files.filter(function (file) {
+    files.filter(function filterJsPlugin(file) {
         return file.name.endsWith(".js")
-    }).forEach(function (file) {
+    }).forEach(function loadJsPlugin(file) {
         loadPlugin(file)
     })
 }
@@ -161,6 +161,12 @@ function internalInitPlugin(plugin) {
 function initPluginConfig(plugin) {
     // 初始化 config
     plugin.configFile = plugin.getFile('config.yml');
+    // 判断插件目录是否存在 并且不为文件 否则删除重建
+    // noinspection JSValidateTypes
+    if (!plugin.configFile.parentFile.isDirectory()) {
+        fs.del(plugin.configFile.parentFile);
+    }
+    plugin.configFile.parentFile.mkdirs();
     /**
      * 获取配置文件
      * @constructor
@@ -192,12 +198,6 @@ function initPluginConfig(plugin) {
      * @constructor (file, content)
      */
     plugin.saveConfig = function () {
-        // 判断插件目录是否存在 并且不为文件 否则删除重建
-        // noinspection JSValidateTypes
-        if (!plugin.configFile.parentFile.isDirectory()) {
-            fs.del(plugin.configFile.parentFile);
-        }
-        plugin.configFile.parentFile.mkdirs();
         switch (arguments.length) {
             case 0:
                 fs.save(plugin.configFile, yaml.safeDump(plugin.config));
@@ -209,7 +209,7 @@ function initPluginConfig(plugin) {
     };
     // noinspection JSValidateTypes
     if (plugin.configFile.isFile()) {
-        plugin.config = plugin.getConfig('config.yml');
+        plugin.config = Object.assign(plugin.description.config, plugin.getConfig('config.yml'));
     } else if (plugin.description.config) {
         plugin.config = plugin.description.config;
         plugin.saveConfig();
