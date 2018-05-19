@@ -42,7 +42,7 @@ function file() {
             }
             break;
         default:
-            return new File(exports.file(arguments[0]), arguments[1]);
+            return new File(file(arguments[0]), arguments[1]);
     }
 }
 
