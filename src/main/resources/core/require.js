@@ -205,7 +205,7 @@
         if (optional.hook) {
             origin = optional.hook(origin);
         }
-        base.save(cacheFile, "(function __init__(module, exports, require, __dirname, __filename) {" + origin + "});");
+        base.save(cacheFile, "(function $(module, exports, require, __dirname, __filename) {" + origin + "});");
         // 使用 load 可以保留行号和文件名称
         var compiledWrapper = engineLoad(cacheFile);
         try {
