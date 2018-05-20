@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>1.3</version>
+    <version>1.3.1</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -84,6 +84,27 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §62018-5-20 §afeat: 新增MiaoBoard插件;
+            §62018-5-20 §afeat: 新增MiaoAuth插件;
+            §62018-5-20 §afeat: 修改初始化函数名称;
+            §62018-5-20 §cfix: file.js修复一个语法错误;
+            §62018-5-20 §afeat: 新增config默认值绑定 匿名函数添加名称;
+            §62018-5-20 §afeat: PAPI支持直接替换数组;
+            §62018-5-20 §afeat: 调整Task任务模块;
+            §62018-5-20 §afeat: 新增模板预编译插件功能;
+            §62018-5-18 §afeat: 清除不必要的代码;
+            §62018-5-17 §afeat: 新增MiaoChat插件描述;
+            §62018-5-17 §afeat: MiaoScriptPackageManager 新增restart和run方法;
+            §62018-5-17 §cfix: 修复Sponge命令参数存在空字符串的问题;
+            §62018-5-17 §cfix: 修复混淆导致的重载方法丢失;
+            §62018-5-17 §afeat: 新增引擎Shutdown方法 关闭资源;
+            §62018-5-17 §afeat: 格式化代码 添加d.ts文件 去除引擎无关代码 清理单元测试;
+            §62018-5-17 §cfix: 修复TellRaw类库错误;
+            §62018-5-17 §cfix: 修复pkg不存在的问题;
+            §62018-5-17 §cfix: 修复下载错误的问题;
+            §62018-5-17 §afeat: 更新版本号
+        </update.changes>
+        <update.changelog>
             §618-05-17 §afeat: 新增Hook提示;
             §618-05-17 §afeat: 调整列表载入顺序;
             §618-05-17 §afeat: 完善MiaoChat的PAPI的替换;
@@ -121,9 +142,7 @@
             §618-01-09 §cfix: 修复调试信息错误;
             §618-01-08 §afeat: require新增基础目录api;
             §618-01-08 §3doc: 新增README;
-            §618-01-08 §cfix: 修复重载命令无效的BUG
-        </update.changes>
-        <update.changelog>
+            §618-01-08 §cfix: 修复重载命令无效的BUG;
             §618-01-09 §afeat: 优化加载流程 完善事件注册;
             §618-01-02 §afeat: 新增http网络访问模块;
             §617-12-28 §afeat: 完善Sponge事件注册 新增player封装类;
