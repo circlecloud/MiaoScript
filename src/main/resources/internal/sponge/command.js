@@ -79,10 +79,6 @@ function enable(jsp) {
     }
 }
 
-// noinspection JSUnusedLocalSymbols
-function get(name) {
-}
-
 function create(jsp, command) {
     var commandKey = jsp.description.name.toLowerCase() + ":" + command.name;
     if (!commandMap[commandKey]) {
@@ -92,37 +88,34 @@ function create(jsp, command) {
     return commandMap[commandKey];
 }
 
-function on(jsp, name, exec) {
-    var c = create(jsp, {name: name});
-    console.debug('插件 %s 设置命令 %s 执行器 ...'.format(jsp.description.name, name));
-    if (exec.cmd) {
-        c.setExecutor(function execCmd(sender, command, args) {
-            try {
-                return exec.cmd(sender, command, args);
-            } catch (ex) {
-                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常'
-                    .format(sender.name, jsp.description.name, command, args.join(' ')));
-                console.ex(ex);
-            }
-        });
-    }
-    if (exec.tab) {
-        c.setTabCompleter(function execTab(sender, command, args) {
-            try {
-                var token = args[args.length - 1];
-                var complete = exec.tab(sender, command, args) || [];
-                return Arrays.asList(complete.copyPartialMatches(token, []));
-            } catch (ex) {
-                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常'
-                    .format(sender.name, jsp.description.name, command, args.join(' ')));
-                console.ex(ex);
-            }
-        });
-    }
+function onCommand(jsp, c, cmd) {
+    c.setExecutor(function execCmd(sender, command, args) {
+        try {
+            return cmd(sender, command, args);
+        } catch (ex) {
+            console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常'.format(sender.name, jsp.description.name, command, args.join(' ')));
+            console.ex(ex);
+        }
+    });
+}
+
+function onTabComplete(jsp, c, tab) {
+    c.setTabCompleter(function execTab(sender, command, args) {
+        try {
+            var token = args[args.length - 1];
+            var complete = tab(sender, command, args) || [];
+            return Arrays.asList(complete.copyPartialMatches(token, []));
+        } catch (ex) {
+            console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常'.format(sender.name, jsp.description.name, command, args.join(' ')));
+            console.ex(ex);
+        }
+    });
 }
 
 exports = module.exports = {
     enable: enable,
-    on: on,
+    create: create,
+    onCommand: onCommand,
+    onTabComplete: onTabComplete,
     off: noop
 };

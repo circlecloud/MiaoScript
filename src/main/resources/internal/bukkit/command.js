@@ -47,59 +47,50 @@ function disable(jsp) {
     }
 }
 
-function get(name) {
-    return commandMap.getCommand(name);
-}
-
-function create(jsp, name) {
-    return register(jsp, ref.on(PluginCommand).create(name, plugin).get());
-}
-
-function register(jsp, cmd) {
-    commandMap.register(jsp.description.name, cmd);
+function create(jsp, command) {
+    var cmd = commandMap.getCommand(command.name)
+    if (cmd) { return cmd };
+    cmd = ref.on(PluginCommand).create(command.name, plugin).get();
+    register(jsp, cmd);
     return cmd;
 }
 
-function on(jsp, name, exec) {
-    var c = get(name) || create(jsp, name);
-    console.debug('插件 %s 设置命令 %s(%s) 执行器 ...'.format(jsp.description.name, name, c));
-    if (exec.cmd) {
-        // 必须指定需要实现的接口类型 否则MOD服会报错
-        // noinspection JSUnusedGlobalSymbols
-        c.setExecutor(new org.bukkit.command.CommandExecutor({
-            onCommand: function (sender, cmd, command, args) {
-                try {
-                    return exec.cmd(sender, command, args);
-                } catch (ex) {
-                    console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'
-                        .format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
-                    console.ex(ex);
-                }
+function onCommand(jsp, c, cmd) {
+    // 必须指定需要实现的接口类型 否则MOD服会报错
+    // noinspection JSUnusedGlobalSymbols
+    c.setExecutor(new org.bukkit.command.CommandExecutor({
+        onCommand: function (sender, cmd, command, args) {
+            try {
+                return cmd(sender, command, args);
+            } catch (ex) {
+                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
+                console.ex(ex);
             }
-        }));
-    }
-    if (exec.tab) {
-        // 必须指定需要实现的接口类型 否则MOD服会报错
-        // noinspection JSUnusedGlobalSymbols
-        c.setTabCompleter(new org.bukkit.command.TabCompleter({
-            onTabComplete: function (sender, cmd, command, args) {
-                try {
-                    var token = args[args.length - 1];
-                    var complete = exec.tab(sender, command, args) || [];
-                    return Arrays.asList(complete.copyPartialMatches(token, []));
-                } catch (ex) {
-                    console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'
-                        .format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
-                    console.ex(ex);
-                }
-            }
-        }));
-    }
+        }
+    }));
 }
 
-exports.enable = enable;
+function onTabComplete(jsp, c, tab) {
+    // 必须指定需要实现的接口类型 否则MOD服会报错
+    // noinspection JSUnusedGlobalSymbols
+    c.setTabCompleter(new org.bukkit.command.TabCompleter({
+        onTabComplete: function (sender, cmd, command, args) {
+            try {
+                var token = args[args.length - 1];
+                var complete = tab(sender, command, args) || [];
+                return Arrays.asList(complete.copyPartialMatches(token, []));
+            } catch (ex) {
+                console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
+                console.ex(ex);
+            }
+        }
+    }));
+}
 
-exports.on = on;
-exports.off = function () {
-
+exports = module.exports = {
+    enable: enable,
+    create: create,
+    onCommand: onCommand,
+    onTabComplete: onTabComplete,
+    off: noop
 };
