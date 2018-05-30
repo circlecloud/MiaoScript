@@ -53,91 +53,12 @@ function load() {
 function enable() {
     command.on(this, 'mpm', {
         cmd: function (sender, command, args) {
-            if (args.length > 0) {
-                switch (args[0]) {
-                    case "list":
-                        console.sender(sender, '§6当前 §bMiaoScriptPackageCenter §6中存在下列插件:');
-                        for (var pkgName in packageCache) {
-                            var pkg = packageCache[pkgName];
-                            console.sender(sender, '§6插件名称: §b%s §6版本: §a%s'.format(pkg.name, pkg.version))
-                        }
-                        break;
-                    case "install":
-                        if (args.length > 1) {
-                            download(sender, args[1]);
-                        } else {
-                            console.sender(sender, '§c请输入插件名称!')
-                        }
-                        break;
-                    case "update":
-                        if (args.length > 1) {
-                            update(sender, args[1]);
-                        } else {
-                            load();
-                            console.sender(sender, "§a仓库缓存刷新成功 共存在 §b" + pluginCache.length + " §a个插件!")
-                        }
-                        break;
-                    case "upgrade":
-                        break;
-                    case "delete":
-                        if (args.length > 1) {
-                            del(sender, args[1]);
-                        } else {
-                            console.sender(sender, '§c请输入插件名称!')
-                        }
-                        break;
-                    case "reload":
-                        if (args.length > 1) {
-                            var pname = args[1];
-                            if (pluginCache.indexOf(pname) !== -1) {
-                                manager.reload(pname)
-                            } else {
-                                console.sender(sender, '§c插件 %s 不存在!'.format(pname))
-                            }
-                        } else {
-                            self.reloadConfig();
-                            load();
-                        }
-                        break;
-                    case "restart":
-                        try {
-                            ScriptEngineContextHolder.disableEngine();
-                            ScriptEngineContextHolder.enableEngine();
-                            console.sender(sender, '§3MiaoScript Engine §6Reload §aSuccessful...');
-                        } catch (ex) {
-                            console.sender(sender, "§3MiaoScript Engine §6Reload §cError! ERR: " + ex);
-                            console.ex(ex);
-                        }
-                        break;
-                    case "run":
-                        args.shift(1);
-                        console.sender(sender, eval(args.join(' ')));
-                        break;
-                    case "create":
-                        var name = args[1];
-                        if (!name) {
-                            console.sender(sender, '§4参数错误 /mpm create <插件名称> [作者] [版本] [主命令]');
-                            return;
-                        }
-                        var result = template.create(http.get(self.config.template)).render({
-                            name: name,
-                            author: args[2] || 'MiaoWoo',
-                            version: args[3] || '1.0',
-                            command: args[4] || name.toLowerCase(),
-                        });
-                        fs.save(fs.file(__dirname, name + '.js'), result);
-                        console.sender(sender, '§6插件 §a' + name +  ' §6已生成到插件目录...');
-                        break;
-                    case "help":
-                        sendHelp(sender);
-                        break;
-                }
-            } else {
-                sendHelp(sender);
-            }
+            task.async(function asyncCommand() {
+                main(sender, command, args);
+            });
         },
         tab: function (sender, command, args) {
-            if (args.length === 1) return ['list', 'install', 'update', 'upgrade', 'reload', 'restart', 'run', 'help'];
+            if (args.length === 1) return ['list', 'install', 'update', 'upgrade', 'reload', 'restart', 'run', 'help', 'create'];
             if (args.length > 1) {
                 switch (args[0]) {
                     case "install":
@@ -150,6 +71,91 @@ function enable() {
             }
         }
     })
+}
+
+function main(sender, command, args){
+    if (!args[0] || args[1] === 'help') {
+        sendHelp(sender);
+        return;
+    }
+    switch (args[0]) {
+        case "list":
+            console.sender(sender, '§6当前 §bMiaoScriptPackageCenter §6中存在下列插件:');
+            for (var pkgName in packageCache) {
+                var pkg = packageCache[pkgName];
+                console.sender(sender, '§6插件名称: §b%s §6版本: §a%s'.format(pkg.name, pkg.version))
+            }
+            break;
+        case "install":
+            if (args.length > 1) {
+                download(sender, args[1]);
+            } else {
+                console.sender(sender, '§c请输入插件名称!')
+            }
+            break;
+        case "update":
+            if (args.length > 1) {
+                update(sender, args[1]);
+            } else {
+                load();
+                console.sender(sender, "§a仓库缓存刷新成功 共存在 §b" + pluginCache.length + " §a个插件!")
+            }
+            break;
+        case "upgrade":
+            break;
+        case "delete":
+            if (args.length > 1) {
+                del(sender, args[1]);
+            } else {
+                console.sender(sender, '§c请输入插件名称!')
+            }
+            break;
+        case "reload":
+            if (args.length > 1) {
+                var pname = args[1];
+                if (pluginCache.indexOf(pname) !== -1) {
+                    manager.reload(pname)
+                } else {
+                    console.sender(sender, '§c插件 %s 不存在!'.format(pname))
+                }
+            } else {
+                self.reloadConfig();
+                load();
+            }
+            break;
+        case "restart":
+            try {
+                ScriptEngineContextHolder.disableEngine();
+                ScriptEngineContextHolder.enableEngine();
+                console.sender(sender, '§3MiaoScript Engine §6Reload §aSuccessful...');
+            } catch (ex) {
+                console.sender(sender, "§3MiaoScript Engine §6Reload §cError! ERR: " + ex);
+                console.ex(ex);
+            }
+            break;
+        case "run":
+            args.shift(1);
+            console.sender(sender, eval(args.join(' ')) || '§4没有返回结果!');
+            break;
+        case "create":
+            var name = args[1];
+            if (!name) {
+                console.sender(sender, '§4参数错误 /mpm create <插件名称> [作者] [版本] [主命令]');
+                return;
+            }
+            var result = template.create(http.get(self.config.template)).render({
+                name: name,
+                author: args[2] || 'MiaoWoo',
+                version: args[3] || '1.0',
+                command: args[4] || name.toLowerCase(),
+            });
+            fs.save(fs.file(__dirname, name + '.js'), result);
+            console.sender(sender, '§6插件 §a' + name +  ' §6已生成到插件目录...');
+            break;
+        default:
+            sendHelp(sender);
+            break;
+    }
 }
 
 function sendHelp(sender) {
