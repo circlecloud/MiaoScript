@@ -6,54 +6,28 @@
 
 /*global Java, base, module, exports, require, __FILE__*/
 var Bukkit = MServer;
-var Server = MServer.server;
-exports.$ = Bukkit;
 /**
  * 获取NMS版本
  */
-exports.nmsVersion = Bukkit.server.class.name.split('.')[3];
+var nmsVersion = Bukkit.class.name.split('.')[3];
 /**
  * 获取NMS类
  */
-exports.nmsCls = function (name) {
-    return Java.type(['net.minecraft.server', exports.nmsVersion, name].join('.'));
+function nmsCls(name) {
+    return Java.type(['net.minecraft.server', nmsVersion, name].join('.'));
 };
 /**
  * 获取OBC类
  */
-exports.obcCls = function (name) {
-    return Java.type(['org.bukkit.craftbukkit', exports.nmsVersion, name].join('.'));
-};
-/**
- * 获取玩家
- */
-exports.player = function () {
-    switch (arguments.length) {
-        case 0:
-            return undefined;
-        case 1:
-            return Server.getPlayer(arguments[0]);
-        default:
-            return Server.getPlayerExtra(arguments[0]);
-    }
-};
-/**
- * 获取在线玩家
- */
-exports.players = function () {
-    switch (arguments.length) {
-        case 1:
-            return Bukkit.onlinePlayers.forEach(arguments[0]);
-        default:
-            return Bukkit.onlinePlayers;
-    }
+function obcCls(name) {
+    return Java.type(['org.bukkit.craftbukkit', nmsVersion, name].join('.'));
 };
 /**
  * 插件管理
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
  */
 var PluginManager = Bukkit.pluginManager;
-exports.plugin = {
+var plugin = {
     /**
      * 插件管理工具
      */
@@ -85,7 +59,7 @@ exports.plugin = {
  * @type {{manager: *, get: exports.plugin.get, load: exports.plugin.load}}
  */
 var ServicesManager = Bukkit.servicesManager;
-exports.service = {
+var service = {
     /**
      * 服务管理工具
      */
@@ -101,10 +75,28 @@ exports.service = {
     }
 };
 /**
+ * 获取玩家
+ */
+function player() {
+    if (!arguments[0]) { throw TypeError("player name can't be null!") }
+    switch (arguments.length) {
+        case 1:
+            return Bukkit.getPlayer(arguments[0]);
+        default:
+            return Bukkit.getPlayerExtra(arguments[0]);
+    }
+};
+/**
+ * 获取在线玩家
+ */
+function onlinePlayers() {
+    return Bukkit.onlinePlayers;
+};
+/**
  * 公告
  * @param message 消息
  */
-exports.broadcast = function (message) {
+function broadcast(message) {
     Bukkit.broadcastMessage(message);
 };
 /**
@@ -112,26 +104,26 @@ exports.broadcast = function (message) {
  * @param player 玩家
  * @param command 命令
  */
-exports.command = function (player, command) {
+function command(player, command) {
     Bukkit.dispatchCommand(player, command);
 };
 /**
  * 执行控制台命令
  * @param command 命令
  */
-exports.console = function (command) {
-    exports.command(Bukkit.getConsoleSender(), command);
+function console(command) {
+    command(Bukkit.consoleSender, command);
 };
 /**
  * 玩家以OP权限执行命令
  * @param player
  * @param command
  */
-exports.opcommand = function (player, command) {
+function opcommand(player, command) {
     var origin = player.isOp();
     player.setOp(true);
     try {
-        exports.command(player, command);
+        command(player, command);
     } finally {
         player.setOp(origin);
     }
@@ -140,13 +132,24 @@ exports.opcommand = function (player, command) {
  * 关闭引擎时执行的操作
  */
 function shutdown () {
-    try {
-        Bukkit.getScheduler().cancelTasks(plugin.self);
-        Bukkit.getServicesManager().unregisterAll(plugin.self);
-        org.bukkit.event.HandlerList.unregisterAll(plugin.self);
-        Bukkit.getMessenger().unregisterIncomingPluginChannel(plugin.self);
-        Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin.self);
-    } catch (ex) {
-        console.console();
-    }
+    Bukkit.scheduler.cancelTasks(plugin.self);
+    Bukkit.servicesManager.unregisterAll(plugin.self);
+    org.bukkit.event.HandlerList.unregisterAll(plugin.self);
+    Bukkit.messenger.unregisterIncomingPluginChannel(plugin.self);
+    Bukkit.messenger.unregisterOutgoingPluginChannel(plugin.self);
+}
+
+exports = module.exports = {
+    $: Bukkit,
+    nmsCls: nmsCls,
+    obcCls: obcCls,
+    plugin: plugin,
+    service: service,
+    player: player,
+    onlinePlayers: onlinePlayers,
+    broadcast: broadcast,
+    command: command,
+    console: console,
+    opcommand: opcommand,
+    shutdown: shutdown
 }

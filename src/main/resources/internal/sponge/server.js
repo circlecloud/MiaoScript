@@ -3,8 +3,9 @@
  * Sponge基础操作
  * Created by 蒋天蓓 on 2017/10/27 0009.
  */
-
 /*global Java, base, module, exports, require, __FILE__*/
+var Text = Java.type('org.spongepowered.api.text.Text');
+
 var Sponge = MServer;
 var Server = MServer.server;
 /**
@@ -23,7 +24,7 @@ var plugin = {
      * @returns {*}
      */
     get: function (name) {
-        return PluginManager.getPlugin(name).orElse(undefined);
+        return PluginManager.getPlugin(name).orElse(null);
     },
     /**
      * 载入插件 并且返回结果
@@ -33,7 +34,7 @@ var plugin = {
     load: function (name) {
         return PluginManager.isLoaded(name);
     },
-    self: PluginManager.getPlugin('miaoscript').orElse(undefined)
+    self: PluginManager.getPlugin('miaoscript').orElse(null)
 };
 /**
  * 服务管理
@@ -58,26 +59,49 @@ var service = {
  * 获取玩家
  */
 function player() {
-    switch (arguments.length) {
-        case 0:
-            return undefined;
-        case 1:
-            return Server.getPlayer(arguments[0]).orElse(undefined);
-        default:
-            return Server.getPlayer(arguments[0]).orElse(undefined);
-    }
+    if (!arguments[0]) { throw TypeError("player name can't be null!") }
+    return Server.getPlayer(arguments[0]).orElse(null);
 };
 /**
  * 获取在线玩家
  */
-function players() {
-    switch (arguments.length) {
-        case 1:
-            // 此处的forEach是Collection接口的
-            return Server.onlinePlayers.forEach(arguments[0]);
-        default:
-            // 此处会转换为JS原生的Array
-            return Java.from(Server.onlinePlayers.toArray());
+function onlinePlayers() {
+    return Server.onlinePlayers;
+};
+/**
+ * 公告
+ * @param message 消息
+ */
+function broadcast(message) {
+    Server.getBroadcastChannel().send(Text.of(message));
+};
+/**
+ * 执行名称
+ * @param player 玩家
+ * @param command 命令
+ */
+function command(player, command) {
+    Sponge.commandManager.process(player, command)
+};
+/**
+ * 执行控制台命令
+ * @param command 命令
+ */
+function console(command) {
+    command(Server.console, command);
+};
+/**
+ * 玩家以OP权限执行命令
+ * @param player
+ * @param command
+ */
+function opcommand(player, command) {
+    var origin = player.isOp();
+    player.setOp(true);
+    try {
+        command(player, command);
+    } finally {
+        player.setOp(origin);
     }
 };
 /**
@@ -98,6 +122,10 @@ exports = module.exports = {
     plugin: plugin,
     service: service,
     player: player,
-    players: players,
+    onlinePlayers: onlinePlayers,
+    broadcast: broadcast,
+    command: command,
+    console: console,
+    opcommand: opcommand,
     shutdown: shutdown
 }
