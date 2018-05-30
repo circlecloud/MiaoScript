@@ -8,7 +8,7 @@ var server = require('api/server');
 
 PlaceholderAPI = {
     setPlaceholders: function () {
-        return arguments[1].replace(/&([1-9a-fA-F])/, '§$1');
+        return arguments[1].replace(/&([0-9a-fk-orA-FK-OR])/, '§$1');
     }
 };
 
@@ -38,7 +38,7 @@ try {
 
 function replace() {
     var player = arguments[0];
-    var line = [];
+    var line = arguments[1];
     if (arguments.length === 1) {
         player = null;
         line = player;
