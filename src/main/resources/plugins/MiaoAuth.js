@@ -13,6 +13,7 @@ var fs = require('fs');
 var description = {
     name: 'MiaoAuth',
     version: '1.0',
+    author: 'MiaoWoo',
     commands: {
         'l': {
             description: 'MiaoAuth登录命令'

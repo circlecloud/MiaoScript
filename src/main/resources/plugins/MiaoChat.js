@@ -16,7 +16,7 @@ var Player;
 var description = {
     name: 'MiaoChat',
     version: '1.0',
-    author: '喵呜',
+    author: 'MiaoWoo',
     commands: {
         'mchat': {
             description: 'MiaoChat登录命令'

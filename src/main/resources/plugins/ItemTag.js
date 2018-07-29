@@ -10,7 +10,7 @@ var Keys;
 var description = {
     name: 'ItemTag',
     version: '1.0',
-    author: '喵♂呜'
+    author: 'MiaoWoo'
 };
 
 var itemConfig;

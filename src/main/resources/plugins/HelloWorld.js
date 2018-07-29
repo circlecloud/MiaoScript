@@ -13,6 +13,7 @@ var fs = require('fs');
 var description = {
     name: 'HelloWorld',
     version: '1.0',
+    author: 'MiaoWoo',
     commands: {
         'hello': {
             description: 'HelloWorld主命令'

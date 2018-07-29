@@ -11,7 +11,7 @@
 - 诞生于 `2016年08月25日` 这是 Git 上的第一个提交 具体啥时候我也忘了
 - 起初 `MiaoScript` 只是用于服务器其他插件的变量执行 并且依赖于PAPI(不知道是啥的自己百度)
   - 比如 [`MiaoMenu`](http://w.yumc.pw/zc/MiaoMenu.html) 的部分复杂脚本 
-  - 比如 [`MiaoChat`](http://mcbbs.tvt.im/thread-631240-1-1.html) 的聊天变量
+  - 比如 [`MiaoChat`](http://mcbbs.net/thread-631240-1-1.html) 的聊天变量
 - 突然有一天 圈内的大佬 `QSB` @qiu1995 过来找我 说能不能用脚本监听玩家的事件
   - PS: 这货自从用过 `DeluxeMenu` 之后就喜欢上了用JS写菜单
 - 当初感觉没啥问题 就出了第一个简易的 `MiaoScript` 版本 还是用 yml 做的配置文件

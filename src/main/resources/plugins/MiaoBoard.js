@@ -17,7 +17,7 @@ var boards = [];
 var description = {
     name: 'MiaoBoard',
     version: '1.0',
-    author: '喵呜',
+    author: 'MiaoWoo',
     commands: {
         'mboard': {
             description: '喵式记分板主命令'

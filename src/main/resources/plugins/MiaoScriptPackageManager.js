@@ -15,7 +15,7 @@ var packageNameCache = [];
 var description = {
     name: 'MiaoScriptPackageManager',
     version: '1.0',
-    author: '喵♂呜',
+    author: 'MiaoWoo',
     description: 'MiaoScript包管理工具',
     commands: {
         'mpm': {
@@ -31,7 +31,7 @@ var description = {
 var help = [
     '§6========= §6[§a' + description.name + '§6] 帮助 §aBy §b喵♂呜 §6=========',
     '§6/mpm §ainstall §e<插件名称> §6- §3安装插件',
-    '§6/mpm §alist §6- §3列出仓库插件',
+    '§6/mpm §alist [install]§6- §3列出仓库插件[已安装的插件]',
     '§6/mpm §aupdate §e<插件名称> §6- §3更新插件(无插件名称则更新源)',
     '§6/mpm §aupgrade §e<插件名称> §6- §3及时更新插件(update需要重启生效)',
     '§6/mpm §areload §e<插件名称> §6- §3重载插件(无插件名称则重载自身)',
@@ -80,10 +80,18 @@ function main(sender, command, args){
     }
     switch (args[0]) {
         case "list":
-            console.sender(sender, '§6当前 §bMiaoScriptPackageCenter §6中存在下列插件:');
-            for (var pkgName in packageCache) {
-                var pkg = packageCache[pkgName];
-                console.sender(sender, '§6插件名称: §b%s §6版本: §a%s'.format(pkg.name, pkg.version))
+            if (args[1]) {
+                console.sender(sender, '§6当前 §bMiaoScript §6已安装下列插件:');
+                pluginCache.forEach(function listInfo(pluginName){
+                    var desc = manager.plugins[pluginName].description;
+                    console.sender(sender, '§6插件名称: §b%s §6版本: §a%s §6作者: §3%s'.format(desc.name, desc.version || '1.0', desc.author || '未知'))
+                })
+            } else {
+                console.sender(sender, '§6当前 §bMiaoScriptPackageCenter §6中存在下列插件:');
+                for (var pkgName in packageCache) {
+                    var pkg = packageCache[pkgName];
+                    console.sender(sender, '§6插件名称: §b%s §6版本: §a%s §6作者: §3%s'.format(pkg.name, pkg.version || '1.0', pkg.author || '未知'))
+                }
             }
             break;
         case "install":
@@ -98,7 +106,7 @@ function main(sender, command, args){
                 update(sender, args[1]);
             } else {
                 load();
-                console.sender(sender, "§a仓库缓存刷新成功 共存在 §b" + pluginCache.length + " §a个插件!")
+                console.sender(sender, "§a仓库缓存刷新成功 共存在 §b" + Object.keys(packageCache).length + " §a个插件!")
             }
             break;
         case "upgrade":
@@ -171,12 +179,13 @@ function del(sender, name) {
     }
     manager.disable(name);
     fs.delete(plugin.__FILE__);
+    console.sender(sender, '§c插件 §b%s §c删除成功!'.format(name));
 }
 
 function download(sender, name) {
     var plugin = packageCache[name];
     if (!plugin) {
-        console.sender(sender, '§c插件§b', name, '§c不存在');
+        console.sender(sender, '§c插件 §b%s §c不存在!'.format(name));
         return;
     }
     var pfile = fs.file(__dirname, name + '.js');
