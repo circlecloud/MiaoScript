@@ -10,12 +10,6 @@ var command = require('api/command');
 
 var papi = require('papi');
 
-var Scoreboard = Java.type('org.spongepowered.api.scoreboard.Scoreboard');
-var Objective = Java.type('org.spongepowered.api.scoreboard.objective.Objective');
-var Criteria = Java.type('org.spongepowered.api.scoreboard.critieria.Criteria');
-var Text = Java.type('org.spongepowered.api.text.Text');
-var DisplaySlots = Java.type('org.spongepowered.api.scoreboard.displayslot.DisplaySlots');
-
 var Player;
 
 var boards = [];
@@ -60,7 +54,6 @@ var description = {
                     "&6位 置: &3%player_x%,%player_y%,%player_z%",
                     "&6等 级: &e%player_level%",
                     "&6血 量: &c%player_health%",
-                    "&6饥 饿: &d%player_food_level%",
                     "&6模 式: &4%player_gamemode%"
                 ]
             },
@@ -70,7 +63,7 @@ var description = {
                 "permission": "mb.reload",
                 "lines": [
                     "&6名 称: &aMiaoBoard",
-                    "&6版 本: &b" + this.version,
+                    "&6版 本: &b1.0.0",
                     "&6作 者: &cMiaoWoo",
                     "&6人 数: &c%server_online%/%server_max%",
                     "&6内 存: &a%server_ram_used%/%server_ram_total%/%server_ram_max%"
@@ -103,7 +96,15 @@ function registerCommand() {
 }
 
 function mainCommand(sender, command, args) {
-    boards[sender.name].update('MiaoBoard', ['第一行', '第二行', '第三行']);
+    if (!args[0]) {
+        return;
+    }
+    switch (args[0]) {
+        case "reload":
+            self.reloadConfig();
+            load();
+            break;
+    }
 }
 
 function registerEvent() {
@@ -139,7 +140,7 @@ function updateBoard() {
         if (player.isOnline()) {
             var format = getBoardFormat(player);
             if (format) {
-                boards[i].update(format.title, papi.replace(player, format.lines));
+                boards[i].update(papi.$(player, format.title), papi.$(player, format.lines));
             } else {
                 boards[i].clear();
             }
@@ -160,27 +161,37 @@ function getBoardFormat(player) {
 }
 
 function disable() {
-    update_task.cancel();
+    if (update_task) { update_task.cancel(); }
 }
 
 function MiaoBoard(player) {
+    var Scoreboard = Java.type('org.spongepowered.api.scoreboard.Scoreboard');
+    var Objective = Java.type('org.spongepowered.api.scoreboard.objective.Objective');
+    var Criteria = Java.type('org.spongepowered.api.scoreboard.critieria.Criteria');
+    var Text = Java.type('org.spongepowered.api.text.Text');
+    var DisplaySlots = Java.type('org.spongepowered.api.scoreboard.displayslot.DisplaySlots');
+
     var uuid = player.uniqueId;
     var scoreboard = Scoreboard.builder().build();
     var sidebar = Objective.builder().criterion(Criteria.DUMMY).displayName(Text.EMPTY).name("Sidebar").build();
+
     var origin = [];
 
     scoreboard.addObjective(sidebar);
     player.setScoreboard(scoreboard);
 
     this.update = function (title, lines) {
+        this.updateBuffer(title, lines);
+    }
+
+    this.updateBuffer = function (title, lines) {
         sidebar.scores.values().forEach(function removeScore(score) {
-            sidebar.removeScore(score)
+            sidebar.removeScore(score);
         })
-        var max = lines.length;
         var i = 0;
         sidebar.setDisplayName(Text.of(title));
         lines.forEach(function addScore(line) {
-            sidebar.getOrCreateScore(Text.of(line)).setScore(max - i++);
+            sidebar.getOrCreateScore(Text.of(line)).setScore(lines.length - i++);
         })
         scoreboard.updateDisplaySlot(sidebar, DisplaySlots.SIDEBAR);
     }
