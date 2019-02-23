@@ -20,8 +20,9 @@ function enable(jsp) {
             // noinspection JSUnfilteredForInLoop
             var command = commands[name];
             if (typeof command !== 'object') continue;
+            command.name = name;
             // noinspection JSUnfilteredForInLoop
-            var newCmd = create(jsp, name);
+            var newCmd = create(jsp, command);
             if (command.description) newCmd.setDescription(command.description);
             if (command.usage) newCmd.setUsage(command.usage);
             /** @namespace command.aliases */
@@ -51,7 +52,7 @@ function create(jsp, command) {
     var cmd = commandMap.getCommand(command.name)
     if (cmd) { return cmd };
     cmd = ref.on(PluginCommand).create(command.name, plugin).get();
-    register(jsp, cmd);
+    commandMap.register(jsp.description.name, cmd);
     return cmd;
 }
 
@@ -59,9 +60,9 @@ function onCommand(jsp, c, cmd) {
     // 必须指定需要实现的接口类型 否则MOD服会报错
     // noinspection JSUnusedGlobalSymbols
     c.setExecutor(new org.bukkit.command.CommandExecutor({
-        onCommand: function (sender, cmd, command, args) {
+        onCommand: function (sender, _, command, args) {
             try {
-                return cmd(sender, command, args);
+                return cmd(sender, command, Java.from(args));
             } catch (ex) {
                 console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6命令时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));
                 console.ex(ex);
@@ -74,10 +75,10 @@ function onTabComplete(jsp, c, tab) {
     // 必须指定需要实现的接口类型 否则MOD服会报错
     // noinspection JSUnusedGlobalSymbols
     c.setTabCompleter(new org.bukkit.command.TabCompleter({
-        onTabComplete: function (sender, cmd, command, args) {
+        onTabComplete: function (sender, _, command, args) {
             try {
                 var token = args[args.length - 1];
-                var complete = tab(sender, command, args) || [];
+                var complete = tab(sender, command, Java.from(args)) || [];
                 return Arrays.asList(complete.copyPartialMatches(token, []));
             } catch (ex) {
                 console.console('§6玩家 §a%s §6执行 §b%s §6插件 §d%s %s §6补全时发生异常 §4%s'.format(sender.name, jsp.description.name, command, Java.from(args).join(' '), ex));

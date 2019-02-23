@@ -26,7 +26,7 @@
  *   注: MiaoScript 暂不支持多层 modules 加载 暂时不需要(估计以后也不会需要)
  */
 /*global Java, base*/
-(function (parent) {
+(function(parent) {
     'use strict';
     var File = Java.type("java.io.File");
     var separatorChar = File.separatorChar;
@@ -175,15 +175,16 @@
         };
         cacheModules[id] = module;
         try {
-            if (_canonical(file).endsWith('.js')) {
+            var cfile = _canonical(file);
+            if (cfile.endsWith('.js')) {
                 compileJs(module, file, optional);
-            }
-            if (_canonical(file).endsWith('.json')) {
+            } else if (cfile.endsWith('.json')) {
                 compileJson(module, file, optional);
-            }
-            if (_canonical(file).endsWith('.msm')) {
+            } else if (cfile.endsWith('.msm')) {
                 // noinspection ExceptionCaughtLocallyJS
                 throw Error("暂不支持解析 MiaoScript 模块");
+            } else {
+                throw Error("未知的文件格式 " + cfile);
             }
         } catch (ex) {
             console.console('§4警告! §c模块§a', name, '§c编译失败! §4ERR:', ex);
@@ -242,12 +243,12 @@
     function _require(name, path, optional) {
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
-        optional = Object.assign({cache: true, warnNotFound: true}, optional);
+        optional = Object.assign({ cache: true, warnNotFound: true }, optional);
         if (file === undefined) {
             if (optional.warnNotFound) {
                 console.console('§c目录§b', path, '§c下模块§a', name, '§c加载失败! §4未找到该模块!');
             }
-            return {exports: {}};
+            return { exports: {} };
         }
         // 重定向文件名称和类型
         return getCacheModule(_canonical(file), file.name.split(".")[0], file, optional);
@@ -259,7 +260,7 @@
      * @returns {Function}
      */
     function exports(parent) {
-        return function (path, optional) {
+        return function __DynamicRequire__(path, optional) {
             return _require(path, parent, optional).exports;
         };
     }

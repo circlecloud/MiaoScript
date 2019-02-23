@@ -38,6 +38,7 @@
 # Eclipse
 .project
 .classpath
+.factorypath
 .settings
 
 # Visual Studio Code
