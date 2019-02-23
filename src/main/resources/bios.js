@@ -1,24 +1,23 @@
 'use strict';
 var log;
 var boot;
-var disable;
 // noinspection ThisExpressionReferencesGlobalObjectJS
 var global = this;
 /**
  * 初始化框架引擎
  */
-(function () {
+(function() {
     var loader;
-    boot = function (root, logger) {
+    boot = function(root, logger) {
         log = logger;
         // 开发环境下初始化
         root = root || "src/main/resources";
         if (__FILE__ !== "<eval>") {
-            logger.info('载入自定义 BIOS 文件 ' + __FILE__);
+            logger.info('Loading custom BIOS file ' + __FILE__);
             global.debug = true;
         }
         if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "debug"))) {
-            logger.info('已开启调试模式!');
+            logger.info('Running debugging mode...');
             global.debug = true;
         }
         // 检查类加载器 防止找不到核心文件
@@ -40,10 +39,10 @@ var global = this;
         var classLoader = java.lang.Thread.currentThread().contextClassLoader;
         pluginYml = classLoader.getResource("plugin.yml");
         if (pluginYml === null) {
-            log.info("==================== ERROR ====================");
-            log.info("异常的类加载器: " + classLoader.class.name);
-            log.info("==================== ERROR ====================");
-            throw Error('MiaoScript核心类库初始化失败 异常的类加载器!');
+            engineDisable = function engineDisable() { }
+            throw Error("Error class loader: " + classLoader.class.name + " Please contact the author MiaoWoo!");
+        } else {
+            log.info("Class loader compatible: " + classLoader.class.name);
         }
         return classLoader;
     }
@@ -56,7 +55,7 @@ var global = this;
         }
         var jar = new java.util.jar.JarFile(jarPath);
         var r = new RegExp(regex);// "[core|modules]/.*"
-        jar.stream().forEach(function (entry) {
+        jar.stream().forEach(function(entry) {
             try {
                 // noinspection JSValidateTypes
                 if (!entry.isDirectory()) {

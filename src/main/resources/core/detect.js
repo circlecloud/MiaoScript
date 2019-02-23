@@ -7,7 +7,7 @@ var ServerType = {
     Sponge: 'sponge'
 };
 var MServer;
-var DetectServerType = ServerType.Bukkit;
+var DetectServerType;
 try {
     MServer = Java.type("org.bukkit.Bukkit");
     DetectServerType = ServerType.Bukkit;
@@ -23,9 +23,11 @@ try {
 /**
  * 尝试加载特殊的Console类
  */
-try {
-    load(root + '/internal/' + DetectServerType + '/console.js');
-} catch (ex) {
-    // IGNORE
+if (DetectServerType) {
+    try {
+        load(root + '/internal/' + DetectServerType + '/console.js');
+    } catch (ex) {
+        // IGNORE
+    }
 }
 global.console = new global.Console();

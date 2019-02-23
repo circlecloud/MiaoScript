@@ -15,10 +15,10 @@
             loadServerLib();
             loadPlugins();
         } catch (ex) {
-            console.console("§4初始化插件基础系统库错误:§c", ex);
+            console.console("§4Init plugin system lib failed! ERROR:§c", ex);
             console.ex(ex);
         }
-        console.log('MiaoScript Engine Load Complete... Done (' + (new Date().getTime() - startTime) / 1000 + 's)!');
+        console.log('MiaoScript engine loading completed... Done (' + (new Date().getTime() - startTime) / 1000 + 's)!');
     };
 
     /**
@@ -38,8 +38,8 @@
      */
     function loadRequire() {
         global.engineLoad = load;
-        global.load = function __denyGlobalLoad__() {
-            throw new Error('系统内部不许允许使用 load 如需执行脚本 请使用 engineLoad !');
+        global.load = function __PreventGlobalLoadFunction__() {
+            throw new Error('Internal engine system not allow use `load` function!');
         };
         // 初始化加载器
         global.require = engineLoad(root + '/core/require.js')(root);
@@ -53,7 +53,7 @@
      */
     function loadPatch() {
         java.nio.file.Files.list(new java.io.File(root, 'core/patch').toPath()).forEach(function (path) {
-            console.log('加载扩展类库', path);
+            console.log('Loading ext lib', path);
             try {
                 load(path.toFile());
             } catch (ex) {
@@ -93,7 +93,7 @@
             global.manager.load();
             global.manager.enable();
         } else {
-            console.console('§4当前服务器不支持使用MiaoScript插件系统!');
+            console.console('§4Current server does not support MiaoScript plugin system!' + DetectServerType);
         }
     }
 
@@ -111,7 +111,7 @@
                 server.shutdown();
             }
         } catch (ex) {
-            console.console("§3MiaoScript Engine §aShutDown §4Error... ERR: ", ex);
+            console.console("§3MiaoScript engine §ashutdown §4error... ERROR: ", ex);
             console.ex(ex);
         }
     }
