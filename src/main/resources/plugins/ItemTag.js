@@ -17,7 +17,7 @@ var itemConfig;
 
 function load() {
     var itemFile = self.file('item.yml');
-    task.async(function () {
+    task.async(function() {
         if (!itemFile.exists()) {
             fs.save(itemFile, http.get('https://data.yumc.pw/config/Item_zh_CN.yml'))
         }
@@ -28,10 +28,10 @@ function load() {
 function enable() {
     switch (DetectServerType) {
         case ServerType.Bukkit:
-            event.on(self, 'ItemMergeEvent', function (event) {
+            event.on(self, 'ItemMergeEvent', function(event) {
                 bukkit(event.target, event.entity.itemStack.amount + event.target.itemStack.amount);
             });
-            event.on(self, 'ItemSpawnEvent', function (event) {
+            event.on(self, 'ItemSpawnEvent', function(event) {
                 if (event.entity.itemStack) {
                     bukkit(event.entity, event.entity.itemStack.amount);
                 }
@@ -39,11 +39,11 @@ function enable() {
             break;
         case ServerType.Sponge:
             Keys = Java.type('org.spongepowered.api.data.key.Keys');
-            event.on(self, 'ItemMergeItemEvent', function (event) {
+            event.on(self, 'ItemMergeItemEvent', function(event) {
                 // Sponge 暂未实现当前事件
             });
-            event.on(self, 'SpawnEntityEvent', function (event) {
-                event.entities.forEach(function (entity) {
+            event.on(self, 'SpawnEntityEvent', function(event) {
+                event.entities.forEach(function(entity) {
                     if (entity.type.name === "item") sponge(entity);
                 })
             });

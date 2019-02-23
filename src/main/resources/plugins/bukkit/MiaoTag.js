@@ -59,12 +59,12 @@ function enable() {
             return ['reload'];
         }
     });
-    bukkit.players(function (p) fakeTag.set(p));
-    event.on(self, 'PlayerJoin', function (event) fakeTag.set(event.player));
-    var entityUpdate = function (event) {
+    bukkit.players(function(p) { fakeTag.set(p) });
+    event.on(self, 'PlayerJoin', function(event) { fakeTag.set(event.player) });
+    var entityUpdate = function(event) {
         var player = event.entity || event.player;
         if (player instanceof org.bukkit.entity.Player) {
-            setTimeout(function () {
+            setTimeout(function() {
                 fakeTag.update(player);
             }, 1);
         }
@@ -108,18 +108,18 @@ function FakeTag(name) {
         player.handle.playerConnection.sendPacket(p);
     }
 
-    this.set = function (player) {
+    this.set = function(player) {
         sendPacket(player, cache.objective);
         sendPacket(player, cache.display);
         this.update(player);
     };
 
-    this.update = function (player) {
+    this.update = function(player) {
         var score = mainScoreboard.getPlayerScoreForObjective(player.name, objective);
         score.setScore(player.getHealth());
         var scorePack = new PacketPlayOutScoreboardScore(score);
         //把其他玩家缓存的包发给这个玩家
-        bukkit.players(function (t) {
+        bukkit.players(function(t) {
             sendPacket(t, scorePack);
             if (t.name !== player.name) {
                 var outher = mainScoreboard.getPlayerScoreForObjective(t.name, objective);
@@ -129,7 +129,7 @@ function FakeTag(name) {
         });
     };
 
-    this.disable = function () {
+    this.disable = function() {
         // 注销tag对象
         mainScoreboard.unregisterObjective(objective);
     }
