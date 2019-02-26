@@ -135,7 +135,7 @@ function EventHandlerDefault() {
         var listenerMap = this.listenerMap;
         // 添加到缓存 用于关闭插件的时候关闭事件
         if (!listenerMap[name]) listenerMap[name] = [];
-        var offExec = function () {
+        var offExec = function() {
             this.unregister(eventCls, listener);
             console.debug('插件 %s 注销事件 %s'.format(name, this.class2Name(eventCls)));
         }.bind(this);
@@ -156,10 +156,10 @@ var EventHandler = Object.assign(new EventHandlerDefault(), requireInternal('eve
 console.info('%s 事件映射完毕 共计 %s 个事件!'.format(DetectServerType, EventHandler.mapEventName().toFixed(0)));
 module.exports = {
     on: EventHandler.listen.bind(EventHandler),
-    disable: function (jsp) {
+    disable: function(jsp) {
         var eventCache = EventHandler.listenerMap[jsp.description.name];
         if (eventCache) {
-            eventCache.forEach(function (t) t.off.call(EventHandler));
+            eventCache.forEach(function(t) { t.off.call(EventHandler) });
             delete EventHandler.listenerMap[jsp.description.name];
         }
     }

@@ -92,7 +92,7 @@ function readPlugin(file) {
     }
     var plugin = require(file, {
         cache: false,
-        hook: function (origin) {
+        hook: function(origin) {
             return beforeLoadHook(origin);
         }
     });
@@ -172,7 +172,7 @@ function initPluginConfig(plugin) {
      * @constructor
      * @constructor (file|string)
      */
-    plugin.getConfig = function () {
+    plugin.getConfig = function() {
         switch (arguments.length) {
             case 0:
                 return plugin.config;
@@ -181,7 +181,7 @@ function initPluginConfig(plugin) {
                 if (!file.isFile) {
                     file = plugin.getFile(file);
                 }
-                return yaml.safeLoad(fs.read(file), {json: true});
+                return yaml.safeLoad(fs.read(file), { json: true });
         }
     };
     /**
@@ -189,7 +189,7 @@ function initPluginConfig(plugin) {
      * @constructor
      * @constructor (file|string)
      */
-    plugin.reloadConfig = function () {
+    plugin.reloadConfig = function() {
         plugin.config = plugin.getConfig(plugin.configFile);
     };
     /**
@@ -197,7 +197,7 @@ function initPluginConfig(plugin) {
      * @constructor
      * @constructor (file, content)
      */
-    plugin.saveConfig = function () {
+    plugin.saveConfig = function() {
         switch (arguments.length) {
             case 0:
                 fs.save(plugin.configFile, yaml.safeDump(plugin.config));
@@ -273,13 +273,15 @@ function disable() {
     });
 }
 
+function reloadPlugin(p) {
+    disable(p);
+    p = loadPlugin(p.__FILE__);
+    load(p);
+    enable(p);
+}
+
 function reload() {
-    checkAndGet(arguments).forEach(function (p) {
-        disable(p);
-        p = loadPlugin(p.__FILE__);
-        load(p);
-        enable(p);
-    });
+    checkAndGet(arguments).forEach(reloadPlugin);
 }
 
 // noinspection JSUnresolvedVariable

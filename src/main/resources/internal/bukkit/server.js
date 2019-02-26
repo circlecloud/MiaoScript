@@ -9,7 +9,7 @@ var Bukkit = MServer;
 /**
  * 获取NMS版本
  */
-var nmsVersion = Bukkit.class.name.split('.')[3];
+var nmsVersion = Bukkit.server.class.name.split('.')[3];
 /**
  * 获取NMS类
  */
