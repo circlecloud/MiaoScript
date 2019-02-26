@@ -7,6 +7,7 @@
             var sender = arguments[0];
             if (!(sender instanceof org.spongepowered.api.command.CommandSource)) {
                 this.error("第一个参数未实现 org.spongepowered.api.command.CommandSource 无法发送消息!")
+                return
             }
             var args = Array.prototype.slice.call(arguments, 1);
             sender.sendMessage(Text.of(console.prefix + args.join(' ')));

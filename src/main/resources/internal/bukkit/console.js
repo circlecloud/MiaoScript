@@ -6,6 +6,7 @@
             var sender = arguments[0];
             if (!(sender instanceof org.bukkit.command.CommandSender)) {
                 this.error("第一个参数未实现 org.bukkit.command.CommandSender 无法发送消息!")
+                return
             }
             var args = Array.prototype.slice.call(arguments, 1);
             sender.sendMessage(console.prefix + args.join(' '));
