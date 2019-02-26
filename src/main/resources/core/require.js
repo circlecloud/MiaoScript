@@ -179,7 +179,7 @@
             if (cfile.endsWith('.js')) {
                 compileJs(module, file, optional);
             } else if (cfile.endsWith('.json')) {
-                compileJson(module, file, optional);
+                compileJson(module, file);
             } else if (cfile.endsWith('.msm')) {
                 // noinspection ExceptionCaughtLocallyJS
                 throw Error("暂不支持解析 MiaoScript 模块");
@@ -227,7 +227,7 @@
      * @param optional 附加选项
      * @returns {Object}
      */
-    function compileJson(module, file, optional) {
+    function compileJson(module, file) {
         module.exports = JSON.parse(base.read(file));
         module.loaded = true;
     }
