@@ -165,7 +165,7 @@
         if (optional.cache && module) {
             return module;
         }
-        console.debug('加载模块', name, '位于', id, 'Optional', JSON.stringify(optional));
+        console.debug('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional));
         // noinspection JSUnresolvedVariable
         module = {
             id: id,
@@ -174,21 +174,16 @@
             require: exports(file.parentFile)
         };
         cacheModules[id] = module;
-        try {
-            var cfile = _canonical(file);
-            if (cfile.endsWith('.js')) {
-                compileJs(module, file, optional);
-            } else if (cfile.endsWith('.json')) {
-                compileJson(module, file);
-            } else if (cfile.endsWith('.msm')) {
-                // noinspection ExceptionCaughtLocallyJS
-                throw Error("暂不支持解析 MiaoScript 模块");
-            } else {
-                throw Error("未知的文件格式 " + cfile);
-            }
-        } catch (ex) {
-            console.console('§4警告! §c模块§a', name, '§c编译失败! §4ERR:', ex);
-            console.ex(ex);
+        var cfile = _canonical(file);
+        if (cfile.endsWith('.js')) {
+            compileJs(module, file, optional);
+        } else if (cfile.endsWith('.json')) {
+            compileJson(module, file);
+        } else if (cfile.endsWith('.msm')) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw Error("Unsupported MiaoScript module!");
+        } else {
+            throw Error("Unknown file type " + cfile);
         }
         return module;
     }
@@ -243,12 +238,9 @@
     function _require(name, path, optional) {
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
-        optional = Object.assign({ cache: true, warnNotFound: true }, optional);
+        optional = Object.assign({ cache: true }, optional);
         if (file === undefined) {
-            if (optional.warnNotFound) {
-                console.console('§c目录§b', path, '§c下模块§a', name, '§c加载失败! §4未找到该模块!');
-            }
-            return { exports: {} };
+            throw Error("Can't found module", name, 'in directory', path)
         }
         // 重定向文件名称和类型
         return getCacheModule(_canonical(file), file.name.split(".")[0], file, optional);
@@ -269,6 +261,6 @@
         parent = new File(parent);
     }
     var cacheModules = [];
-    console.debug("初始化 require 模块组件 父目录 ", _canonical(parent));
+    console.debug("Initialization require module... ParentDir:", _canonical(parent));
     return exports(parent);
 });
