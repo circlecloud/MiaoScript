@@ -50,7 +50,7 @@ function disable(jsp) {
 
 function create(jsp, command) {
     var cmd = commandMap.getCommand(command.name)
-    if (cmd) { return cmd };
+    if (cmd && cmd instanceof PluginCommand) { return cmd };
     cmd = ref.on(PluginCommand).create(command.name, plugin).get();
     commandMap.register(jsp.description.name, cmd);
     return cmd;
