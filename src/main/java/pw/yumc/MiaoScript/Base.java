@@ -7,8 +7,6 @@ import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 import lombok.val;
-import pw.yumc.YumCore.annotation.NotProguard;
-import pw.yumc.YumCore.mc.MinecraftTools;
 
 /**
  * Created with IntelliJ IDEA
@@ -16,7 +14,6 @@ import pw.yumc.YumCore.mc.MinecraftTools;
  * @author 喵♂呜
  * Created on 2017/10/9 12:40.
  */
-@NotProguard
 public class Base {
     public Class getClass(String name) throws ClassNotFoundException {
         return Class.forName(name);
@@ -45,9 +42,5 @@ public class Base {
             }
         }
         Files.delete(path);
-    }
-
-    public Class getTools() {
-        return MinecraftTools.class;
     }
 }
