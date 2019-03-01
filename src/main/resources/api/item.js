@@ -1,2 +1,9 @@
+'use strict';
+/**
+ * MiaoScript Item处理类
+ */
 /*global Java, base, module, exports, require*/
-module.exports = requireInternal('item');
+/*global Java, base, module, exports, require*/
+function ItemHandlerDefault() {
+}
+exports = module.exports = Object.assign(new ItemHandlerDefault(), requireInternal('item'));;

@@ -1,3 +1,7 @@
+'use strict';
+/**
+ * MiaoScript Command处理类
+ */
 /*global Java, base, module, exports, require*/
 function CommandHandlerDefault() {
     this.on = function(jsp, name, exec) {
@@ -13,6 +17,4 @@ function CommandHandlerDefault() {
         }
     }
 }
-var CommandHandler = Object.assign(new CommandHandlerDefault(), requireInternal('command'));
-
-exports = module.exports = CommandHandler;
+exports = module.exports = Object.assign(new CommandHandlerDefault(), requireInternal('command'));

@@ -13,6 +13,4 @@ function ServerHandlerDefault() {
         }
     };
 }
-var ServerHandler = Object.assign(new ServerHandlerDefault(), requireInternal('server'));
-
-exports = module.exports = ServerHandler;
+exports = module.exports = Object.assign(new ServerHandlerDefault(), requireInternal('server'));

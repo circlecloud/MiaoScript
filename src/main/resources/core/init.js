@@ -1,11 +1,11 @@
 'use strict';
 /*global base*/
 
-(function (global) {
+(function(global) {
     // noinspection JSUnusedLocalSymbols
     global.init = function init(root) {
         global.root = root;
-        global.noop = function () {
+        global.noop = function() {
         };
         var startTime = new Date().getTime();
         loadCore();
@@ -15,7 +15,7 @@
             loadServerLib();
             loadPlugins();
         } catch (ex) {
-            console.console("§4Init plugin system lib failed! ERROR:§c", ex);
+            console.console("§4Initialization plugin system lib failed! ERROR:§c", ex);
             console.ex(ex);
         }
         console.log('MiaoScript engine loading completed... Done (' + (new Date().getTime() - startTime) / 1000 + 's)!');
@@ -34,6 +34,20 @@
     }
 
     /**
+     * 加载补丁
+     */
+    function loadPatch() {
+        java.nio.file.Files.list(new java.io.File(root, 'core/patch').toPath()).forEach(function(path) {
+            console.log('Loading ext lib', path);
+            try {
+                load(path.toFile());
+            } catch (ex) {
+                console.ex(ex);
+            }
+        })
+    }
+
+    /**
      * 初始化模块
      */
     function loadRequire() {
@@ -44,22 +58,13 @@
         // 初始化加载器
         global.require = engineLoad(root + '/core/require.js')(root);
         global.requireInternal = function requireInternal(name) {
-            return require(root + '/internal/' + DetectServerType + '/' + name + '.js', arguments[1]);
-        }
-    }
-
-    /**
-     * 加载补丁
-     */
-    function loadPatch() {
-        java.nio.file.Files.list(new java.io.File(root, 'core/patch').toPath()).forEach(function (path) {
-            console.log('Loading ext lib', path);
             try {
-                load(path.toFile());
+                return require(root + '/internal/' + DetectServerType + '/' + name + '.js');
             } catch (ex) {
-                console.ex(ex);
+                if (!arguments[1]) { return {} }
+                throw ex;
             }
-        })
+        }
     }
 
     /**

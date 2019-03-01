@@ -1,3 +1,7 @@
+'use strict';
+/**
+ * MiaoScript Chat处理类
+ */
 /*global Java, base, module, exports, require*/
 function ChatHandlerDefault() {
     // noinspection JSUnusedGlobalSymbols
@@ -5,6 +9,4 @@ function ChatHandlerDefault() {
         this.json(sender, JSON.stringify(raw));
     }
 }
-var ChatHandler = Object.assign(new ChatHandlerDefault(), requireInternal('chat'));
-
-exports = module.exports = ChatHandler;
+exports = module.exports = Object.assign(new ChatHandlerDefault(), requireInternal('chat'));

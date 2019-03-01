@@ -18,15 +18,16 @@ public class ScriptEngine {
     private String root;
     private Object logger;
     private MiaoScriptEngine engine;
+    private ScriptEngineManager manager;
 
     public ScriptEngine(String root, Object logger) {
         this.root = root;
         this.logger = logger;
+        this.manager = new ScriptEngineManager();
     }
 
     @SneakyThrows
     public void enableEngine() {
-        ScriptEngineManager manager = new ScriptEngineManager();
         this.engine = new MiaoScriptEngine(manager, "nashorn");
         this.engine.put("base", new Base());
         this.engine.put("ScriptEngineContextHolder", this);
@@ -42,7 +43,8 @@ public class ScriptEngine {
 
     @SneakyThrows
     public void disableEngine() {
-        engine.invokeFunction("engineDisable");
+        this.engine.invokeFunction("engineDisable");
+        this.engine = null;
     }
 
     public MiaoScriptEngine getEngine() {

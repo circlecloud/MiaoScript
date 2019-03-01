@@ -6,6 +6,4 @@
 /*global Java, base, module, exports, require*/
 function TaskHandlerDefault() {
 }
-var TaskHandler = Object.assign(new TaskHandlerDefault(), requireInternal('task'));
-
-exports = module.exports = TaskHandler;
+exports = module.exports = Object.assign(new TaskHandlerDefault(), requireInternal('task'));

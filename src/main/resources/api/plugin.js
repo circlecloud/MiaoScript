@@ -1,7 +1,6 @@
 'use strict';
 /**
  * MiaoScript脚本插件加载类
- * @namespace plugin.configFile.parentFile, command.enable, permission.enable
  */
 /*global Java, module, exports, require, __FILE__*/
 var fs = require('core/fs');
@@ -68,20 +67,20 @@ function loadJsPlugins(files) {
     files.filter(function filterJsPlugin(file) {
         return file.name.endsWith(".js")
     }).forEach(function loadJsPlugin(file) {
-        loadPlugin(file)
+        try {
+            loadPlugin(file)
+        } catch (ex) {
+            console.console('§6插件 §b%s §6初始化时发生错误 §4%s'.format(file.name, ex.message));
+            console.ex(ex);
+        }
     })
 }
 
 function loadPlugin(file) {
-    try {
-        var plugin = readPlugin(file);
-        initPlugin(plugin);
-        plugins[plugin.description.name] = plugin;
-        return plugin
-    } catch (ex) {
-        console.console('§6插件 §b%s §6初始化时发生错误 §4%s'.format(file.name, ex.message));
-        console.ex(ex);
-    }
+    var plugin = readPlugin(file);
+    initPlugin(plugin);
+    plugins[plugin.description.name] = plugin;
+    return plugin
 }
 
 function readPlugin(file) {
@@ -148,10 +147,7 @@ function internalInitPlugin(plugin) {
     };
     // 初始化插件配置相关方法
     initPluginConfig(plugin);
-
-    /** @namespace command.enable */
     if (command.enable) command.enable(plugin);
-    /** @namespace permission.enable */
     if (permission.enable) permission.enable(plugin);
 }
 
@@ -227,7 +223,7 @@ function checkAndGet(args) {
     }
     var plugin = exports.plugins[name];
     if (!plugin) {
-        throw new Error("插件 " + name + " 不存在!");
+        throw new Error("插件 " + name + " 不存在!", args);
     }
     return [plugin];
 }
@@ -276,8 +272,10 @@ function disable() {
 function reloadPlugin(p) {
     disable(p);
     p = loadPlugin(p.__FILE__);
-    load(p);
-    enable(p);
+    if (p) {
+        load(p);
+        enable(p);
+    }
 }
 
 function reload() {

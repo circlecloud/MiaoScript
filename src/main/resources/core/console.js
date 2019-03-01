@@ -39,26 +39,39 @@
             }
         };
         this.ex = function(message, ex) {
-            if (!ex) {
-                this.console('§4' + message);
-                ex = message;
-            } else {
-                this.console('§4' + message + ' ' + ex);
+            switch (toString.call(message)) {
+                case "[object String]":
+                    message = message + ' ' //message = 'xxxx' ex =Error
+                    break
+                case "[object Error]":
+                    ex = message // message = Error ex=null
+                    message = ''
+                    break
             }
-            var track = ex.getStackTrace();
+            this.console('§4 ' + message + ex)
+            this.stack(ex).forEach(function(line) {
+                this.console(line)
+            })
+        };
+        this.stack = function(ex) {
+            var track = ex ? ex.getStackTrace() : new Error().getStackTrace();
+            var cache = ['§4' + ex];
             if (track.class) {
                 track = Arrays.asList(track)
             }
             track.forEach(function(stack) {
                 if (stack.className.startsWith('<')) {
-                    this.console('    §e位于§c', stack.fileName, '=>§c', stack.methodName, '§4行', stack.lineNumber);
+                    var fileName = stack.fileName
+                    fileName = fileName.indexOf('runtime') > -1 ? fileName.split('runtime')[1] : fileName;
+                    cache.push('    §e->§c %s => §4%s:%s'.format(fileName, stack.methodName, stack.lineNumber))
                 } else {// %s.%s(§4%s:%s§c)
                     var className = stack.className
                     className = className.startsWith('jdk.nashorn.internal.scripts') ? className.substr(className.lastIndexOf('$') + 1) : className
-                    this.console('    §e位于§c', className + '.' + stack.methodName + '(§4' + stack.fileName + ':' + stack.lineNumber + '§c)');
+                    cache.push('    §e->§c %s.%s(§4%s:%s§c)'.format(className, stack.methodName, stack.fileName, stack.lineNumber));
                 }
-            }.bind(this));
-        };
+            });
+            return cache;
+        }
     };
     global.Console = ConsoleDefault;
 })(global);

@@ -1,10 +1,9 @@
 'use strict';
 /**
- * Bukkit 事件相关类
+ * MiaoScript Event处理类
  */
 
 /*global Java, base, module, exports, require, __FILE__*/
-
 function EventHandlerDefault() {
     var Thread = Java.type("java.lang.Thread");
 
@@ -13,9 +12,6 @@ function EventHandlerDefault() {
     this.mapEvent = [];
     this.listenerMap = [];
     this.baseEventDir = '';
-
-    // noinspection JSUnusedLocalSymbols
-    var self = this;
 
     /**
      * 扫描包 org.bukkit.event 下的所有事件
@@ -101,7 +97,12 @@ function EventHandlerDefault() {
     this.execute = function execute(name, exec, eventCls) {
         return function execute() {
             try {
+                var time = new Date().getTime()
                 exec(arguments[arguments.length - 1]);
+                var cost = new Date().getTime() - time;
+                if (cost > 20) {
+                    console.console('§c注意! §6插件 §b%s §6处理 §d%s §6事件 §c耗时 §4%sms !'.format(name, this.class2Name(eventCls), cost))
+                }
             } catch (ex) {
                 console.console('§6插件 §b%s §6处理 §d%s §6事件时发生异常 §4%s'.format(name, this.class2Name(eventCls), ex));
                 console.ex(ex);
@@ -121,9 +122,7 @@ function EventHandlerDefault() {
         if (!jsp || !jsp.description || !jsp.description.name) throw new TypeError('插件名称为空 请检查传入参数!');
         var name = jsp.description.name;
         var eventCls = this.name2Class(name, event);
-        if (!eventCls) {
-            return;
-        }
+        if (!eventCls) { return; }
         if (typeof priority === 'boolean') {
             ignoreCancel = priority;
             priority = 'NORMAL';
@@ -146,7 +145,7 @@ function EventHandlerDefault() {
         };
         listenerMap[name].push(off);
         // noinspection JSUnresolvedVariable
-        console.debug('插件 %s 注册事件 %s => %s'.format(name, this.class2Name(eventCls), exec.name === '' ? '匿名方法' : exec.name));
+        console.debug('插件 %s 注册事件 %s => %s'.format(name, this.class2Name(eventCls), exec.name || '匿名方法'));
         return off;
     }
 }
