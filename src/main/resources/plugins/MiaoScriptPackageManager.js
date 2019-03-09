@@ -41,7 +41,7 @@ var help = [
 ];
 
 function load() {
-    task.async(function () {
+    task.async(function() {
         pluginCache = Object.keys(manager.plugins);
         JSON.parse(http.get(self.config.center)).data.forEach(function cachePackageName(pkg) {
             packageCache[pkg.name] = pkg;
@@ -52,12 +52,12 @@ function load() {
 
 function enable() {
     command.on(this, 'mpm', {
-        cmd: function (sender, command, args) {
+        cmd: function(sender, command, args) {
             task.async(function asyncCommand() {
                 main(sender, command, args);
             });
         },
-        tab: function (sender, command, args) {
+        tab: function(sender, command, args) {
             if (args.length === 1) return ['list', 'install', 'update', 'upgrade', 'reload', 'restart', 'run', 'help', 'create'];
             if (args.length > 1) {
                 switch (args[0]) {
@@ -73,7 +73,7 @@ function enable() {
     })
 }
 
-function main(sender, command, args){
+function main(sender, command, args) {
     if (!args[0] || args[1] === 'help') {
         sendHelp(sender);
         return;
@@ -82,7 +82,7 @@ function main(sender, command, args){
         case "list":
             if (args[1]) {
                 console.sender(sender, '§6当前 §bMiaoScript §6已安装下列插件:');
-                pluginCache.forEach(function listInfo(pluginName){
+                pluginCache.forEach(function listInfo(pluginName) {
                     var desc = manager.plugins[pluginName].description;
                     console.sender(sender, '§6插件名称: §b%s §6版本: §a%s §6作者: §3%s'.format(desc.name, desc.version || '1.0', desc.author || '未知'))
                 })
@@ -123,8 +123,9 @@ function main(sender, command, args){
                 var pname = args[1];
                 if (pluginCache.indexOf(pname) !== -1) {
                     manager.reload(pname)
+                    console.sender(sender, '§6插件 §b%s §a重载完成!'.format(pname))
                 } else {
-                    console.sender(sender, '§c插件 %s 不存在!'.format(pname))
+                    console.sender(sender, '§c插件 §b%s §c不存在!'.format(pname))
                 }
             } else {
                 self.reloadConfig();
@@ -133,17 +134,24 @@ function main(sender, command, args){
             break;
         case "restart":
             try {
+                console.sender(sender, '§6Reloading §3MiaoScript Engine...');
                 ScriptEngineContextHolder.disableEngine();
                 ScriptEngineContextHolder.enableEngine();
                 console.sender(sender, '§3MiaoScript Engine §6Reload §aSuccessful...');
             } catch (ex) {
                 console.sender(sender, "§3MiaoScript Engine §6Reload §cError! ERR: " + ex);
-                console.ex(ex);
+                console.sender(sender, console.stack(ex));
             }
             break;
         case "run":
             args.shift(1);
-            console.sender(sender, eval(args.join(' ')) || '§4没有返回结果!');
+            try {
+                var script = args.join(' ')
+                console.sender(sender, '§b运行脚本:§r', script)
+                console.sender(sender, '§a返回结果:§r', eval(script) || '§4没有返回结果!');
+            } catch (ex) {
+                console.sender(sender, console.stack(ex))
+            }
             break;
         case "create":
             var name = args[1];
@@ -158,7 +166,7 @@ function main(sender, command, args){
                 command: args[4] || name.toLowerCase(),
             });
             fs.save(fs.file(__dirname, name + '.js'), result);
-            console.sender(sender, '§6插件 §a' + name +  ' §6已生成到插件目录...');
+            console.sender(sender, '§6插件 §a' + name + ' §6已生成到插件目录...');
             break;
         default:
             sendHelp(sender);
@@ -167,7 +175,7 @@ function main(sender, command, args){
 }
 
 function sendHelp(sender) {
-    help.forEach(function (msg) {
+    help.forEach(function(msg) {
         console.sender(sender, msg);
     })
 }
