@@ -57,11 +57,11 @@
         };
         // 初始化加载器
         global.require = engineLoad(root + '/core/require.js')(root);
-        global.requireInternal = function requireInternal(name) {
+        global.requireInternal = function requireInternal(name, ignoreError) {
             try {
                 return require(root + '/internal/' + DetectServerType + '/' + name + '.js');
             } catch (ex) {
-                if (!arguments[1]) { return {} }
+                if (ignoreError) { return {} }
                 throw ex;
             }
         }

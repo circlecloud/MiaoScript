@@ -18,7 +18,7 @@ function Reflect(obj) {
         this.class = obj.class;
     }
 
-    this.field = function (name) {
+    this.field = function(name) {
         try {
             // Try getting a public field
             var field = this.class.field(name);
@@ -33,24 +33,37 @@ function Reflect(obj) {
         }
     };
 
-    this.call = function () {
+    this.fields = function(declared) {
+        return declared ? this.class.declaredFields : this.class.fields;
+    }
+
+    this.values = function(declared) {
+        var cache = {};
+        var feds = declared ? this.class.declaredFields : this.class.fields;
+        Java.from(feds).forEach(function(fed) {
+            cache[fed.name] = this.field(fed.name).get();
+        }.bind(this))
+        return cache;
+    }
+
+    this.call = function() {
         var name = arguments[0];
         var params = Array.prototype.slice.call(arguments, 1);
         var method = declaredMethod(this.class, name, types(params));
         return on(method.invoke(this.get(), params));
     };
 
-    this.get = function () {
+    this.get = function() {
         return arguments.length === 1 ? this.field(arguments[0]) : this.obj;
     };
 
     // noinspection JSUnusedGlobalSymbols
-    this.set = function (name, value) {
+    this.set = function(name, value) {
         accessible(declaredField(this.class, name)).set(this.obj, value);
         return this;
     };
 
-    this.create = function () {
+    this.create = function() {
         var param = Array.prototype.slice.call(arguments);
         return on(declaredConstructor(this.class, param).newInstance(param));
     };
@@ -64,7 +77,7 @@ function types(values, def) {
         return [];
     }
     var result = [];
-    values.forEach(function (t) {
+    values.forEach(function(t) {
         result.push((t || def) ? Object.class : t instanceof Class ? t : t.class)
     });
     return result;

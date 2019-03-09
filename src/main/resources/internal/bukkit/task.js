@@ -12,7 +12,13 @@ var BukkitRunnable = Java.type("org.bukkit.scheduler.BukkitRunnable");
  */
 function create(func) {
     if (toString.call(func) !== "[object Function]") { throw TypeError('第一个参数 Task 必须为 function !'); };
-    return new BukkitRunnable(func);
+    return new BukkitRunnable(function() {
+        try {
+            func();
+        } catch (ex) {
+            console.ex('§4插件执行任务时发生错误', ex);
+        }
+    });
 };
 /**
  * 运行任务

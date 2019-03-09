@@ -48,10 +48,10 @@
                     message = ''
                     break
             }
-            this.console('§4 ' + message + ex)
+            this.console('§4' + message + ex)
             this.stack(ex).forEach(function(line) {
                 this.console(line)
-            })
+            }.bind(this))
         };
         this.stack = function(ex) {
             var track = ex ? ex.getStackTrace() : new Error().getStackTrace();

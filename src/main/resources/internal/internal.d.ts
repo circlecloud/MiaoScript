@@ -32,7 +32,6 @@ interface Server {
     pluginManager;
     serviceManager;
     servicesManager;
-    onlinePlayers;
 }
 
 interface Player {

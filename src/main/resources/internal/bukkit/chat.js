@@ -10,7 +10,6 @@ var chatMessageTypes;
 var String = Java.type('java.lang.String');
 
 function init() {
-    /** @namespace bukkit.nmsVersion */
     nmsChatSerializerClass = bukkit.nmsCls(bukkit.nmsVersion.split("_")[1] > 7 ? "IChatBaseComponent$ChatSerializer" : "ChatSerializer");
     packetTypeClass = bukkit.nmsCls("PacketPlayOutChat");
     var packetTypeConstructor;

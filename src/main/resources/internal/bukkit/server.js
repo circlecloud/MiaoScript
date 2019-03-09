@@ -141,6 +141,7 @@ function shutdown () {
 
 exports = module.exports = {
     $: Bukkit,
+    nmsVersion: nmsVersion,
     nmsCls: nmsCls,
     obcCls: obcCls,
     plugin: plugin,
