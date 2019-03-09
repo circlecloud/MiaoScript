@@ -41,14 +41,14 @@ var description = {
                 "index": 50,
                 "permission": "MiaoChat.default",
                 "range": 0,
-                "format": "[world][player]: ",
+                "format": "[world][player]&7: ",
                 "item": true,
                 "itemformat": "&6[&b%s&6]&r"
             },
             "admin": {
                 "index": 49,
                 "permission": "MiaoChat.admin",
-                "format": "[admin][world][player][help]: ",
+                "format": "[admin][world][player][help]&7: ",
                 "range": 0,
                 "item": true,
                 "itemformat": "&6[&b%s&6]&r"
@@ -116,7 +116,7 @@ function load() {
 var FORMAT_PATTERN = /[\[]([^\[\]]+)[\]]/ig;
 
 function initFormat(chat_formats) {
-    chat_formats.forEach(function (chat_format) {
+    chat_formats.forEach(function(chat_format) {
         var chat_format_str = chat_format.format;
         var temp = [];
         var r;
@@ -168,7 +168,7 @@ function registerEvent() {
 }
 
 function handlerBukkitChat(event) {
-    sendChat(event.player, event.message, function () {
+    sendChat(event.player, event.message, function() {
         event.setCancelled(true);
     });
 }
@@ -182,7 +182,7 @@ function handlerSpongeChat(event) {
     if (plain.startsWith(tellraw.duplicateChar)) {
         return;
     }
-    sendChat(player, plain, function () {
+    sendChat(player, plain, function() {
         event.setMessageCancelled(true)
     });
 }

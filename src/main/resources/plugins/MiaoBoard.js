@@ -84,9 +84,7 @@ function enable() {
     registerCommand();
     registerEvent();
     registerTask();
-    server.players(function (player) {
-        boards[player.name] = new MiaoBoard(player);
-    })
+    updatePlayers()
 }
 
 function registerCommand() {
@@ -110,12 +108,25 @@ function mainCommand(sender, command, args) {
 function registerEvent() {
     switch (DetectServerType) {
         case ServerType.Bukkit:
-            event.on(self, 'PlayerLoginEvent', handlerPlayerJoin);
+            //event.on(self, 'PlayerLoginEvent', handlerPlayerJoin);
             break;
         case ServerType.Sponge:
             Player = org.spongepowered.api.entity.living.player.Player;
             event.on(self, 'ClientConnectionEvent.Join', handlerPlayerJoin);
             event.on(self, 'ClientConnectionEvent.Disconnect', handlerPlayerQuit);
+            break;
+    }
+}
+
+function updatePlayers() {
+    switch (DetectServerType) {
+        case ServerType.Bukkit:
+            //event.on(self, 'PlayerLoginEvent', handlerPlayerJoin);
+            break;
+        case ServerType.Sponge:
+            server.players(function(player) {
+                boards[player.name] = new MiaoBoard(player);
+            })
             break;
     }
 }
@@ -180,11 +191,11 @@ function MiaoBoard(player) {
     scoreboard.addObjective(sidebar);
     player.setScoreboard(scoreboard);
 
-    this.update = function (title, lines) {
+    this.update = function(title, lines) {
         this.updateBuffer(title, lines);
     }
 
-    this.updateBuffer = function (title, lines) {
+    this.updateBuffer = function(title, lines) {
         sidebar.scores.values().forEach(function removeScore(score) {
             sidebar.removeScore(score);
         })
@@ -196,7 +207,7 @@ function MiaoBoard(player) {
         scoreboard.updateDisplaySlot(sidebar, DisplaySlots.SIDEBAR);
     }
 
-    this.clear = function () {
+    this.clear = function() {
         player.setScoreboard(Scoreboard.builder().build());
     }
 }

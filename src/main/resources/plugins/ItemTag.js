@@ -74,6 +74,10 @@ function getItemCount(amount) {
     return amount === 1 ? "" : "*" + amount;
 }
 
+function disable() {
+    console.log('卸载', description.name, '插件!');
+}
+
 module.exports = {
     description: description,
     load: load,

@@ -10,11 +10,13 @@ var bukkit = require('api/server');
 var item = require('api/item');
 
 var Arrays = Java.type('java.util.Arrays');
+var Material = Java.type('org.bukkit.Material');
 var ItemStackArray = Java.type('org.bukkit.inventory.ItemStack[]');
 
 var description = {
     name: 'Lottery',
     version: '1.0',
+    author: 'MiaoWoo',
     commands: {
         'lottery': {
             description: 'Lottery主命令'
@@ -22,11 +24,15 @@ var description = {
     },
     config: {
         title: '§m§s§a幸运抽奖',
-        panel: '160:13',
+        control: {
+            panel: 'GLASS_PANE:13',
+            ok: 'GLASS_PANE:14',
+            no: 'GLASS_PANE:15',
+        },
         list: [
             {
                 box: {
-                    id: 160,
+                    id: 'GLASS_PANE',
                     damage: 1,
                     name: '§a箱子',
                     lore: [
@@ -34,7 +40,7 @@ var description = {
                     ]
                 },
                 key: {
-                    id: 160,
+                    id: 'GLASS_PANE',
                     damage: 2,
                     name: '§b钥匙',
                     lore: [
@@ -46,7 +52,7 @@ var description = {
                         percent: 10,
                         command: 'money give %player% 100',
                         item: {
-                            id: 160,
+                            id: 'GLASS_PANE',
                             damage: 3,
                             name: '§c奖品1',
                             lore: [
@@ -58,7 +64,7 @@ var description = {
                         percent: 20,
                         command: 'money give %player% 200',
                         item: {
-                            id: 160,
+                            id: 'GLASS_PANE',
                             damage: 4,
                             name: '§c奖品2',
                             lore: [
@@ -72,25 +78,19 @@ var description = {
     }
 };
 
-var panel = item.create(160, 1, 13);
+var panel;
 var config;
 var items;
 
 function load() {
+    panel = item.create('GLASS_PANE', 1, 13);
     config = this.config;
-    if (config.panel) {
-        var arr = config.panel.split(':');
-        if (arr.length === 2) {
-            panel = newItem(arr[0], arr[1]);
-        } else {
-            panel = newItem(arr[0]);
-        }
-    }
+    panel = newItemFromString(config.control.panel || 'GLASS_PANE:13')
     items = new ItemStackArray(54);
     item.setName(panel, '');
-    var ok = newItem(160, 14);
+    var ok = newItemFromString(config.control.ok || 'GLASS_PANE:14')
     item.setName(ok, '§a确定抽奖');
-    var no = newItem(160, 15);
+    var no = newItemFromString(config.control.no || 'GLASS_PANE:15')
     item.setName(no, '§c取消抽奖');
     Arrays.fill(items, 0, 10, panel);
     Arrays.fill(items, 11, 16, panel);
@@ -113,6 +113,15 @@ function newItem(name, sub) {
     return item.create(name, 1, sub || 0);
 }
 
+function newItemFromString(str) {
+    var arr = str.split(':');
+    if (arr.length === 2) {
+        return newItem(arr[0], arr[1]);
+    } else {
+        return newItem(arr[0]);
+    }
+}
+
 function newItemFromConfig(config) {
     var i = newItem(config.id, config.damage);
     if (config.name) item.setName(i, config.name);
@@ -123,7 +132,7 @@ function newItemFromConfig(config) {
 function enable() {
     // noinspection JSUnusedLocalSymbols
     command.on(this, 'l', {
-        cmd: function (sender, command, args) {
+        cmd: function(sender, command, args) {
             if (!sender.openInventory) {
                 console.sender(sender, "§4当前用户无法使用该命令!");
             }
@@ -180,7 +189,7 @@ function enable() {
                     return;
                 }
                 var resultList = [];
-                litem.result.forEach(function (t) {
+                litem.result.forEach(function(t) {
                     for (var i = 0; i < t.percent; i++) {
                         resultList.push(t);
                     }
