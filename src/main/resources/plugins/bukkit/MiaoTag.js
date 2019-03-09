@@ -13,7 +13,7 @@ var fakeTag;
 var description = {
     name: 'MiaoTag',
     version: '1.1',
-    author: '喵♂呜',
+    author: 'MiaoWoo',
     config: {
         format: '§4§l❤'
     },
@@ -40,10 +40,15 @@ var config;
 
 function load() {
     config = self.getConfig();
-    fakeTag = new FakeTag(config.format);
 }
 
 function enable() {
+    registryCommand()
+    fakeTag = new FakeTag(config.format);
+    registryEvent()
+}
+
+function registryCommand() {
     command.on(self, 'mtag', {
         cmd: function cmd(sender, command, args) {
             var subCommand = args[0];
@@ -51,7 +56,7 @@ function enable() {
                 case 'reload':
                     self.reloadConfig();
                     fakeTag = new FakeTag(config.format);
-                    console.sender(sender, "§a配置文件重载完成!", "TEST");
+                    console.sender(sender, "§a配置文件重载完成!");
                     break;
             }
         },
@@ -59,30 +64,41 @@ function enable() {
             return ['reload'];
         }
     });
+}
+
+function registryEvent() {
     bukkit.players(function(p) { fakeTag.set(p) });
     event.on(self, 'PlayerJoin', function(event) { fakeTag.set(event.player) });
-    var entityUpdate = function(event) {
-        var player = event.entity || event.player;
-        if (player instanceof org.bukkit.entity.Player) {
-            setTimeout(function() {
-                fakeTag.update(player);
-            }, 1);
-        }
-    };
     event.on(self, 'EntityRegainHealth', entityUpdate, false);
     event.on(self, 'EntityDamage', entityUpdate, false);
     event.on(self, 'EntityRegainHealth', entityUpdate, false);
     event.on(self, 'PlayerRespawn', entityUpdate, false);
-    //event.on(this, 'playerquitevent', function quit(event) removeTask(event.player));
 }
 
+function entityUpdate(event) {
+    var player = event.entity || event.player;
+    if (player instanceof org.bukkit.entity.Player) {
+        setTimeout(function() {
+            fakeTag.update(player);
+        }, 1);
+    }
+};
+
 function disable() {
-    fakeTag.disable();
+    if (fakeTag) { fakeTag.disable() };
 }
 
 function FakeTag(name) {
+    var ver1_13 = false;
     // NMS CLASS
-    var ScoreboardBaseCriteria = bukkit.nmsCls('ScoreboardBaseCriteria');
+    try {
+        var ScoreboardBaseCriteria = bukkit.nmsCls('ScoreboardBaseCriteria');
+    } catch (ex) {
+        ver1_13 = true;
+        var IScoreboardCriteria = bukkit.nmsCls('IScoreboardCriteria');
+        var ScoreboardServer = bukkit.nmsCls("ScoreboardServer");
+        var ChatComponentText = bukkit.nmsCls('ChatComponentText');
+    }
     var PacketPlayOutScoreboardScore = bukkit.nmsCls('PacketPlayOutScoreboardScore');
     var PacketPlayOutScoreboardObjective = bukkit.nmsCls('PacketPlayOutScoreboardObjective');
     var PacketPlayOutScoreboardDisplayObjective = bukkit.nmsCls('PacketPlayOutScoreboardDisplayObjective');
@@ -90,13 +106,31 @@ function FakeTag(name) {
     var scoreboardManager = bukkit.$.scoreboardManager;
     var mainScoreboard = scoreboardManager.mainScoreboard.handle;
 
+    // 注销对象
+    var objective = mainScoreboard.getObjective(name);
+    if (objective) {
+        mainScoreboard.unregisterObjective(objective);
+    }
+
     try {
-        // 注册tag对象
-        mainScoreboard.registerObjective(name, new ScoreboardBaseCriteria(name));
+        if (!ver1_13) {
+            // 注册tag对象
+            objective = mainScoreboard.registerObjective(name, new ScoreboardBaseCriteria(name));
+        } else {
+            // 注册tag对象
+            objective = mainScoreboard.registerObjective(name,
+                IScoreboardCriteria.HEALTH,
+                new ChatComponentText(name),
+                IScoreboardCriteria.EnumScoreboardHealthDisplay.HEARTS);
+        }
     } catch (ex) {
+        throw ex
         // ignore 忽略创建错误 eg: java.lang.IllegalArgumentException: An objective with the name 'xxxxx' already exists!
     }
-    var objective = mainScoreboard.getObjective(name);
+
+    if (!objective) {
+        throw Error("Error Can't Found MainScoreboard Objective " + name)
+    }
 
     // 缓存虚拟的tag包
     var cache = {
@@ -114,17 +148,23 @@ function FakeTag(name) {
         this.update(player);
     };
 
-    this.update = function(player) {
-        var score = mainScoreboard.getPlayerScoreForObjective(player.name, objective);
-        score.setScore(player.getHealth());
-        var scorePack = new PacketPlayOutScoreboardScore(score);
+    function createScore(player) {
+        if (!ver1_13) {
+            var score = mainScoreboard.getPlayerScoreForObjective(player.name, objective);
+            score.setScore(player.health);
+            return new PacketPlayOutScoreboardScore(score);
+        } else {
+            return new PacketPlayOutScoreboardScore(ScoreboardServer.Action.CHANGE, name, player.name, player.health)
+        }
+    }
+
+    this.update = function update(player) {
+        var scorePack = createScore(player);
         //把其他玩家缓存的包发给这个玩家
         bukkit.players(function(t) {
             sendPacket(t, scorePack);
             if (t.name !== player.name) {
-                var outher = mainScoreboard.getPlayerScoreForObjective(t.name, objective);
-                outher.setScore(t.getHealth());
-                sendPacket(player, new PacketPlayOutScoreboardScore(outher));
+                sendPacket(player, createScore(t));
             }
         });
     };
