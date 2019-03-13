@@ -126,7 +126,7 @@ function beforeLoadHook(origin) {
 function afterLoadHook(plugin) {
     // plugin.event.on = event.on.bind(plugin);
     // 给 console 添加插件名称
-    plugin.console.name = plugin.description.name;
+    plugin.console.name = plugin.description.prefix || plugin.description.name;
     // 赋值 self
     Object.assign(plugin.self, plugin);
 }

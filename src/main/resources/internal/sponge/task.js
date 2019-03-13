@@ -13,11 +13,12 @@ var Task = Java.type("org.spongepowered.api.scheduler.Task");
  */
 function create(func) {
     if (toString.call(func) !== "[object Function]") { throw TypeError('第一个参数 Task 必须为 function !'); };
-    return Task.builder().execute(new Consumer(function () {
+    return Task.builder().execute(new Consumer(function() {
         try {
             func();
         } catch (ex) {
-            console.ex('§4插件执行任务时发生错误', ex);
+            console.console('§4插件执行任务时发生错误', ex)
+            console.ex(ex);
         }
     }));
 };

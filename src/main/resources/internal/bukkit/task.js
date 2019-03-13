@@ -16,7 +16,8 @@ function create(func) {
         try {
             func();
         } catch (ex) {
-            console.ex('§4插件执行任务时发生错误', ex);
+            console.console('§4插件执行任务时发生错误', ex)
+            console.ex(ex);
         }
     });
 };

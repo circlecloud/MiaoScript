@@ -38,36 +38,32 @@
                 this.log(i, '=>', obj[i])
             }
         };
-        this.ex = function(message, ex) {
-            switch (toString.call(message)) {
-                case "[object String]":
-                    message = message + ' ' //message = 'xxxx' ex =Error
-                    break
-                case "[object Error]":
-                    ex = message // message = Error ex=null
-                    message = ''
-                    break
-            }
-            this.console('§4' + message + ex)
+        this.ex = function(ex) {
             this.stack(ex).forEach(function(line) {
                 this.console(line)
             }.bind(this))
         };
         this.stack = function(ex) {
-            var track = ex ? ex.getStackTrace() : new Error().getStackTrace();
+            // var exType = toString.call(ex)
+            // if (exType !== "[object Error]") {
+            //     console.console('§6[WARN] Unknown Type', exType, ex)
+            //     ex.printStackTrace();
+            //     return []
+            // }
+            var stack = ex.getStackTrace();
             var cache = ['§4' + ex];
-            if (track.class) {
-                track = Arrays.asList(track)
+            if (stack.class) {
+                stack = Arrays.asList(stack)
             }
-            track.forEach(function(stack) {
-                if (stack.className.startsWith('<')) {
-                    var fileName = stack.fileName
+            stack.forEach(function(trace) {
+                if (trace.className.startsWith('<')) {
+                    var fileName = trace.fileName
                     fileName = fileName.indexOf('runtime') > -1 ? fileName.split('runtime')[1] : fileName;
-                    cache.push('    §e->§c %s => §4%s:%s'.format(fileName, stack.methodName, stack.lineNumber))
+                    cache.push('    §e->§c %s => §4%s:%s'.format(fileName, trace.methodName, trace.lineNumber))
                 } else {// %s.%s(§4%s:%s§c)
-                    var className = stack.className
+                    var className = trace.className
                     className = className.startsWith('jdk.nashorn.internal.scripts') ? className.substr(className.lastIndexOf('$') + 1) : className
-                    cache.push('    §e->§c %s.%s(§4%s:%s§c)'.format(className, stack.methodName, stack.fileName, stack.lineNumber));
+                    cache.push('    §e->§c %s.%s(§4%s:%s§c)'.format(className, trace.methodName, trace.fileName, trace.lineNumber));
                 }
             });
             return cache;

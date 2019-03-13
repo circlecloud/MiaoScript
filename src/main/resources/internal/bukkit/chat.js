@@ -13,7 +13,7 @@ function init() {
     nmsChatSerializerClass = bukkit.nmsCls(bukkit.nmsVersion.split("_")[1] > 7 ? "IChatBaseComponent$ChatSerializer" : "ChatSerializer");
     packetTypeClass = bukkit.nmsCls("PacketPlayOutChat");
     var packetTypeConstructor;
-    Java.from(packetTypeClass.class.constructors).forEach(function (c) {
+    Java.from(packetTypeClass.class.constructors).forEach(function(c) {
         if (c.parameterTypes.length === 2) {
             packetTypeConstructor = c
         }

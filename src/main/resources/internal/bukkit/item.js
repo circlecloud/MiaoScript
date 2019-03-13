@@ -17,11 +17,26 @@ var Material = Java.type('org.bukkit.Material');
  */
 item.create = function() {
     var idOrType = arguments[0];
-    if (isNaN(Number(idOrType))) {
-        idOrType = Material[idOrType];
+    var argType = toString.call(idOrType)
+    switch (argType) {
+        case "[object Number]":
+            break;
+        case "[object String]":
+            idOrType = Material[idOrType];
+            break;
+        case "[object Array]":
+            idOrType.forEach(function(type) {
+                var temp = Material[idOrType];
+                if (temp) {
+                    idOrType = temp;
+                    return;
+                }
+            })
+        default:
+            throw Error("Unsupport argument type " + argType + " value " + idOrType)
     }
     if (!idOrType) {
-        throw Error('无效的物品ID或枚举!' + arguments[0] + ' => ' + idOrType)
+        throw Error('无效的物品ID或枚举 ' + arguments[0] + ' => ' + idOrType)
     }
     switch (arguments.length) {
         case 1:
