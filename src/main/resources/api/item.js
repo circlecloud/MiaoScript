@@ -6,4 +6,4 @@
 /*global Java, base, module, exports, require*/
 function ItemHandlerDefault() {
 }
-exports = module.exports = Object.assign(new ItemHandlerDefault(), requireInternal('item'));;
+exports = module.exports = Object.assign(new ItemHandlerDefault(), requireInternal('item', true));;

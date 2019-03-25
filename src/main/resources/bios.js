@@ -43,7 +43,9 @@ var global = this;
             throw Error("Error class loader: " + classLoader.class.name + " Please contact the author MiaoWoo!");
         } else {
             log.info("Class loader compatible: " + classLoader.class.name);
-            log.info("Parent class loader: " + classLoader.parent.class.name);
+            if (classLoader.parent) {
+                log.info("Parent class loader: " + classLoader.parent.class.name);
+            }
         }
         return classLoader;
     }

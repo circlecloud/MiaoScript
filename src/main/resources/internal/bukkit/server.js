@@ -14,13 +14,21 @@ var nmsVersion = Bukkit.server.class.name.split('.')[3];
  * 获取NMS类
  */
 function nmsCls(name) {
-    return Java.type(['net.minecraft.server', nmsVersion, name].join('.'));
+    try {
+        return Java.type(['net.minecraft.server', nmsVersion, name].join('.'));
+    } catch (e) {
+        return base.getClass(['net.minecraft.server', nmsVersion, name].join('.'))
+    }
 };
 /**
  * 获取OBC类
  */
 function obcCls(name) {
-    return Java.type(['org.bukkit.craftbukkit', nmsVersion, name].join('.'));
+    try {
+        return Java.type(['org.bukkit.craftbukkit', nmsVersion, name].join('.'));
+    } catch (e) {
+        return base.getClass(['org.bukkit.craftbukkit', nmsVersion, name].join('.'))
+    }
 };
 /**
  * 插件管理
@@ -37,7 +45,7 @@ var plugin = {
      * @param name 插件名称
      * @returns {*}
      */
-    get: function (name) {
+    get: function(name) {
         return PluginManager.getPlugin(name);
     },
     /**
@@ -45,7 +53,7 @@ var plugin = {
      * @param name 插件名称
      * @returns {*}
      */
-    load: function (name) {
+    load: function(name) {
         var plugin = this.get(name);
         if (ext.notNull(plugin) && !plugin.isEnabled()) {
             PluginManager.enablePlugin(plugin);
@@ -69,7 +77,7 @@ var service = {
      * @param name 插件名称
      * @returns {*}
      */
-    get: function (name) {
+    get: function(name) {
         var reg = ServicesManager.getRegistration(base.getClass(name));
         return reg && reg.provider || null;
     }
@@ -131,7 +139,7 @@ function opcommand(player, command) {
 /**
  * 关闭引擎时执行的操作
  */
-function shutdown () {
+function shutdown() {
     Bukkit.scheduler.cancelTasks(plugin.self);
     Bukkit.servicesManager.unregisterAll(plugin.self);
     org.bukkit.event.HandlerList.unregisterAll(plugin.self);

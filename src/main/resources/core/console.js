@@ -5,6 +5,7 @@
 (function(global) {
     var Arrays = Java.type('java.util.Arrays');
     var Level = Java.type('java.util.logging.Level');
+    var ignoreLogPrefix = ['java.', 'net.minecraft.', 'org.bukkit.', 'jdk.nashorn.'];
     global.ConsoleDefault = function ConsoleDefault(name) {
         Object.defineProperty(this, 'name', {
             get: function() {
@@ -44,12 +45,6 @@
             }.bind(this))
         };
         this.stack = function(ex) {
-            // var exType = toString.call(ex)
-            // if (exType !== "[object Error]") {
-            //     console.console('§6[WARN] Unknown Type', exType, ex)
-            //     ex.printStackTrace();
-            //     return []
-            // }
             var stack = ex.getStackTrace();
             var cache = ['§4' + ex];
             if (stack.class) {
@@ -61,8 +56,16 @@
                     fileName = fileName.indexOf('runtime') > -1 ? fileName.split('runtime')[1] : fileName;
                     cache.push('    §e->§c %s => §4%s:%s'.format(fileName, trace.methodName, trace.lineNumber))
                 } else {// %s.%s(§4%s:%s§c)
-                    var className = trace.className
-                    className = className.startsWith('jdk.nashorn.internal.scripts') ? className.substr(className.lastIndexOf('$') + 1) : className
+                    var className = trace.className;
+                    if (className.startsWith('jdk.nashorn.internal.scripts')) {
+                        className = className.substr(className.lastIndexOf('$') + 1)
+                    } else {
+                        for (var prefix in ignoreLogPrefix) {
+                            if (className.startsWith(ignoreLogPrefix[prefix])) {
+                                return;
+                            }
+                        }
+                    }
                     cache.push('    §e->§c %s.%s(§4%s:%s§c)'.format(className, trace.methodName, trace.fileName, trace.lineNumber));
                 }
             });

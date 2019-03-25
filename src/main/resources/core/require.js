@@ -240,7 +240,7 @@
         file = _isFile(file) ? file : resolve(name, path);
         optional = Object.assign({ cache: true }, optional);
         if (file === undefined) {
-            throw Error("Can't found module" + name + 'in directory' + path)
+            throw Error("Can't found module " + name + " in directory " + path)
         }
         // 重定向文件名称和类型
         return getCacheModule(_canonical(file), file.name.split(".")[0], file, optional);
