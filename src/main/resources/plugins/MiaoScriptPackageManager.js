@@ -14,6 +14,7 @@ var packageNameCache = [];
 
 var description = {
     name: 'MiaoScriptPackageManager',
+    prefix: 'PM',
     version: '1.0',
     author: 'MiaoWoo',
     description: 'MiaoScript包管理工具',
@@ -75,7 +76,7 @@ function enable() {
 
 function main(sender, command, args) {
     if (!args[0] || args[1] === 'help') {
-        sendHelp(sender);
+        console.sender(sender, help);
         return;
     }
     switch (args[0]) {
@@ -169,15 +170,9 @@ function main(sender, command, args) {
             console.sender(sender, '§6插件 §a' + name + ' §6已生成到插件目录...');
             break;
         default:
-            sendHelp(sender);
+            console.sender(sender, help);
             break;
     }
-}
-
-function sendHelp(sender) {
-    help.forEach(function(msg) {
-        console.sender(sender, msg);
-    })
 }
 
 function del(sender, name) {
