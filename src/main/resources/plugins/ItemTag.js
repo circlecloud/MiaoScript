@@ -28,6 +28,8 @@ function load() {
 function enable() {
     switch (DetectServerType) {
         case ServerType.Bukkit:
+            var i = require('api/item').create('STONE')
+            if (!i.setCustomName) { return }
             event.on(self, 'ItemMergeEvent', function(event) {
                 bukkit(event.target, event.entity.itemStack.amount + event.target.itemStack.amount);
             });
