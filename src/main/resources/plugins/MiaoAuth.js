@@ -7,8 +7,6 @@
 var event = require('api/event');
 var wrapper = require('api/wrapper');
 var command = require('api/command');
-var server = require('api/server');
-var fs = require('fs');
 
 var description = {
     name: 'MiaoAuth',
@@ -30,12 +28,12 @@ function load() {
 
 function enable() {
     command.on(this, 'l', {
-        cmd: function (sender, command, args) {
+        cmd: function(sender, command, args) {
             return true;
         }
     });
     command.on(this, 'r', {
-        cmd: function (sender, command, args) {
+        cmd: function(sender, command, args) {
             return true;
         }
     });

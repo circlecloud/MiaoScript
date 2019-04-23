@@ -28,7 +28,7 @@ function load() {
 function enable() {
     // noinspection JSUnusedLocalSymbols
     command.on(this, 'hello', {
-        cmd: function (sender, command, args) {
+        cmd: function(sender, command, args) {
             engineLoad(fs.file(root, 'test.js'));
             return true;
         }
@@ -51,7 +51,7 @@ function enable() {
 function send(event, player) {
     // noinspection JSUnresolvedVariable
     console.debug('玩家', player.getName(), "触发事件", event.class.simpleName);
-    setTimeout(function () {
+    setTimeout(function() {
         // noinspection JSUnresolvedVariable
         player.sendMessage("§a欢迎来到 §bMiaoScript §a的世界! 当前在线: " + server.players().length)
     }, 10);

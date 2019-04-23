@@ -10,7 +10,6 @@ var bukkit = require('api/server');
 var item = require('api/item');
 
 var Arrays = Java.type('java.util.Arrays');
-var Material = Java.type('org.bukkit.Material');
 var ItemStackArray = Java.type('org.bukkit.inventory.ItemStack[]');
 
 var PANE = 'STAINED_GLASS_PANE'
