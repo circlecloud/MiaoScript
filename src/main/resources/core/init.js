@@ -25,8 +25,6 @@
      * 初始化核心
      */
     function loadCore() {
-        // 加载基础模块
-        load(root + '/core/ext.js');
         // 加载Console
         load(root + '/core/console.js');
         // 探测服务器类型
@@ -59,7 +57,7 @@
         global.require = engineLoad(root + '/core/require.js')(root);
         global.requireInternal = function requireInternal(name, ignoreError) {
             try {
-                return require(root + '/internal/' + DetectServerType + '/' + name + '.js');
+                return require('internal/' + DetectServerType + '/' + name + '.js');
             } catch (ex) {
                 if (ignoreError) { return {} }
                 throw ex;

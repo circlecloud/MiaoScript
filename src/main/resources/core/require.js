@@ -31,7 +31,7 @@
     var File = Java.type("java.io.File");
     var separatorChar = File.separatorChar;
     var cacheDir = parent + separatorChar + "runtime";
-    var paths = [parent, parent + separatorChar + 'core', parent + separatorChar + 'api', parent + separatorChar + 'modules'];
+    var paths = [parent, parent + separatorChar + 'node_modules'];
 
     try {
         base.delete(cacheDir);
@@ -75,8 +75,7 @@
      * 按照下列顺序查找
      * 当前目录 ./
      * 父目录 ../
-     * 核心目录 /core
-     * 模块目录 /modules
+     * 模块目录 /node_modules
      * @param name 模块名称
      * @param parent 父目录
      */
@@ -103,7 +102,7 @@
      * @returns {*}
      */
     function resolveAsFile(dir, file) {
-        file = ext.notNull(dir) ? new File(dir, file) : new File(file);
+        file = dir != undefined ? new File(dir, file) : new File(file);
         // 直接文件
         if (file.isFile()) {
             return file;
@@ -125,11 +124,10 @@
      * @returns {*}
      */
     function resolveAsDirectory(dir, file) {
-        dir = ext.notNull(dir) ? new File(dir, file) : new File(file);
+        dir = dir != undefined ? new File(dir, file) : new File(file);
         var _package = new File(dir, 'package.json');
         if (_package.exists()) {
             var json = JSON.parse(base.read(_package));
-            /** @namespace json.main */
             if (json.main) {
                 return resolveAsFile(dir, json.main);
             }

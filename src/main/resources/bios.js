@@ -23,7 +23,7 @@ var global = this;
         // 检查类加载器 防止找不到核心文件
         loader = checkClassLoader();
         // 解压文件到根目录 非调试模式直接从jar解压覆盖
-        release(root, '(api|core|internal|modules)+/.*', !global.debug);
+        release(root, '(core|node_modules)+/.*', !global.debug);
         load(root + '/core/init.js');
         try {
             init(root);

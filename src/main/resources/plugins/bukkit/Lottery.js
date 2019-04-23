@@ -13,6 +13,8 @@ var Arrays = Java.type('java.util.Arrays');
 var Material = Java.type('org.bukkit.Material');
 var ItemStackArray = Java.type('org.bukkit.inventory.ItemStack[]');
 
+var PANE = 'STAINED_GLASS_PANE'
+
 var description = {
     name: 'Lottery',
     version: '1.0',
@@ -25,14 +27,14 @@ var description = {
     config: {
         title: '§m§s§a幸运抽奖',
         control: {
-            panel: 'GLASS_PANE:13',
-            ok: 'GLASS_PANE:14',
-            no: 'GLASS_PANE:15',
+            panel: PANE + ':13',
+            ok: PANE + ':14',
+            no: PANE + ':15',
         },
         list: [
             {
                 box: {
-                    id: 'GLASS_PANE',
+                    id: PANE,
                     damage: 1,
                     name: '§a箱子',
                     lore: [
@@ -40,7 +42,7 @@ var description = {
                     ]
                 },
                 key: {
-                    id: 'GLASS_PANE',
+                    id: PANE,
                     damage: 2,
                     name: '§b钥匙',
                     lore: [
@@ -52,7 +54,7 @@ var description = {
                         percent: 10,
                         command: 'money give %player% 100',
                         item: {
-                            id: 'GLASS_PANE',
+                            id: PANE,
                             damage: 3,
                             name: '§c奖品1',
                             lore: [
@@ -64,7 +66,7 @@ var description = {
                         percent: 20,
                         command: 'money give %player% 200',
                         item: {
-                            id: 'GLASS_PANE',
+                            id: PANE,
                             damage: 4,
                             name: '§c奖品2',
                             lore: [
@@ -83,14 +85,13 @@ var config;
 var items;
 
 function load() {
-    panel = item.create('GLASS_PANE', 1, 13);
     config = this.config;
-    panel = newItemFromString(config.control.panel || 'GLASS_PANE:13')
+    panel = newItemFromString(config.control.panel || PANE + ':13')
     items = new ItemStackArray(54);
     item.setName(panel, '');
-    var ok = newItemFromString(config.control.ok || 'GLASS_PANE:14')
+    var ok = newItemFromString(config.control.ok || PANE + ':14')
     item.setName(ok, '§a确定抽奖');
-    var no = newItemFromString(config.control.no || 'GLASS_PANE:15')
+    var no = newItemFromString(config.control.no || PANE + ':15')
     item.setName(no, '§c取消抽奖');
     Arrays.fill(items, 0, 10, panel);
     Arrays.fill(items, 11, 16, panel);
@@ -133,6 +134,8 @@ function enable() {
     // noinspection JSUnusedLocalSymbols
     command.on(this, 'l', {
         cmd: function(sender, command, args) {
+            sender.inventory.addItem(newItemFromConfig(config.list[0].box))
+            sender.inventory.addItem(newItemFromConfig(config.list[0].key))
             if (!sender.openInventory) {
                 console.sender(sender, "§4当前用户无法使用该命令!");
             }
@@ -144,7 +147,7 @@ function enable() {
     });
     event.on(this, 'InventoryClick', function click(event) {
         var inv = event.inventory;
-        if (inv.title !== config.title) return;
+        if (inv && inv.title !== config.title) return;
         var player = event.whoClicked;
         var slot = event.rawSlot;
         if (slot > 53 || slot < 0) {
@@ -169,6 +172,10 @@ function enable() {
                 }
                 var litem;
                 var box = inv.getItem(10);
+                if (!box) {
+                    console.sender(player, '§c请先放入抽奖物品和钥匙!');
+                    return;
+                }
                 var key = inv.getItem(16);
                 if (box && box.typeId !== 0 && key && key.typeId !== 0) {
                     for (var i = 0; i < config.list.length; i++) {
@@ -194,7 +201,7 @@ function enable() {
                         resultList.push(t);
                     }
                 });
-                var ri = ext.random(resultList.length);
+                var ri = random(resultList.length);
                 var result = resultList[ri];
                 box.amount = box.amount - 1;
                 key.amount = key.amount - 1;
@@ -208,6 +215,11 @@ function enable() {
         }
     });
 }
+
+function random(max, min) {
+    min = min === undefined ? 0 : min;
+    return Math.floor(Math.random() * (max - min) + min);
+};
 
 function disable() {
 }

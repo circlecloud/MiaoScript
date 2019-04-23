@@ -94,10 +94,15 @@ function FakeTag(name) {
     try {
         var ScoreboardBaseCriteria = bukkit.nmsCls('ScoreboardBaseCriteria');
     } catch (ex) {
-        ver1_13 = true;
-        var IScoreboardCriteria = bukkit.nmsCls('IScoreboardCriteria');
-        var ScoreboardServer = bukkit.nmsCls("ScoreboardServer");
-        var ChatComponentText = bukkit.nmsCls('ChatComponentText');
+        try {
+            var IScoreboardCriteria = bukkit.nmsCls('IScoreboardCriteria');
+            var ScoreboardServer = bukkit.nmsCls("ScoreboardServer");
+            var ChatComponentText = bukkit.nmsCls('ChatComponentText');
+            ver1_13 = true;
+        } catch (ex) {
+            console.log(ex);
+            throw ex;
+        }
     }
     var PacketPlayOutScoreboardScore = bukkit.nmsCls('PacketPlayOutScoreboardScore');
     var PacketPlayOutScoreboardObjective = bukkit.nmsCls('PacketPlayOutScoreboardObjective');
