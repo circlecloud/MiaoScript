@@ -20,14 +20,3 @@ try {
 } catch (ex) {
     // IGNORE
 }
-/**
- * 尝试加载特殊的Console类
- */
-if (DetectServerType) {
-    try {
-        load(root + '/internal/' + DetectServerType + '/console.js');
-    } catch (ex) {
-        // IGNORE
-    }
-}
-global.console = new global.Console();

@@ -12,6 +12,7 @@
         loadPatch();
         loadRequire();
         try {
+            loadServerConsole();
             loadServerLib();
             loadPlugins();
         } catch (ex) {
@@ -27,6 +28,7 @@
     function loadCore() {
         // 加载Console
         load(root + '/core/console.js');
+        global.console = new global.Console();
         // 探测服务器类型
         load(root + '/core/detect.js');
     }
@@ -66,6 +68,20 @@
     }
 
     /**
+    * 尝试加载特殊的Console类
+    */
+    function loadServerConsole() {
+        if (DetectServerType) {
+            try {
+                requireInternal('console');
+                global.console = new global.Console();
+            } catch (ex) {
+                // IGNORE
+            }
+        }
+    }
+
+    /**
      * 加载系统类库
      */
     function loadServerLib() {
@@ -100,7 +116,6 @@
         }
     }
 
-    // noinspection JSUnusedLocalSymbols
     /**
      * 关闭插件Hook
      */
