@@ -9,7 +9,7 @@
  *     2. 如果模块以 `./` `../` 开头
  *       a. 尝试使用 resolveAsFile(dir/xx) 加载文件
  *       b. 尝试使用 resolveAsDirectory(dir/xx) 加载目录
- *     3. 尝试去 root root/core root/modules => xx 加载模块
+ *     3. 尝试去 root root/node_modules => xx 加载模块
  *       a. 尝试使用 resolveAsFile(xx/xx) 加载文件
  *       b. 尝试使用 resolveAsDirectory(xx/xx) 加载目录
  *     4. 抛出 not found 异常
