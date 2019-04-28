@@ -2,14 +2,12 @@
  * 补丁和方法扩展
  */
 
-(function () {
+(function() {
     // Object.assign Polyfill
     if (!Object.assign) {
         Object.defineProperty(Object, "assign", {
             enumerable: false,
-            configurable: true,
-            writable: true,
-            value: function (target) {
+            value: function(target) {
                 "use strict";
                 if (target === undefined || target === null)
                     throw new TypeError("Cannot convert first argument to object");
@@ -28,13 +26,11 @@
             }
         });
     }
-
+    // Object.values Polyfill
     if (!Object.values) {
         Object.defineProperty(Object, "values", {
             enumerable: false,
-            configurable: true,
-            writable: true,
-            value: function (target) {
+            value: function(target) {
                 "use strict";
                 var values = [];
                 for (var key in target) {
@@ -50,22 +46,9 @@
     if (!Object.toJson) {
         Object.defineProperty(Object.prototype, "toJson", {
             enumerable: false,
-            configurable: true,
-            writable: true,
-            value: function () {
+            value: function() {
                 return JSON.stringify(this);
             }
         });
     }
-
-
-    // Object.prototype.toJson = function () {
-    //     return JSON.stringify(this);
-    // };
-
-    // // YAML快速生成
-    // var yaml = require('modules/yaml');
-    // Object.prototype.toYaml = function () {
-    //     return yaml.safeDump(this);
-    // };
 })();

@@ -1,15 +1,14 @@
 /**
  * 补丁和方法扩展
  */
-
-(function () {
+(function() {
     /**
      * 日期格式化
      * 例: new Date().format('yyyy-MM-dd hh:mm:ss.s') => "2017-08-24 16:15:40.693"
      * @param fmt 格式化字符串
      * @returns {*}
      */
-    Date.prototype.format = function (fmt) {
+    Date.prototype.format = function(fmt) {
         var o = {
             "M+": this.getMonth() + 1, //月份
             "d+": this.getDate(), //日

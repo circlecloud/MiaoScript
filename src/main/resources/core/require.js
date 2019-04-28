@@ -31,7 +31,7 @@
     var File = Java.type("java.io.File");
     var separatorChar = File.separatorChar;
     var cacheDir = parent + separatorChar + "runtime";
-    var paths = [parent, parent + separatorChar + 'node_modules'];
+    var paths = [parent + separatorChar + 'node_modules', parent];
 
     try {
         base.delete(cacheDir);
