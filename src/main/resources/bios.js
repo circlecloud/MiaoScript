@@ -4,13 +4,13 @@ var boot;
 // noinspection ThisExpressionReferencesGlobalObjectJS
 var global = this;
 /**
- * 初始化框架引擎
+ * Init Engine Env
  */
 (function() {
     var loader;
     boot = function(root, logger) {
         log = logger;
-        // 开发环境下初始化
+        // Development Env Detect
         root = root || "src/main/resources";
         if (__FILE__ !== "<eval>") {
             logger.info('Loading custom BIOS file ' + __FILE__);
@@ -20,10 +20,12 @@ var global = this;
             logger.info('Running debugging mode...');
             global.debug = true;
         }
-        // 检查类加载器 防止找不到核心文件
+        // Check Class Loader, Sometimes Server will can't find plugin.yml file
         loader = checkClassLoader();
-        // 解压文件到根目录 非调试模式直接从jar解压覆盖
+        // Force decompression core|node_modules to folder when not debug mode
         release(root, '(core|node_modules)+/.*', !global.debug);
+        // Plugin file decompression to folder when file not exist
+        release(root, '(plugins)+/.*', false);
         load(root + '/core/init.js');
         try {
             init(root);
