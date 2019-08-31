@@ -23,6 +23,29 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <artifactSet>
+                        <includes>
+                            <include>org.kamranzafar:jtar</include>
+                        </includes>
+                    </artifactSet>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
     <ciManagement>
         <system>Jenkins</system>
@@ -31,27 +54,29 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
-            §62018-5-20 §afeat: 新增MiaoBoard插件;
-            §62018-5-20 §afeat: 新增MiaoAuth插件;
-            §62018-5-20 §afeat: 修改初始化函数名称;
-            §62018-5-20 §cfix: file.js修复一个语法错误;
-            §62018-5-20 §afeat: 新增config默认值绑定 匿名函数添加名称;
-            §62018-5-20 §afeat: PAPI支持直接替换数组;
-            §62018-5-20 §afeat: 调整Task任务模块;
-            §62018-5-20 §afeat: 新增模板预编译插件功能;
-            §62018-5-18 §afeat: 清除不必要的代码;
-            §62018-5-17 §afeat: 新增MiaoChat插件描述;
-            §62018-5-17 §afeat: MiaoScriptPackageManager 新增restart和run方法;
-            §62018-5-17 §cfix: 修复Sponge命令参数存在空字符串的问题;
-            §62018-5-17 §cfix: 修复混淆导致的重载方法丢失;
-            §62018-5-17 §afeat: 新增引擎Shutdown方法 关闭资源;
-            §62018-5-17 §afeat: 格式化代码 添加d.ts文件 去除引擎无关代码 清理单元测试;
-            §62018-5-17 §cfix: 修复TellRaw类库错误;
-            §62018-5-17 §cfix: 修复pkg不存在的问题;
-            §62018-5-17 §cfix: 修复下载错误的问题;
-            §62018-5-17 §afeat: 更新版本号
+            §619-08-31 §afeat: 新增 tar 类库 支持 tar.gz 解压;
+            §619-08-29 §erefactor: 移动插件文件 默认自带MSPM插件 优化bios
         </update.changes>
         <update.changelog>
+            §618-5-20 §afeat: 新增MiaoBoard插件;
+            §618-5-20 §afeat: 新增MiaoAuth插件;
+            §618-5-20 §afeat: 修改初始化函数名称;
+            §618-5-20 §cfix: file.js修复一个语法错误;
+            §618-5-20 §afeat: 新增config默认值绑定 匿名函数添加名称;
+            §618-5-20 §afeat: PAPI支持直接替换数组;
+            §618-5-20 §afeat: 调整Task任务模块;
+            §618-5-20 §afeat: 新增模板预编译插件功能;
+            §618-5-18 §afeat: 清除不必要的代码;
+            §618-5-17 §afeat: 新增MiaoChat插件描述;
+            §618-5-17 §afeat: MiaoScriptPackageManager 新增restart和run方法;
+            §618-5-17 §cfix: 修复Sponge命令参数存在空字符串的问题;
+            §618-5-17 §cfix: 修复混淆导致的重载方法丢失;
+            §618-5-17 §afeat: 新增引擎Shutdown方法 关闭资源;
+            §618-5-17 §afeat: 格式化代码 添加d.ts文件 去除引擎无关代码 清理单元测试;
+            §618-5-17 §cfix: 修复TellRaw类库错误;
+            §618-5-17 §cfix: 修复pkg不存在的问题;
+            §618-5-17 §cfix: 修复下载错误的问题;
+            §618-5-17 §afeat: 更新版本号;
             §618-05-17 §afeat: 新增Hook提示;
             §618-05-17 §afeat: 调整列表载入顺序;
             §618-05-17 §afeat: 完善MiaoChat的PAPI的替换;
@@ -131,6 +156,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kamranzafar</groupId>
+            <artifactId>jtar</artifactId>
+            <version>2.3</version>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
