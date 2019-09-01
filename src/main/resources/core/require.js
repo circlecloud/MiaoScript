@@ -61,13 +61,24 @@
     }
 
     /**
+     * 获得文件绝对路径
+     * @param file
+     * @returns {*}
+     * @private
+     */
+    function _absolute(file) {
+        // noinspection JSUnresolvedVariable
+        return file.absolutePath;
+    }
+
+    /**
      * 获得缓存的文件名称
      * @param file
      * @returns {string}
      * @private
      */
     function _cacheFile(file) {
-        return _canonical(file).replace(parent, cacheDir);
+        return _absolute(file).replace(parent, cacheDir);
     }
 
     /**
@@ -108,12 +119,12 @@
             return file;
         }
         // JS文件
-        var js = new File(normalizeName(_canonical(file), ".js"));
+        var js = new File(normalizeName(_absolute(file), ".js"));
         if (js.isFile()) {
             return js;
         }
         // JSON文件
-        var json = new File(normalizeName(_canonical(file), ".json"));
+        var json = new File(normalizeName(_absolute(file), ".json"));
         if (json.isFile()) {
             return json;
         }
