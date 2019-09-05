@@ -33,6 +33,16 @@
     var cacheDir = parent + separatorChar + "runtime";
     var paths = [parent + separatorChar + 'node_modules', parent];
 
+    function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            if (s === undefined) { continue; };
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+
     try {
         base.delete(cacheDir);
     } catch (ex) {
@@ -247,7 +257,7 @@
     function _require(name, path, optional) {
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
-        optional = Object.assign({ cache: true }, optional);
+        optional = __assign({ cache: true }, optional);
         if (file === undefined) {
             throw Error("Can't found module " + name + " in directory " + path)
         }
