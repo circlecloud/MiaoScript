@@ -29,9 +29,9 @@
 (function(parent) {
     'use strict';
     var File = Java.type("java.io.File");
+    var FileNotFoundException = Java.type("java.io.FileNotFoundException");
     var separatorChar = File.separatorChar;
     var cacheDir = parent + separatorChar + "runtime";
-    var paths = [parent + separatorChar + 'node_modules', parent];
 
     function __assign(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -104,25 +104,21 @@
         name = _canonical(name) || name;
         // 解析本地目录
         if (name.startsWith('./') || name.startsWith('../')) {
-            return resolveAsFile(parent, name) || resolveAsDirectory(parent, name) || undefined;
+            return resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined;
         } else {
-            // 查找可能存在的路径
-            for (var i in paths) {
-                var path = paths[i];
-                var result = resolveAsFile(path, name) || resolveAsDirectory(path, name);
-                if (result) {
-                    return result;
-                }
-            }
+            // 解析Node目录
+            var dir = [parent, 'node_modules'].join(separatorChar);
+            return resolveAsFile(name, dir) ||
+                resolveAsDirectory(name, dir) ||
+                (parent && parent.toString().startsWith(root) ? resolve(name, new File(parent).getParent()) : undefined);
         }
-        return undefined;
     }
 
     /**
      * 解析文件
      * @returns {*}
      */
-    function resolveAsFile(dir, file) {
+    function resolveAsFile(file, dir) {
         file = dir != undefined ? new File(dir, file) : new File(file);
         // 直接文件
         if (file.isFile()) {
@@ -144,17 +140,17 @@
      * 解析目录
      * @returns {*}
      */
-    function resolveAsDirectory(dir, file) {
+    function resolveAsDirectory(file, dir) {
         dir = dir != undefined ? new File(dir, file) : new File(file);
         var _package = new File(dir, 'package.json');
         if (_package.exists()) {
             var json = JSON.parse(base.read(_package));
             if (json.main) {
-                return resolveAsFile(dir, json.main);
+                return resolveAsFile(json.main, dir);
             }
         }
         // if no package or package.main exists, look for index.js
-        return resolveAsFile(dir, 'index.js');
+        return resolveAsFile('index.js', dir);
     }
 
     /**
@@ -259,7 +255,7 @@
         file = _isFile(file) ? file : resolve(name, path);
         optional = __assign({ cache: true }, optional);
         if (file === undefined) {
-            throw Error("Can't found module " + name + " in directory " + path)
+            throw new FileNotFoundException("Can't found module " + name + " in directory " + path)
         }
         // 重定向文件名称和类型
         return getCacheModule(_canonical(file), file.name.split(".")[0], file, optional);

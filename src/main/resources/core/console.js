@@ -10,6 +10,7 @@
     return {
         log: log,
         info: log,
+        ex: log,
         debug: global.debug ? _proxy('DEBUG') : global.noop,
         warn: _proxy('WARN'),
         error: _proxy('ERROR')

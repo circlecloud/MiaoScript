@@ -1,5 +1,6 @@
 (function(root, logger) {
     global.root = root;
+    global.logger = logger;
     global.noop = global.engineDisable = function() { };
     // disable 
     global.engineLoad = load;
