@@ -7,6 +7,7 @@ import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 import com.google.inject.Inject;
@@ -39,5 +40,13 @@ public class MiaoScriptSponge {
     @SneakyThrows
     public void onStop(GameStoppingServerEvent event) {
         engine.disableEngine();
+    }
+
+    @Listener
+    @SneakyThrows
+    public void reload(GameReloadEvent event) {
+        engine.disableEngine();
+        engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger);
+        engine.enableEngine();
     }
 }
