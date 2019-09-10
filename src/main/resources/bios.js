@@ -26,22 +26,15 @@ var global = this;
         release(root, '(core|node_modules)+/.*', !global.debug);
         // Plugin file decompression to folder when file not exist
         release(root, '(plugins)+/.*', false);
-        load(root + '/core/init.js');
-        try {
-            init(root);
-        } catch (ex) {
-            ex.printStackTrace();
-        }
+        load(root + '/core/ployfill.js')(root, logger);
+        require('@ms/core');
     };
 
     var pluginYml;
-
     function checkClassLoader() {
-        // noinspection JSUnresolvedVariable
         var classLoader = java.lang.Thread.currentThread().contextClassLoader;
         pluginYml = classLoader.getResource("plugin.yml");
         if (pluginYml === null) {
-            engineDisable = function engineDisable() { }
             throw Error("Error class loader: " + classLoader.class.name + " Please contact the author MiaoWoo!");
         } else {
             log.info("Class loader compatible: " + classLoader.class.name);
@@ -62,11 +55,9 @@ var global = this;
         var r = new RegExp(regex);// "[core|modules]/.*"
         jar.stream().forEach(function(entry) {
             try {
-                // noinspection JSValidateTypes
                 if (!entry.isDirectory()) {
                     if (r.test(entry.name)) {
                         var path = java.nio.file.Paths.get(root, entry.name);
-                        // noinspection JSUnresolvedVariable
                         var parentFile = path.toFile().parentFile;
                         if (!parentFile.exists()) { parentFile.mkdirs(); }
                         if (!java.nio.file.Files.exists(path) || replace) {
