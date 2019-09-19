@@ -1,6 +1,7 @@
 'use strict';
 var log;
 var boot;
+var engineDisable;
 // noinspection ThisExpressionReferencesGlobalObjectJS
 var global = this;
 /**
@@ -27,7 +28,7 @@ var global = this;
         // Plugin file decompression to folder when file not exist
         release(root, '(plugins)+/.*', false);
         load(root + '/core/ployfill.js')(root, logger);
-        require('@ms/core');
+        engineDisable = require('@ms/core').default;
     };
 
     var pluginYml;

@@ -31,7 +31,6 @@
     var File = Java.type("java.io.File");
     var FileNotFoundException = Java.type("java.io.FileNotFoundException");
     var separatorChar = File.separatorChar;
-    var cacheDir = parent + separatorChar + "runtime";
 
     function __assign(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -42,12 +41,6 @@
         }
         return t;
     };
-
-    try {
-        base.delete(cacheDir);
-    } catch (ex) {
-        console.ex(ex);
-    }
 
     /**
      * 判断是否为一个文件
@@ -79,16 +72,6 @@
     function _absolute(file) {
         // noinspection JSUnresolvedVariable
         return file.absolutePath;
-    }
-
-    /**
-     * 获得缓存的文件名称
-     * @param file
-     * @returns {string}
-     * @private
-     */
-    function _cacheFile(file) {
-        return _absolute(file).replace(parent, cacheDir);
     }
 
     /**
@@ -211,19 +194,12 @@
      * @returns {Object}
      */
     function compileJs(module, file, optional) {
-        var cacheFile = _cacheFile(file);
         var origin = base.read(file);
         if (optional.hook) {
             origin = optional.hook(origin);
         }
-        base.save(cacheFile, "(function $(module, exports, require, __dirname, __filename) {" + origin + "});");
-        // 使用 load 可以保留行号和文件名称
-        var compiledWrapper = engineLoad(cacheFile);
-        try {
-            base.delete(cacheFile);
-        } catch (ex) {
-            cacheFile.deleteOnExit();
-        }
+        // 2019-09-19 使用 扩展函数直接 load 无需保存文件 删除文件
+        var compiledWrapper = engineLoad({ script: "(function $(module, exports, require, __dirname, __filename) {" + origin + "});", name: file });
         compiledWrapper.apply(module.exports, [
             module, module.exports, module.require, file.parentFile, file
         ]);

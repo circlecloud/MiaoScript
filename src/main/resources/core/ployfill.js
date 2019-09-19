@@ -5,7 +5,7 @@
     // Init Global Function
     global.noop = global.engineDisable = function() { };
     global.engineLoad = load;
-    global.load = function __PreventGlobalLoadFunction__() {
+    global.load = load = function __PreventGlobalLoadFunction__() {
         throw new Error('Internal engine system not allow use `load` function!');
     };
     // Init console and require
