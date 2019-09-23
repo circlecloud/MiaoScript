@@ -11,11 +11,11 @@
     // Init console and require
     global.console = engineLoad(global.root + '/core/console.js')(logger);
     global.require = engineLoad(global.root + '/core/require.js')(root);
-    // String contains playfill
+    // String contains ployfill
     String.prototype.contains = function(searchString, position) {
         return String.prototype.indexOf.call(this, searchString, position) > -1;
     };
-    // ES6 Map Symbol playfill
+    // ES6 Map Symbol ployfill
     require('es6-map/implement');
     require('es6-symbol/implement');
 });

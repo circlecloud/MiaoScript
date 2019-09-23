@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>1.3.5</version>
+    <version>0.0.1</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -33,6 +33,8 @@
                     <artifactSet>
                         <includes>
                             <include>org.kamranzafar:jtar</include>
+                            <include>com.squareup.okhttp3:okhttp</include>
+                            <include>com.squareup.okio:okio</include>
                         </includes>
                     </artifactSet>
                 </configuration>
@@ -54,10 +56,11 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
-            §619-08-31 §afeat: 新增 tar 类库 支持 tar.gz 解压;
-            §619-08-29 §erefactor: 移动插件文件 默认自带MSPM插件 优化bios
+            §619-09-21 §afeat: 新增 okhttp3 类库;
+            §619-08-31 §afeat: 新增 tar 类库 支持 tar.gz 解压
         </update.changes>
         <update.changelog>
+            §619-08-29 §erefactor: 移动插件文件 默认自带MSPM插件 优化bios;
             §618-5-20 §afeat: 新增MiaoBoard插件;
             §618-5-20 §afeat: 新增MiaoAuth插件;
             §618-5-20 §afeat: 修改初始化函数名称;
@@ -161,6 +164,11 @@
             <groupId>org.kamranzafar</groupId>
             <artifactId>jtar</artifactId>
             <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>

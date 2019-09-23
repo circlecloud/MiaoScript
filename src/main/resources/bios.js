@@ -2,10 +2,9 @@
 var log;
 var boot;
 var engineDisable;
-// noinspection ThisExpressionReferencesGlobalObjectJS
 var global = this;
 /**
- * Init Engine Env
+ * Init MiaoScriptEngine Runtime
  */
 (function() {
     var loader;
@@ -53,7 +52,7 @@ var global = this;
             jarPath = "/" + jarPath;
         }
         var jar = new java.util.jar.JarFile(jarPath);
-        var r = new RegExp(regex);// "[core|modules]/.*"
+        var r = new RegExp(regex);
         jar.stream().forEach(function(entry) {
             try {
                 if (!entry.isDirectory()) {
