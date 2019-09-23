@@ -25,11 +25,20 @@
  *     暂不支持 4. 如果 xx/index.msm 是一个文件 则使用MScript解析器解析 并停止执行
  *   注: MiaoScript 暂不支持多层 modules 加载 暂时不需要(估计以后也不会需要)
  */
-/*global Java, base*/
 (function(parent) {
     'use strict';
-    var File = Java.type("java.io.File");
-    var FileNotFoundException = Java.type("java.io.FileNotFoundException");
+    var File = Java.type('java.io.File');
+    var Paths = Java.type('java.nio.file.Paths');
+    var Files = Java.type('java.nio.file.Files');
+    var StandardCopyOption = Java.type('java.nio.file.StandardCopyOption');
+    var FileNotFoundException = Java.type('java.io.FileNotFoundException');
+
+    var TarInputStream = Java.type('org.kamranzafar.jtar.TarInputStream');
+    var GZIPInputStream = Java.type('java.util.zip.GZIPInputStream');
+    var BufferedInputStream = Java.type('java.io.BufferedInputStream');
+
+    var URL = Java.type('java.net.URL')
+
     var separatorChar = File.separatorChar;
 
     function __assign(t) {
@@ -59,7 +68,6 @@
      * @private
      */
     function _canonical(file) {
-        // noinspection JSUnresolvedVariable
         return file.canonicalPath;
     }
 
@@ -70,7 +78,6 @@
      * @private
      */
     function _absolute(file) {
-        // noinspection JSUnresolvedVariable
         return file.absolutePath;
     }
 
@@ -108,12 +115,12 @@
             return file;
         }
         // JS文件
-        var js = new File(normalizeName(_absolute(file), ".js"));
+        var js = new File(normalizeName(_absolute(file), '.js'));
         if (js.isFile()) {
             return js;
         }
         // JSON文件
-        var json = new File(normalizeName(_absolute(file), ".json"));
+        var json = new File(normalizeName(_absolute(file), '.json'));
         if (json.isFile()) {
             return json;
         }
@@ -164,7 +171,6 @@
             return module;
         }
         console.debug('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional));
-        // noinspection JSUnresolvedVariable
         module = {
             id: id,
             exports: {},
@@ -178,10 +184,9 @@
         } else if (cfile.endsWith('.json')) {
             compileJson(module, file);
         } else if (cfile.endsWith('.msm')) {
-            // noinspection ExceptionCaughtLocallyJS
-            throw Error("Unsupported MiaoScript module!");
+            throw Error('Unsupported MiaoScript module!');
         } else {
-            throw Error("Unknown file type " + cfile);
+            throw Error('Unknown file type ' + cfile);
         }
         return module;
     }
@@ -198,8 +203,8 @@
         if (optional.hook) {
             origin = optional.hook(origin);
         }
-        // 2019-09-19 使用 扩展函数直接 load 无需保存文件 删除文件
-        var compiledWrapper = engineLoad({ script: "(function $(module, exports, require, __dirname, __filename) {" + origin + "});", name: file });
+        // 2019-09-19 使用 扩展函数直接 load 无需保存/删除文件
+        var compiledWrapper = engineLoad({ script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '});', name: file });
         compiledWrapper.apply(module.exports, [
             module, module.exports, module.require, file.parentFile, file
         ]);
@@ -219,6 +224,27 @@
     }
 
     /**
+     * 尝试从网络下载依赖包
+     */
+    function download(name) {
+        // handle name es6-map/implement => es6-map @ms/common/dist/reflect => @ms/common
+        var names = name.split('/');
+        name = name.startsWith('@') ? names[0] + '/' + names[1] : names[0];
+        var tempFile = Files.createTempDirectory('MiaoScript').resolve(java.util.UUID.randomUUID().toString() + '.http');
+        Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + name).openStream(), tempFile)
+        var info = JSON.parse(new java.lang.String(Files.readAllBytes(tempFile), 'UTF-8'));
+        var url = info.versions[info['dist-tags']['latest']].dist.tarball;
+        console.log('local module ' + name + ' not found but exist at internet ' + url + ' downloading...')
+        var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())));
+        var entry; var target = root + separatorChar + 'node_modules' + separatorChar;
+        while ((entry = tis.getNextEntry()) != null) {
+            var targetPath = Paths.get(target + entry.getName().substring('package/'.length));
+            targetPath.toFile().getParentFile().mkdirs();
+            Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    /**
      * 加载模块
      * @param name 模块名称
      * @param path 路径
@@ -229,12 +255,21 @@
     function _require(name, path, optional) {
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
-        optional = __assign({ cache: true }, optional);
+        optional = __assign({ cache: true, recursive: 0 }, optional);
+        if (optional.recursive > 1) { throw new Error('Recursive call error!') }
         if (file === undefined) {
-            throw new FileNotFoundException("Can't found module " + name + " in directory " + path)
+            try {
+                if (notFoundModules[name]) { throw new Error("can't found module in network!") }
+                download(name);
+                optional.recursive++
+                return _require(name, path, optional);
+            } catch (ex) {
+                notFoundModules[name] = true;
+                throw new FileNotFoundException("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex)
+            }
         }
         // 重定向文件名称和类型
-        return getCacheModule(_canonical(file), file.name.split(".")[0], file, optional);
+        return getCacheModule(_canonical(file), file.name.split('.')[0], file, optional);
     }
 
     /**
@@ -248,10 +283,11 @@
         };
     }
 
-    if (typeof parent === "string") {
+    if (typeof parent === 'string') {
         parent = new File(parent);
     }
     var cacheModules = [];
-    console.debug("Initialization require module... ParentDir:", _canonical(parent));
+    var notFoundModules = [];
+    console.debug('Initialization require module... ParentDir:', _canonical(parent));
     return exports(parent);
 });
