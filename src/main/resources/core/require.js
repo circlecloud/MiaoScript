@@ -38,7 +38,6 @@
     var BufferedInputStream = Java.type('java.io.BufferedInputStream');
 
     var URL = Java.type('java.net.URL')
-
     var separatorChar = File.separatorChar;
 
     function __assign(t) {
@@ -55,7 +54,6 @@
      * 判断是否为一个文件
      * @param file
      * @returns {*}
-     * @private
      */
     function _isFile(file) {
         return file.isFile && file.isFile();
@@ -65,7 +63,6 @@
      * 获得文件规范路径
      * @param file
      * @returns {*}
-     * @private
      */
     function _canonical(file) {
         return file.canonicalPath;
@@ -75,7 +72,6 @@
      * 获得文件绝对路径
      * @param file
      * @returns {*}
-     * @private
      */
     function _absolute(file) {
         return file.absolutePath;
@@ -106,6 +102,8 @@
 
     /**
      * 解析文件
+     * @param file 文件
+     * @param dir 目录
      * @returns {*}
      */
     function resolveAsFile(file, dir) {
@@ -128,6 +126,8 @@
 
     /**
      * 解析目录
+     * @param file 文件
+     * @param dir 目录
      * @returns {*}
      */
     function resolveAsDirectory(file, dir) {
@@ -215,7 +215,6 @@
      * 预编译Json
      * @param module Json模块
      * @param file Json 文件
-     * @param optional 附加选项
      * @returns {Object}
      */
     function compileJson(module, file) {
@@ -225,23 +224,25 @@
 
     /**
      * 尝试从网络下载依赖包
+     * @param name 包名称
      */
     function download(name) {
         // handle name es6-map/implement => es6-map @ms/common/dist/reflect => @ms/common
-        var names = name.split('/');
-        name = name.startsWith('@') ? names[0] + '/' + names[1] : names[0];
-        var tempFile = Files.createTempDirectory('MiaoScript').resolve(java.util.UUID.randomUUID().toString() + '.http');
-        Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + name).openStream(), tempFile)
+        var name_arr = name.split('/');
+        var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0];
+        var tempFile = Files.createTempDirectory('MiaoScript').resolve(module_name + '.tgz');
+        Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING)
         var info = JSON.parse(new java.lang.String(Files.readAllBytes(tempFile), 'UTF-8'));
         var url = info.versions[info['dist-tags']['latest']].dist.tarball;
-        console.log('local module ' + name + ' not found but exist at internet ' + url + ' downloading...')
+        console.log('node_module ' + module_name + ' not found at local but exist at internet ' + url + ' downloading...')
         var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())));
-        var entry; var target = root + separatorChar + 'node_modules' + separatorChar;
+        var entry; var target = root + separatorChar + 'node_modules' + separatorChar + module_name;
         while ((entry = tis.getNextEntry()) != null) {
-            var targetPath = Paths.get(target + entry.getName().substring('package/'.length));
+            var targetPath = Paths.get(target + separatorChar + entry.getName().substring('package/'.length));
             targetPath.toFile().getParentFile().mkdirs();
             Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING);
         }
+        return name;
     }
 
     /**
@@ -250,19 +251,19 @@
      * @param path 路径
      * @param optional 附加选项
      * @returns {*}
-     * @private
      */
     function _require(name, path, optional) {
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
-        optional = __assign({ cache: true, recursive: 0 }, optional);
-        if (optional.recursive > 1) { throw new Error('Recursive call error!') }
+        optional = __assign({ cache: true }, optional);
         if (file === undefined) {
             try {
-                if (notFoundModules[name]) { throw new Error("can't found module in network!") }
-                download(name);
-                optional.recursive++
-                return _require(name, path, optional);
+                if (optional.recursive || notFoundModules[name]) {
+                    console.log(name, path, optional, notFoundModules[name])
+                    throw new Error("Can't found module " + name + ' in network!')
+                }
+                optional.recursive = true;
+                return _require(download(name), path, optional);
             } catch (ex) {
                 notFoundModules[name] = true;
                 throw new FileNotFoundException("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex)
