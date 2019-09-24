@@ -230,8 +230,9 @@
         // handle name es6-map/implement => es6-map @ms/common/dist/reflect => @ms/common
         var name_arr = name.split('/');
         var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0];
-        var tempFile = Files.createTempDirectory('MiaoScript').resolve(module_name + '.tgz');
-        Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING)
+        // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
+        var tempFile = Files.createTempFile(module_name.replace('/', '_'), 'json');
+        Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
         var info = JSON.parse(new java.lang.String(Files.readAllBytes(tempFile), 'UTF-8'));
         var url = info.versions[info['dist-tags']['latest']].dist.tarball;
         console.log('node_module ' + module_name + ' not found at local but exist at internet ' + url + ' downloading...')
@@ -258,9 +259,10 @@
         optional = __assign({ cache: true }, optional);
         if (file === undefined) {
             try {
-                if (optional.recursive || notFoundModules[name]) {
+                // excloud local dir, prevent too many recursive call and cache not found module
+                if (name.startsWith('.') || name.startsWith('/') || optional.recursive || notFoundModules[name]) {
                     console.log(name, path, optional, notFoundModules[name])
-                    throw new Error("Can't found module " + name + ' in network!')
+                    throw new Error("Can't found module " + name + ' at local or network!')
                 }
                 optional.recursive = true;
                 return _require(download(name), path, optional);
