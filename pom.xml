@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.0.1</version>
+    <version>0.1.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -54,6 +54,8 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §619-09-24 §cremove: 移除 okhttp3 类库;
+            　　　　　　§afeat: 新增require自动下载模块功能;
             §619-09-21 §afeat: 新增 okhttp3 类库;
             §619-08-31 §afeat: 新增 tar 类库 支持 tar.gz 解压
         </update.changes>

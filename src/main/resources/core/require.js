@@ -23,7 +23,6 @@
  *     2. 如果 xx/index.js 存在 则使用 resolveAsFile(xx/index.js) 加载
  *     3. 如果 xx/index.json 存在 则使用 `xx/index.json` 解析为对象加载 并停止执行
  *     暂不支持 4. 如果 xx/index.msm 是一个文件 则使用MScript解析器解析 并停止执行
- *   注: MiaoScript 暂不支持多层 modules 加载 暂时不需要(估计以后也不会需要)
  */
 (function(parent) {
     'use strict';
@@ -231,9 +230,9 @@
         var name_arr = name.split('/');
         var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0];
         // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
-        var tempFile = Files.createTempFile(module_name.replace('/', '_'), 'json');
+        var tempFile = Files.createTempFile(module_name.replace('/', '_'), '.json');
         Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
-        var info = JSON.parse(new java.lang.String(Files.readAllBytes(tempFile), 'UTF-8'));
+        var info = JSON.parse(new java.lang.String(Files.readAllBytes(tempFile), 'UTF-8')); tempFile.toFile().deleteOnExit();
         var url = info.versions[info['dist-tags']['latest']].dist.tarball;
         console.log('node_module ' + module_name + ' not found at local but exist at internet ' + url + ' downloading...')
         var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())));
