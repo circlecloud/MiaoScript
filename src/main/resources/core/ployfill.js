@@ -9,6 +9,7 @@
         throw new Error('Internal engine system not allow use `load` function!');
     };
     // Init console and require
+    global.XMLHttpRequest = undefined;
     global.console = engineLoad(global.root + '/core/console.js')(logger);
     global.require = engineLoad(global.root + '/core/require.js')(root);
     // String contains ployfill
