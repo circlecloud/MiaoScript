@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -54,6 +54,8 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §620-01-14 §afeat: 新增 Bungee 支持;
+            　　　　　　§afeat: 新增 instance 实例获取;
             §619-09-24 §cremove: 移除 okhttp3 类库;
             　　　　　　§afeat: 新增require自动下载模块功能;
             §619-09-21 §afeat: 新增 okhttp3 类库;
@@ -174,6 +176,16 @@
             <groupId>org.spongepowered</groupId>
             <artifactId>spongeapi</artifactId>
             <version>7.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.md-5</groupId>
+            <artifactId>bungeecord-api</artifactId>
+            <version>1.12-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.nukkit</groupId>
+            <artifactId>nukkit</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

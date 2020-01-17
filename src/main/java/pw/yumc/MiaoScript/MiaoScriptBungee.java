@@ -1,22 +1,20 @@
 package pw.yumc.MiaoScript;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
 import lombok.SneakyThrows;
+import net.md_5.bungee.api.plugin.Plugin;
 
 /**
- * 喵式脚本
+ * Created with IntelliJ IDEA
  *
- * @author 喵♂呜
- * @since 2016年8月29日 上午7:50:39
+ * @author MiaoWoo
+ * Created on 2020/1/14 16:02.
  */
-public class MiaoScript extends JavaPlugin {
+public class MiaoScriptBungee extends Plugin {
     private ScriptEngine engine;
 
     @Override
     @SneakyThrows
     public void onEnable() {
-        Thread.currentThread().setContextClassLoader(getClassLoader());
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
         engine.enableEngine();
     }

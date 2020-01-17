@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import javax.script.ScriptEngineManager;
 
 import lombok.SneakyThrows;
+
 /**
  * Created with IntelliJ IDEA
  *
@@ -17,19 +18,21 @@ import lombok.SneakyThrows;
 public class ScriptEngine {
     private String root;
     private Object logger;
+    private Base base;
     private MiaoScriptEngine engine;
     private ScriptEngineManager manager;
 
-    public ScriptEngine(String root, Object logger) {
+    public ScriptEngine(String root, Object logger, Object instance) {
         this.root = root;
         this.logger = logger;
+        this.base = new Base(instance);
         this.manager = new ScriptEngineManager();
     }
 
     @SneakyThrows
     public void enableEngine() {
         this.engine = new MiaoScriptEngine(manager, "nashorn");
-        this.engine.put("base", new Base());
+        this.engine.put("base", this.base);
         this.engine.put("ScriptEngineContextHolder", this);
         Path bios = Paths.get(root, "bios.js");
         // 如果存在自定义bios就加载自定义的

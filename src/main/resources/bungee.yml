@@ -1,0 +1,5 @@
+name: ${project.artifactId}
+description: ${project.description}
+main: ${project.groupId}.${project.artifactId}.${project.artifactId}Bungee
+version: ${project.version}
+author: MiaoWoo

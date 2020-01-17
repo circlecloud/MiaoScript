@@ -1,22 +1,17 @@
 package pw.yumc.MiaoScript;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
+import cn.nukkit.plugin.PluginBase;
 import lombok.SneakyThrows;
 
 /**
- * 喵式脚本
- *
- * @author 喵♂呜
- * @since 2016年8月29日 上午7:50:39
+ * @author MiaoWoo
  */
-public class MiaoScript extends JavaPlugin {
+public class MiaoScriptNukkit extends PluginBase {
     private ScriptEngine engine;
 
     @Override
     @SneakyThrows
     public void onEnable() {
-        Thread.currentThread().setContextClassLoader(getClassLoader());
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
         engine.enableEngine();
     }

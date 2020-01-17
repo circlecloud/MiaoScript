@@ -5,9 +5,9 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
-import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 import com.google.inject.Inject;
@@ -32,7 +32,7 @@ public class MiaoScriptSponge {
     @Listener
     @SneakyThrows
     public void onStart(GameStartedServerEvent event) {
-        engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger);
+        engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger, this);
         engine.enableEngine();
     }
 
@@ -46,7 +46,7 @@ public class MiaoScriptSponge {
     @SneakyThrows
     public void reload(GameReloadEvent event) {
         engine.disableEngine();
-        engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger);
+        engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger, this);
         engine.enableEngine();
     }
 }

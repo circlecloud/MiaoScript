@@ -15,8 +15,22 @@ import lombok.val;
  * Created on 2017/10/9 12:40.
  */
 public class Base {
+    private Object instance;
+
+    public Base(Object instance) {
+        this.instance = instance;
+    }
+
     public Class getClass(String name) throws ClassNotFoundException {
         return Class.forName(name);
+    }
+
+    public Object getInstance() {
+        return this.instance;
+    }
+
+    public Class getProxyClass() {
+        return ProxyClass.class;
     }
 
     public String read(String path) throws IOException {
