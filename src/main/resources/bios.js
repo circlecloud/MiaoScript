@@ -19,6 +19,7 @@ var global = this;
         if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "debug"))) {
             logger.info('Running debugging mode...');
             global.debug = true;
+            global.trace = true;
         }
         // Check Class Loader, Sometimes Server will can't find plugin.yml file
         loader = checkClassLoader();

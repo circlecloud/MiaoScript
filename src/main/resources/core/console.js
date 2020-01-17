@@ -11,6 +11,7 @@
         log: log,
         info: log,
         ex: log,
+        trace: global.trace ? _proxy('TRACE') : global.noop,
         debug: global.debug ? _proxy('DEBUG') : global.noop,
         warn: _proxy('WARN'),
         error: _proxy('ERROR')

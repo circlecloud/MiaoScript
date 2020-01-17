@@ -39,6 +39,8 @@
     var URL = Java.type('java.net.URL')
     var separatorChar = File.separatorChar;
 
+    var CoreModules = ['assert', 'async_hooks', 'child_process', 'cluster', 'crypto', 'dns', 'domain', 'events', 'fs', 'http', 'http2', 'https', 'inspector', 'net', 'os', 'path', 'vm', 'url', 'util', 'zlib', 'worker_threads']
+
     function __assign(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
             s = arguments[i];
@@ -93,9 +95,10 @@
         } else {
             // 解析Node目录
             var dir = [parent, 'node_modules'].join(separatorChar);
-            return resolveAsFile(name, dir) ||
-                resolveAsDirectory(name, dir) ||
+            if (cacheModuleIds[name]) return cacheModuleIds[name]
+            cacheModuleIds[name] = resolveAsFile(name, dir) || resolveAsDirectory(name, dir) ||
                 (parent && parent.toString().startsWith(root) ? resolve(name, new File(parent).getParent()) : undefined);
+            return cacheModuleIds[name];
         }
     }
 
@@ -169,12 +172,12 @@
         if (optional.cache && module) {
             return module;
         }
-        console.debug('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional));
+        console.trace('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional));
         module = {
             id: id,
             exports: {},
             loaded: false,
-            require: exports(file.parentFile)
+            require: getRequire(file.parentFile)
         };
         cacheModules[id] = module;
         var cfile = _canonical(file);
@@ -245,6 +248,12 @@
         return name;
     }
 
+    function checkCoreModule(name) {
+        if (CoreModules.indexOf(name) != -1) {
+            throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to @ms/" + name + ' to compatible...')
+        }
+    }
+
     /**
      * 加载模块
      * @param name 模块名称
@@ -253,6 +262,7 @@
      * @returns {*}
      */
     function _require(name, path, optional) {
+        checkCoreModule(name);
         var file = new File(name);
         file = _isFile(file) ? file : resolve(name, path);
         optional = __assign({ cache: true }, optional);
@@ -285,11 +295,20 @@
         };
     }
 
+    function getRequire(parent) {
+        var require = exports(parent)
+        require.resolve = function __DynamicResolve__(name) {
+            return _canonical(new File(resolve(name, parent)))
+        }
+        return require;
+    }
+
     if (typeof parent === 'string') {
         parent = new File(parent);
     }
     var cacheModules = [];
+    var cacheModuleIds = [];
     var notFoundModules = [];
-    console.debug('Initialization require module... ParentDir:', _canonical(parent));
-    return exports(parent);
+    console.info('Initialization require module... ParentDir:', _canonical(parent));
+    return getRequire(parent);
 });
