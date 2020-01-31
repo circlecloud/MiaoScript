@@ -17,9 +17,12 @@ var global = this;
             global.debug = true;
         }
         if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "debug"))) {
-            logger.info('Running debugging mode...');
+            logger.info('Running in debug mode...');
             global.debug = true;
-            global.trace = true;
+        }
+        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "level"))) {
+            global.level = base.read(java.nio.file.Paths.get(root, "level"))
+            logger.info('Set system level to [' + global.level + ']...');
         }
         // Check Class Loader, Sometimes Server will can't find plugin.yml file
         loader = checkClassLoader();
