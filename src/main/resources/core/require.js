@@ -232,8 +232,9 @@
                 origin = optional.hook(origin);
             }
             // 2019-09-19 使用 扩展函数直接 load 无需保存/删除文件
+            // 2020-02-16 结尾新增换行 防止有注释导致加载失败
             // @ts-ignore
-            var compiledWrapper = engineLoad({ script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '});', name: file });
+            var compiledWrapper = engineLoad({ script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '\n});', name: file });
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
             ]);
