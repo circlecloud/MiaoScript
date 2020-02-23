@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -54,14 +54,16 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §620-02-16 §afeat: 新增 Source Map 支持;
+            §620-02-02 §afeat: 迁移 ployfill 到 @ms/ployfill;
             §620-01-14 §afeat: 新增 Bungee 支持;
-            　　　　　　§afeat: 新增 instance 实例获取;
+            　　　　　　§afeat: 新增 instance 实例获取
+        </update.changes>
+        <update.changelog>
             §619-09-24 §cremove: 移除 okhttp3 类库;
             　　　　　　§afeat: 新增require自动下载模块功能;
             §619-09-21 §afeat: 新增 okhttp3 类库;
-            §619-08-31 §afeat: 新增 tar 类库 支持 tar.gz 解压
-        </update.changes>
-        <update.changelog>
+            §619-08-31 §afeat: 新增 tar 类库 支持 tar.gz 解压;
             §619-08-29 §erefactor: 移动插件文件 默认自带MSPM插件 优化bios;
             §618-5-20 §afeat: 新增MiaoBoard插件;
             §618-5-20 §afeat: 新增MiaoAuth插件;
