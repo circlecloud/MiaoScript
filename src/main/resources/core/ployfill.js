@@ -14,6 +14,7 @@
         global.setGlobal = function(key, value) { global[key] = value; };
         // Init console and require
         global.console = engineLoad(global.root + '/core/console.js')(logger);
+        console.log("Loading Engine at Thread", java.lang.Thread.currentThread().name)
         global.require = engineLoad(global.root + '/core/require.js')(root);
         require('@ms/ployfill')
     }

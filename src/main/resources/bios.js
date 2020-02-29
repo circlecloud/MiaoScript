@@ -27,11 +27,12 @@ var global = this;
         // Check Class Loader, Sometimes Server will can't find plugin.yml file
         loader = checkClassLoader();
         // Force decompression core|node_modules to folder when not debug mode
-        release(root, '(core|node_modules)+/.*', !global.debug);
-        // Plugin file decompression to folder when file not exist
-        release(root, '(plugins)+/.*', false);
-        load(root + '/core/ployfill.js')(root, logger);
-        engineDisable = require('@ms/core').default;
+        release(root, '(core)+/.*', !global.debug);
+        // Async Loading MiaoScript Engine
+        new java.lang.Thread(function() {
+            load(root + '/core/ployfill.js')(root, logger);
+            engineDisable = require('@ms/core').default;
+        }, "MiaoScript thread").start()
     };
 
     var pluginYml;
