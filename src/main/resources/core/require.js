@@ -271,7 +271,7 @@
             // @ts-ignore
             var entry; var target = root + separatorChar + 'node_modules' + separatorChar + module_name;
             while ((entry = tis.getNextEntry()) != null) {
-                var targetPath = Paths.get(target + separatorChar + entry.getName().substring('package/'.length));
+                var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8));
                 targetPath.toFile().getParentFile().mkdirs();
                 Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING);
             }
