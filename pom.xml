@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -49,11 +49,12 @@
     </build>
     <ciManagement>
         <system>Jenkins</system>
-        <url>https://ci.yumc.pw/job/Minecraft/${project.artifactId}/</url>
+        <url>https://ci.yumc.pw/job/Minecraft/job/${project.artifactId}/</url>
     </ciManagement>
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §620-03-03 §afeat: require 新增 淘宝镜像源拉取;
             §620-02-27 §afeat: 异步加载脚本引擎;
             §620-02-25 §afeat: 新增 Nukkit 的支持;
             §620-02-16 §afeat: 新增 Source Map 支持;
