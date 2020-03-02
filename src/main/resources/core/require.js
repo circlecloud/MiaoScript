@@ -263,10 +263,9 @@
             var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0];
             // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
             var tempFile = Files.createTempFile(module_name.replace('/', '_'), '.json');
-            Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
-            var info = JSON.parse(new JavaString(Files.readAllBytes(tempFile), 'UTF-8')); tempFile.toFile().deleteOnExit();
+            var info = fetchPackageInfo(module_name, tempFile);
             var url = info.versions[info['dist-tags']['latest']].dist.tarball;
-            console.log('node_module ' + module_name + ' not found at local but exist at internet ' + url + ' downloading...')
+            console.log('fetch node_module ' + module_name + ' from ' + url + ' waiting...')
             var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())));
             // @ts-ignore
             var entry; var target = root + separatorChar + 'node_modules' + separatorChar + module_name;
@@ -276,6 +275,17 @@
                 Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING);
             }
             return name;
+        }
+
+        function fetchPackageInfo(module_name, tempFile) {
+            try {
+                Files.copy(new URL('https://registry.npm.taobao.org/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+            } catch (ex) {
+                console.debug('can\'t fetch package ' + module_name + ' from taobao registry. try fetch from yumc registry...')
+                Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            tempFile.toFile().deleteOnExit();
+            return JSON.parse(new JavaString(Files.readAllBytes(tempFile), 'UTF-8'));
         }
 
         /**
