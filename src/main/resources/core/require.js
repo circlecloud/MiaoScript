@@ -207,7 +207,7 @@
             cacheModules[id] = module;
             var cfile = _canonical(file);
             if (cfile.endsWith('.js')) {
-                compileJs(module, file, optional);
+                compileJs(module, file, __assign(optional, { id: id }));
             } else if (cfile.endsWith('.json')) {
                 compileJson(module, file);
             } else if (cfile.endsWith('.msm')) {
@@ -234,7 +234,7 @@
             // 2019-09-19 使用 扩展函数直接 load 无需保存/删除文件
             // 2020-02-16 结尾新增换行 防止有注释导致加载失败
             // @ts-ignore
-            var compiledWrapper = engineLoad({ script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '\n});', name: file });
+            var compiledWrapper = engineLoad({ script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '\n});', name: optional.id });
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
             ]);
@@ -261,14 +261,16 @@
             // handle name es6-map/implement => es6-map @ms/common/dist/reflect => @ms/common
             var name_arr = name.split('/');
             var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0];
+            var target = root + separatorChar + 'node_modules' + separatorChar + module_name;
+            var _package = new File(target, 'package.json');
+            if (_package.exists()) { return }
             // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
-            var tempFile = Files.createTempFile(module_name.replace('/', '_'), '.json');
-            var info = fetchPackageInfo(module_name, tempFile);
+            var info = fetchPackageInfo(module_name);
             var url = info.versions[info['dist-tags']['latest']].dist.tarball;
             console.log('fetch node_module ' + module_name + ' from ' + url + ' waiting...')
             var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())));
             // @ts-ignore
-            var entry; var target = root + separatorChar + 'node_modules' + separatorChar + module_name;
+            var entry;
             while ((entry = tis.getNextEntry()) != null) {
                 var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8));
                 targetPath.toFile().getParentFile().mkdirs();
@@ -277,7 +279,8 @@
             return name;
         }
 
-        function fetchPackageInfo(module_name, tempFile) {
+        function fetchPackageInfo(module_name) {
+            var tempFile = Files.createTempFile(module_name.replace('/', '_'), '.json');
             try {
                 Files.copy(new URL('https://registry.npm.taobao.org/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
             } catch (ex) {
@@ -292,10 +295,15 @@
          * 检查核心模块
          * @param {string} name
          */
-        function checkCoreModule(name) {
+        function checkCoreModule(name, path) {
             if (CoreModules.indexOf(name) != -1) {
-                throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to @ms/" + name + ' to compatible...')
+                var newName = '@ms/nodejs/dist/' + name
+                if (resolve(newName, path) !== undefined) {
+                    return newName;
+                }
+                throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to @ms/nodejs/" + name + ' to compatible...')
             }
+            return name;
         }
 
         /**
@@ -306,7 +314,7 @@
          * @returns {*}
          */
         function _require(name, path, optional) {
-            checkCoreModule(name);
+            name = checkCoreModule(name, path);
             var file = new File(name);
             file = _isFile(file) ? file : resolve(name, path);
             optional = __assign({ cache: true }, optional);
@@ -367,9 +375,12 @@
                  * @param {string} name
                  */
                 function __DynamicClear__(name) {
-                    var moduleId = require.resolve(name)
-                    console.trace('Clear module ' + name + '(' + moduleId + ') ...')
-                    return delete cacheModules[moduleId]
+                    for (var cacheModule in cacheModules) {
+                        if (cacheModule.indexOf(name) != -1) {
+                            console.trace('Clear module ' + cacheModule + ' ...')
+                            delete cacheModules[cacheModule]
+                        }
+                    }
                 }
             return require;
         }
@@ -382,11 +393,11 @@
          */
         var cacheModules = {};
         /**
-         * @type {{[key:string]:string}} cacheModules
+         * @type {{[key:string]:string}} cacheModuleIds
          */
         var cacheModuleIds = {};
         /**
-         * @type {{[key:string]:boolean}} cacheModules
+         * @type {{[key:string]:boolean}} notFoundModules
          */
         var notFoundModules = {};
         console.info('Initialization require module. ParentDir:', _canonical(parent));
