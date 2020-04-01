@@ -46,7 +46,7 @@
         var JavaString = Java.type('java.lang.String')
         var separatorChar = File.separatorChar;
 
-        var CoreModules = ['assert', 'async_hooks', 'child_process', 'cluster', 'crypto', 'dns', 'domain', 'events', 'fs', 'http', 'http2', 'https', 'inspector', 'net', 'os', 'path', 'vm', 'url', 'util', 'zlib', 'worker_threads']
+        var CoreModules = ['assert', 'async_hooks', 'child_process', 'cluster', 'crypto', 'dns', 'domain', 'events', 'fs', 'http', 'http2', 'https', 'inspector', 'net', 'os', 'path', 'vm', 'url', 'util', 'zlib', 'worker_threads', 'punycode']
 
         /**
          * @param {...object} t
