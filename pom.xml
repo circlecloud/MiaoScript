@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -54,6 +54,7 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §620-04-03 §afeat: 优化 框架卸载逻辑;
             §620-03-31 §afeat: require 新增 内建 nodejs 模块;
             §620-03-03 §afeat: require 新增 淘宝镜像源拉取;
             §620-02-27 §afeat: 异步加载脚本引擎;

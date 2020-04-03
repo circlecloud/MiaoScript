@@ -23,5 +23,6 @@ public class MiaoScriptBungee extends Plugin {
     @Override
     public void onDisable() {
         engine.disableEngine();
+        engine = null;
     }
 }

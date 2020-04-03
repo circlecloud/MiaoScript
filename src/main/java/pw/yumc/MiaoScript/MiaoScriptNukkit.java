@@ -20,5 +20,6 @@ public class MiaoScriptNukkit extends PluginBase {
     @Override
     public void onDisable() {
         engine.disableEngine();
+        engine = null;
     }
 }

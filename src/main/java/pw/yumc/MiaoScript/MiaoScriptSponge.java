@@ -19,7 +19,7 @@ import lombok.SneakyThrows;
  * @author 喵♂呜
  * Created on 2017/10/25 20:35.
  */
-@Plugin(id = "miaoscript", name = "MiaoScript", version = "1.0", authors = "喵♂呜")
+@Plugin(id = "miaoscript", name = "MiaoScript", version = "1.0", authors = "MiaoWoo")
 public class MiaoScriptSponge {
     private ScriptEngine engine;
     @Inject
@@ -40,6 +40,7 @@ public class MiaoScriptSponge {
     @SneakyThrows
     public void onStop(GameStoppingServerEvent event) {
         engine.disableEngine();
+        engine = null;
     }
 
     @Listener
