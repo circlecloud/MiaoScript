@@ -17,5 +17,6 @@
         console.log("Loading Engine at Thread", java.lang.Thread.currentThread().name)
         global.require = engineLoad(global.root + '/core/require.js')(root);
         require('@ms/ployfill')
+        require('@ms/nodejs')
     }
 );
