@@ -12,7 +12,7 @@ var global = this;
         log = logger;
         // Development Env Detect
         root = root || "src/main/resources";
-        if (__FILE__ !== "<eval>") {
+        if (__FILE__.indexOf('!') === -1) {
             logger.info('Loading custom BIOS file ' + __FILE__);
             global.debug = true;
         }
@@ -24,14 +24,13 @@ var global = this;
             global.level = base.read(java.nio.file.Paths.get(root, "level"))
             logger.info('Set system level to [' + global.level + ']...');
         }
-        // Check Class Loader, Sometimes Server will can't find plugin.yml file
+        // Check Class Loader, Sometimes Server will can't found plugin.yml file
         loader = checkClassLoader();
-        // Force decompression core|node_modules to folder when not debug mode
-        release(root, '(core)+/.*', !global.debug);
         // Async Loading MiaoScript Engine
         new java.lang.Thread(function() {
-            load(root + '/core/ployfill.js')(root, logger);
-            engineDisable = require('@ms/core').default;
+            java.lang.Thread.currentThread().contextClassLoader = loader;
+            load('classpath:core/ployfill.js')(root, logger);
+            engineDisable = require('@ms/core').default || function() { logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...') };
         }, "MiaoScript thread").start()
     };
 
@@ -48,31 +47,5 @@ var global = this;
             }
         }
         return classLoader;
-    }
-
-    function release(root, regex, replace) {
-        var filePath = pluginYml.getFile().substring(pluginYml.getFile().indexOf("/") + 1);
-        var jarPath = java.net.URLDecoder.decode(filePath.substring(0, filePath.indexOf('!')));
-        if (!java.nio.file.Files.exists(java.nio.file.Paths.get(jarPath))) {
-            jarPath = "/" + jarPath;
-        }
-        var jar = new java.util.jar.JarFile(jarPath);
-        var r = new RegExp(regex);
-        jar.stream().forEach(function(entry) {
-            try {
-                if (!entry.isDirectory()) {
-                    if (r.test(entry.name)) {
-                        var path = java.nio.file.Paths.get(root, entry.name);
-                        var parentFile = path.toFile().parentFile;
-                        if (!parentFile.exists()) { parentFile.mkdirs(); }
-                        if (!java.nio.file.Files.exists(path) || replace) {
-                            java.nio.file.Files.copy(loader.getResourceAsStream(entry.name), path, java.nio.file.StandardCopyOption['REPLACE_EXISTING']);
-                        }
-                    }
-                }
-            } catch (ex) {
-                ex.printStackTrace();
-            }
-        })
     }
 })();

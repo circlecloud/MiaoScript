@@ -39,7 +39,7 @@ public class ScriptEngine {
         if (Files.exists(bios)) {
             this.engine.eval("load('" + bios.toFile().getCanonicalPath() + "')");
         } else {
-            this.engine.eval(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream("bios.js")));
+            this.engine.eval("load('classpath:bios.js')");
         }
         engine.invokeFunction("boot", root, logger);
     }

@@ -382,6 +382,17 @@
                         }
                     }
                 }
+            require.disable = function __DynamicDisable__() {
+                for (var cacheModule in cacheModules) {
+                    delete cacheModules[cacheModule]
+                }
+                cacheModules = undefined;
+                for (var cacheModule in cacheModuleIds) {
+                    delete cacheModuleIds[cacheModule]
+                }
+                cacheModuleIds = undefined;
+                notFoundModules = undefined;
+            }
             return require;
         }
 

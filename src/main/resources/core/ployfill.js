@@ -13,10 +13,10 @@
         global.load = load = function __PreventGlobalLoadFunction__() { throw new Error('Internal engine system not allow use `load` function!'); }
         global.setGlobal = function(key, value) { global[key] = value; };
         // Init console and require
-        global.console = engineLoad(global.root + '/core/console.js')(logger);
+        global.console = engineLoad('classpath:core/console.js')(logger);
         console.log("Loading Engine at Thread", java.lang.Thread.currentThread().name)
-        global.require = engineLoad(global.root + '/core/require.js')(root);
+        global.require = engineLoad('classpath:core/require.js')(root);
         require('@ms/ployfill')
         require('@ms/nodejs')
     }
-);
+)
