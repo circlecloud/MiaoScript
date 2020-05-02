@@ -1,17 +1,15 @@
 'use strict';
-var log;
-var boot;
-var engineDisable;
 var global = this;
 /**
  * Init MiaoScriptEngine Runtime
  */
-(function() {
+(function () {
     var loader;
-    boot = function(root, logger) {
-        log = logger;
+    global.boot = function (root, logger) {
+        global.scope = "@ccms";
+        global.log = logger;
         // Development Env Detect
-        root = root || "src/main/resources";
+        global.root = root || "src/main/resources";
         if (__FILE__.indexOf('!') === -1) {
             logger.info('Loading custom BIOS file ' + __FILE__);
             global.debug = true;
@@ -27,10 +25,10 @@ var global = this;
         // Check Class Loader, Sometimes Server will can't found plugin.yml file
         loader = checkClassLoader();
         // Async Loading MiaoScript Engine
-        new java.lang.Thread(function() {
+        new java.lang.Thread(function () {
             java.lang.Thread.currentThread().contextClassLoader = loader;
             load('classpath:core/ployfill.js')(root, logger);
-            engineDisable = require('@ms/core').default || function() { logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...') };
+            global.engineDisable = require(global.scope + '/core').default || function () { logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...') };
         }, "MiaoScript thread").start()
     };
 

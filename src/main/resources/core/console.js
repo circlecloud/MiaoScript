@@ -3,7 +3,7 @@
     /**
      * @param {{ info: (arg0: string) => void; }} logger
      */
-    function(logger) {
+    function (logger) {
         function log() {
             logger.info(Array.prototype.join.call(arguments, ' '))
         }
@@ -11,7 +11,7 @@
          * @param {string} prefix
          */
         function _proxy(prefix) {
-            return function() {
+            return function () {
                 log('[' + prefix + ']', Array.prototype.join.call(arguments, ' '))
             }
         }

@@ -25,24 +25,33 @@
  *     暂不支持 4. 如果 xx/index.msm 是一个文件 则使用MScript解析器解析 并停止执行
  */
 // @ts-check
-/// <reference types="@ms/nashorn" />
 (
     /**
      * @param {any} parent
      */
-    function(parent) {
+    function (parent) {
         'use strict';
+        // @ts-ignore
         var File = Java.type('java.io.File');
+        // @ts-ignore
         var Paths = Java.type('java.nio.file.Paths');
+        // @ts-ignore
         var Files = Java.type('java.nio.file.Files');
+        // @ts-ignore
         var StandardCopyOption = Java.type('java.nio.file.StandardCopyOption');
+        // @ts-ignore
         var FileNotFoundException = Java.type('java.io.FileNotFoundException');
 
+        // @ts-ignore
         var TarInputStream = Java.type('org.kamranzafar.jtar.TarInputStream');
+        // @ts-ignore
         var GZIPInputStream = Java.type('java.util.zip.GZIPInputStream');
+        // @ts-ignore
         var BufferedInputStream = Java.type('java.io.BufferedInputStream');
 
+        // @ts-ignore
         var URL = Java.type('java.net.URL')
+        // @ts-ignore
         var JavaString = Java.type('java.lang.String')
         var separatorChar = File.separatorChar;
 
@@ -258,9 +267,10 @@
          * @param {string} name 包名称
          */
         function download(name) {
-            // handle name es6-map/implement => es6-map @ms/common/dist/reflect => @ms/common
+            // handle name es6-map/implement => es6-map @ccms/common/dist/reflect => @ccms/common
             var name_arr = name.split('/');
             var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0];
+            // @ts-ignore
             var target = root + separatorChar + 'node_modules' + separatorChar + module_name;
             var _package = new File(target, 'package.json');
             if (_package.exists()) { return }
@@ -279,6 +289,9 @@
             return name;
         }
 
+        /**
+         * @param {string} module_name
+         */
         function fetchPackageInfo(module_name) {
             var tempFile = Files.createTempFile(module_name.replace('/', '_'), '.json');
             try {
@@ -291,17 +304,23 @@
             return JSON.parse(new JavaString(Files.readAllBytes(tempFile), 'UTF-8'));
         }
 
+        var lastModule = ''
         /**
          * 检查核心模块
          * @param {string} name
          */
         function checkCoreModule(name, path) {
+            if (name.startsWith('@ms') && lastModule.endsWith('.js')) {
+                console.warn(lastModule + ' load deprecated module ' + name + ' auto replace to ' + name.replace('@ms', '@ccms') + '...')
+            } else {
+                lastModule = name
+            }
             if (CoreModules.indexOf(name) != -1) {
-                var newName = '@ms/nodejs/dist/' + name
+                var newName = '@ccms/nodejs/dist/' + name
                 if (resolve(newName, path) !== undefined) {
                     return newName;
                 }
-                throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to @ms/nodejs/" + name + ' to compatible...')
+                throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to @ccms/nodejs/" + name + ' to compatible...')
             }
             return name;
         }
