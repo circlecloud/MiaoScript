@@ -11,7 +11,14 @@
         global.engineLoad = load;
         global.noop = global.engineDisable = engineDisable = function () { };
         global.load = load = function __PreventGlobalLoadFunction__() { throw new Error('Internal engine system not allow use `load` function!'); }
-        global.setGlobal = function (key, value) { global[key] = value; };
+        global.setGlobal = function (key, value, config) {
+            if (config) {
+                config.value = value;
+                Object.defineProperty(global, key, config)
+            } else {
+                global[key] = value;
+            }
+        };
         // Init console and require
         global.console = engineLoad('classpath:core/console.js')(logger);
         console.log("Loading Engine at Thread", java.lang.Thread.currentThread().name)
