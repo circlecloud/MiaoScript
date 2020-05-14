@@ -55,7 +55,14 @@
         var JavaString = Java.type('java.lang.String')
         var separatorChar = File.separatorChar;
 
-        var CoreModules = ['assert', 'async_hooks', 'child_process', 'cluster', 'crypto', 'dns', 'domain', 'events', 'fs', 'http', 'http2', 'https', 'inspector', 'net', 'os', 'path', 'vm', 'url', 'util', 'zlib', 'worker_threads', 'punycode']
+        var CoreModules = [
+            "assert", "async_hooks", "Buffer", "child_process", "cluster", "crypto",
+            "dgram", "dns", "domain", "events", "fs", "http", "http2", "https",
+            "inspector", "net", "os", "path", "perf_hooks", "process", "punycode",
+            "querystring", "readline", "repl", "stream", "string_decoder",
+            "timer", "tls", "trace_events", "tty", "url", "util",
+            "v8", "vm", "wasi", "worker_threads", "zlib"
+        ]
 
         /**
          * @param {...object} t
@@ -308,19 +315,24 @@
         /**
          * 检查核心模块
          * @param {string} name
+         * @param {string} path
          */
         function checkCoreModule(name, path) {
             if (name.startsWith('@ms') && lastModule.endsWith('.js')) {
-                console.warn(lastModule + ' load deprecated module ' + name + ' auto replace to ' + name.replace('@ms', '@ccms') + '...')
+                // @ts-ignore
+                console.warn(lastModule + ' load deprecated module ' + name + ' auto replace to ' + (name = name.replace('@ms', global.scope)) + '...')
+                return name;
             } else {
                 lastModule = name
             }
             if (CoreModules.indexOf(name) != -1) {
-                var newName = '@ccms/nodejs/dist/' + name
+                // @ts-ignore
+                var newName = global.scope + '/nodejs/dist/' + name
                 if (resolve(newName, path) !== undefined) {
                     return newName;
                 }
-                throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to @ccms/nodejs/" + name + ' to compatible...')
+                // @ts-ignore
+                throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to " + global.scope + "/nodejs/" + name + ' to compatible...')
             }
             return name;
         }
@@ -372,7 +384,34 @@
                 }
             return __DynamicRequire__
         }
-
+        /**
+         * @param {string} name
+         */
+        function __DynamicResolve__(name) {
+            return _canonical(new File(resolve(name, parent)))
+        }
+        /**
+         * @param {string} name
+         */
+        function __DynamicClear__(name) {
+            for (var cacheModule in cacheModules) {
+                if (cacheModule.indexOf(name) != -1) {
+                    console.trace('Clear module ' + cacheModule + ' ...')
+                    delete cacheModules[cacheModule]
+                }
+            }
+        }
+        function __DynamicDisable__() {
+            for (var cacheModule in cacheModules) {
+                delete cacheModules[cacheModule]
+            }
+            cacheModules = undefined;
+            for (var cacheModule in cacheModuleIds) {
+                delete cacheModuleIds[cacheModule]
+            }
+            cacheModuleIds = undefined;
+            notFoundModules = undefined;
+        }
         /**
          * @param {string} parent
          * @param {string} parentId
@@ -382,37 +421,11 @@
              * @type {any} require
              */
             var require = exports(parent, parentId)
-            require.resolve =
-                /**
-                 * @param {string} name
-                 */
-                function __DynamicResolve__(name) {
-                    return _canonical(new File(resolve(name, parent)))
-                }
-            require.clear =
-                /**
-                 * @param {string} name
-                 */
-                function __DynamicClear__(name) {
-                    for (var cacheModule in cacheModules) {
-                        if (cacheModule.indexOf(name) != -1) {
-                            console.trace('Clear module ' + cacheModule + ' ...')
-                            delete cacheModules[cacheModule]
-                        }
-                    }
-                }
-            require.disable = function __DynamicDisable__() {
-                for (var cacheModule in cacheModules) {
-                    delete cacheModules[cacheModule]
-                }
-                cacheModules = undefined;
-                for (var cacheModule in cacheModuleIds) {
-                    delete cacheModuleIds[cacheModule]
-                }
-                cacheModuleIds = undefined;
-                notFoundModules = undefined;
-            }
-            return require;
+            require.resolve = __DynamicResolve__
+            require.clear = __DynamicClear__
+            require.disable = __DynamicDisable__
+            require.core_modules = CoreModules
+            return require
         }
 
         if (typeof parent === 'string') {
