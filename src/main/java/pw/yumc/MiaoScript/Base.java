@@ -21,7 +21,7 @@ public class Base {
         this.instance = instance;
     }
 
-    public Class getClass(String name) throws ClassNotFoundException {
+    public Class<?> getClass(String name) throws ClassNotFoundException {
         return Class.forName(name);
     }
 
@@ -29,7 +29,7 @@ public class Base {
         return this.instance;
     }
 
-    public Class getProxyClass() {
+    public Class<?> getProxyClass() {
         return ProxyClass.class;
     }
 

@@ -32,11 +32,9 @@ var global = this;
         }, "MiaoScript thread").start()
     };
 
-    var pluginYml;
     function checkClassLoader() {
         var classLoader = java.lang.Thread.currentThread().contextClassLoader;
-        pluginYml = classLoader.getResource("plugin.yml");
-        if (pluginYml === null) {
+        if (classLoader.getResource("bios.js") === null) {
             throw Error("Error class loader: " + classLoader.class.name + " Please contact the author MiaoWoo!");
         } else {
             log.info("Class loader compatible: " + classLoader.class.name);
