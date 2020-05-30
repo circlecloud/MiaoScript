@@ -4,7 +4,7 @@ import javax.websocket.CloseReason;
 import javax.websocket.EndpointConfig;
 import javax.websocket.Session;
 
-public interface WebSocketServerProxy {
+public interface WebSocketProxy {
     void onOpen(Session session, EndpointConfig config);
 
     void onMessage(Session session, String message);

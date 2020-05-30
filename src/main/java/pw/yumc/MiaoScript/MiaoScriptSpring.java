@@ -8,13 +8,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.io.File;
-import javax.annotation.PreDestroy;
 
 @Slf4j
 @Component
 public class MiaoScriptSpring {
-    private ScriptEngine engine;
-
     @Bean
     @SneakyThrows
     public ScriptEngine buildScriptEngine(ApplicationContext applicationContext) {
@@ -24,11 +21,5 @@ public class MiaoScriptSpring {
     @Bean
     public ServerEndpointExporter serverEndpointExporter() {
         return new ServerEndpointExporter();
-    }
-
-    @PreDestroy
-    public void disableEngine() {
-        engine.disableEngine();
-        engine = null;
     }
 }

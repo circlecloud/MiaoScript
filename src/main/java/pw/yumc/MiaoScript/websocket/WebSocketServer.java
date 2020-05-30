@@ -14,12 +14,12 @@ import javax.websocket.server.ServerEndpoint;
 @ServerEndpoint("/ws/")
 public class WebSocketServer implements ApplicationContextAware {
     private static ApplicationContext context;
-    private WebSocketServerProxy proxy;
+    private WebSocketProxy proxy;
 
     private boolean checkProxy(Session session) {
         try {
             if (this.proxy == null) {
-                this.proxy = context.getBean(WebSocketServerProxy.class);
+                this.proxy = context.getBean(WebSocketProxy.class);
             }
             return true;
         } catch (Exception ex) {
