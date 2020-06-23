@@ -27,7 +27,7 @@
 // @ts-check
 (
     /**
-     * @param {any} parent
+     * @param {string} parent
      */
     function (parent) {
         'use strict';
@@ -55,6 +55,13 @@
         var JavaString = Java.type('java.lang.String')
         var separatorChar = File.separatorChar;
 
+        // @ts-ignore
+        var NODE_PATH = java.lang.System.getenv("NODE_PATH") || root + separatorChar + 'node_modules'
+        // @ts-ignore
+        var NODE_REGISTRY = java.lang.System.getenv("NODE_REGISTRY") || 'https://registry.npm.taobao.org'
+        // @ts-ignore
+        var MS_NODE_REGISTRY = java.lang.System.getenv("MS_NODE_REGISTRY") || 'https://repo.yumc.pw/repository/npm'
+
         var CoreModules = [
             "assert", "async_hooks", "Buffer", "child_process", "cluster", "crypto",
             "dgram", "dns", "domain", "events", "fs", "http", "http2", "https",
@@ -70,13 +77,16 @@
         function __assign(t) {
             for (var s, i = 1, n = arguments.length; i < n; i++) {
                 s = arguments[i];
-                if (s === undefined) { continue; };
+                if (s === undefined) {
+                    continue;
+                }
                 for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
                     t[p] = s[p];
             }
             return t;
-        };
+        }
 
+        // noinspection JSValidateJSDoc
         /**
          * 判断是否为一个文件
          * @param {any} file
@@ -109,23 +119,26 @@
          * 按照下列顺序查找
          * 当前目录 ./
          * 父目录 ../
-         * 模块目录 /node_modules
+         * 递归模块目录 ../node_modules 到root
+         * 寻找 ${NODE_PATH}
          * @param {string} name 模块名称
          * @param {string} parent 父目录
          */
         function resolve(name, parent) {
             name = _canonical(name) || name;
+            if (cacheModuleIds[name]) return cacheModuleIds[name]
             // 解析本地目录
             if (name.startsWith('./') || name.startsWith('../')) {
-                return resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined;
+                var moduleId = parent + '||' + name
+                if (cacheModuleIds[moduleId]) return cacheModuleIds[moduleId]
+                return cacheModuleIds[moduleId] = resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined;
             } else {
                 // 解析Node目录
                 var dir = [parent, 'node_modules'].join(separatorChar);
-                if (cacheModuleIds[name]) return cacheModuleIds[name]
-                cacheModuleIds[name] = resolveAsFile(name, dir) || resolveAsDirectory(name, dir) ||
+                return cacheModuleIds[name] = resolveAsFile(name, dir) || resolveAsDirectory(name, dir) ||
                     // @ts-ignore
-                    (parent && parent.toString().startsWith(root) ? resolve(name, new File(parent).getParent()) : undefined);
-                return cacheModuleIds[name];
+                    (parent && parent.toString().startsWith(root) ?
+                        resolve(name, new File(parent).getParent()) : resolveAsDirectory(name, NODE_PATH) || undefined);
             }
         }
 
@@ -136,7 +149,7 @@
          * @returns {*}
          */
         function resolveAsFile(file, dir) {
-            file = dir != undefined ? new File(dir, file) : new File(file);
+            file = dir !== undefined ? new File(dir, file) : new File(file);
             // 直接文件
             // @ts-ignore
             if (file.isFile()) {
@@ -161,7 +174,7 @@
          * @returns {*}
          */
         function resolveAsDirectory(file, dir) {
-            dir = dir != undefined ? new File(dir, file) : new File(file);
+            dir = dir !== undefined ? new File(dir, file) : new File(file);
             var _package = new File(dir, 'package.json');
             if (_package.exists()) {
                 // @ts-ignore
@@ -250,7 +263,10 @@
             // 2019-09-19 使用 扩展函数直接 load 无需保存/删除文件
             // 2020-02-16 结尾新增换行 防止有注释导致加载失败
             // @ts-ignore
-            var compiledWrapper = engineLoad({ script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '\n});', name: optional.id });
+            var compiledWrapper = engineLoad({
+                script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '\n});',
+                name: optional.id
+            });
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
             ]);
@@ -278,7 +294,7 @@
             var name_arr = name.split('/');
             var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0];
             // @ts-ignore
-            var target = root + separatorChar + 'node_modules' + separatorChar + module_name;
+            var target = NODE_PATH + separatorChar + module_name;
             var _package = new File(target, 'package.json');
             if (_package.exists()) { return }
             // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
@@ -302,10 +318,10 @@
         function fetchPackageInfo(module_name) {
             var tempFile = Files.createTempFile(module_name.replace('/', '_'), '.json');
             try {
-                Files.copy(new URL('https://registry.npm.taobao.org/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(new URL(NODE_REGISTRY + '/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
             } catch (ex) {
-                console.debug('can\'t fetch package ' + module_name + ' from taobao registry. try fetch from yumc registry...')
-                Files.copy(new URL('https://repo.yumc.pw/repository/npm/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+                console.debug('can\'t fetch package ' + module_name + ' from ' + NODE_REGISTRY + ' registry. try fetch from ' + MS_NODE_REGISTRY + ' registry...')
+                Files.copy(new URL(MS_NODE_REGISTRY + '/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             tempFile.toFile().deleteOnExit();
             return JSON.parse(new JavaString(Files.readAllBytes(tempFile), 'UTF-8'));
@@ -325,7 +341,7 @@
             } else {
                 lastModule = name
             }
-            if (CoreModules.indexOf(name) != -1) {
+            if (CoreModules.indexOf(name) !== -1) {
                 // @ts-ignore
                 var newName = global.scope + '/nodejs/dist/' + name
                 if (resolve(newName, path) !== undefined) {
@@ -374,44 +390,46 @@
          * @returns {Function}
          */
         function exports(parent, parentId) {
-            var __DynamicRequire__ =
-                /**
-                * @param {string} path
-                * @param {any} optional
-                */
-                function __DynamicRequire__(path, optional) {
-                    return _require(path, parent, __assign({ parentId: parentId }, optional)).exports;
-                }
-            return __DynamicRequire__
+            /**
+             * @param {string} path
+             * @param {any} optional
+             */
+            return function __DynamicRequire__(path, optional) {
+                return _require(path, parent, __assign({ parentId: parentId }, optional)).exports;
+            }
         }
+
         /**
          * @param {string} name
          */
         function __DynamicResolve__(name) {
             return _canonical(new File(resolve(name, parent)))
         }
+
         /**
          * @param {string} name
          */
         function __DynamicClear__(name) {
             for (var cacheModule in cacheModules) {
-                if (cacheModule.indexOf(name) != -1) {
+                if (cacheModule.indexOf(name) !== -1) {
                     console.trace('Clear module ' + cacheModule + ' ...')
                     delete cacheModules[cacheModule]
                 }
             }
         }
+
         function __DynamicDisable__() {
             for (var cacheModule in cacheModules) {
                 delete cacheModules[cacheModule]
             }
             cacheModules = undefined;
-            for (var cacheModule in cacheModuleIds) {
-                delete cacheModuleIds[cacheModule]
+            for (var cacheModuleId in cacheModuleIds) {
+                delete cacheModuleIds[cacheModuleId]
             }
             cacheModuleIds = undefined;
             notFoundModules = undefined;
         }
+
         /**
          * @param {string} parent
          * @param {string} parentId
@@ -444,5 +462,9 @@
          */
         var notFoundModules = {};
         console.info('Initialization require module. ParentDir:', _canonical(parent));
+        console.info('Require module env list:');
+        console.info('- NODE_PATH:', NODE_PATH);
+        console.info('- NODE_REGISTRY:', NODE_REGISTRY);
+        console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY);
         return getRequire(parent, "null");
     });

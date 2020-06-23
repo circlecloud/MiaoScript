@@ -6,7 +6,7 @@ var global = this;
 (function () {
     var loader;
     global.boot = function (root, logger) {
-        global.scope = "@ccms";
+        global.scope = java.lang.System.getenv("MS_NODE_CORE_SCOPE") || "@ccms";
         global.log = logger;
         // Development Env Detect
         global.root = root || "src/main/resources";
@@ -27,8 +27,10 @@ var global = this;
         // Async Loading MiaoScript Engine
         new java.lang.Thread(function () {
             java.lang.Thread.currentThread().contextClassLoader = loader;
-            load('classpath:core/ployfill.js')(root, logger);
-            global.engineDisable = require(global.scope + '/core').default || function () { logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...') };
+            load(java.lang.System.getenv("MS_NODE_CORE_PLOYFILL") || 'classpath:core/ployfill.js')(root, logger);
+            global.engineDisable = require(java.lang.System.getenv("MS_NODE_CORE_MODULE") || global.scope + '/core').default || function () {
+                logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...')
+            };
         }, "MiaoScript thread").start()
     };
 
