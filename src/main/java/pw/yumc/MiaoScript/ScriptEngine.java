@@ -1,12 +1,11 @@
 package pw.yumc.MiaoScript;
 
+import lombok.SneakyThrows;
+
+import javax.script.ScriptEngineManager;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import javax.script.ScriptEngineManager;
-
-import lombok.SneakyThrows;
 
 /**
  * Created with IntelliJ IDEA
@@ -27,21 +26,26 @@ public class ScriptEngine {
         this.manager = new ScriptEngineManager();
     }
 
-    @SneakyThrows
-    public synchronized void enableEngine() {
+    public synchronized MiaoScriptEngine createEngine() {
         if (this.engine == null) {
             this.engine = new MiaoScriptEngine(manager, "nashorn");
             this.engine.put("base", this.base);
             this.engine.put("ScriptEngineContextHolder", this);
-            Path bios = Paths.get(root, "bios.js");
-            // 如果存在自定义bios就加载自定义的
-            if (Files.exists(bios)) {
-                this.engine.eval("load('" + bios.toFile().getCanonicalPath() + "')");
-            } else {
-                this.engine.eval("load('classpath:bios.js')");
-            }
-            engine.invokeFunction("boot", root, logger);
         }
+        return this.engine;
+    }
+
+    @SneakyThrows
+    public void enableEngine() {
+        createEngine();
+        Path bios = Paths.get(root, "bios.js");
+        // 如果存在自定义bios就加载自定义的
+        if (Files.exists(bios)) {
+            this.engine.eval("load('" + bios.toFile().getCanonicalPath() + "')");
+        } else {
+            this.engine.eval("load('classpath:bios.js')");
+        }
+        engine.invokeFunction("boot", root, logger);
     }
 
     @SneakyThrows
