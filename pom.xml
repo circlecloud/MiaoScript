@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.7.5</version>
+    <version>0.9.1</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -53,6 +53,8 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §620-08-27 §afeat: 新增ProtocolLib依赖;
+            §620-07-28 §afeat: 新增框架升级功能;
             §620-06-23 §afeat: 支持自定义参数;
             §620-06-22 §afeat: 优化 require 加载逻辑;
             §620-05-28 §afeat: 新增 Spring 的支持;

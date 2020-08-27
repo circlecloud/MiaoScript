@@ -6,8 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 
-import lombok.val;
-
 /**
  * Created with IntelliJ IDEA
  *
@@ -48,7 +46,7 @@ public class Base {
     }
 
     public void delete(Path path) throws IOException {
-        val file = path.toFile();
+        File file = path.toFile();
         if (!file.exists()) { return; }
         if (file.isDirectory()) {
             for (Path f : Files.list(file.toPath()).collect(Collectors.toList())) {

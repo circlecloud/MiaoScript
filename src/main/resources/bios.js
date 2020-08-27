@@ -22,6 +22,11 @@ var global = this;
             global.level = base.read(java.nio.file.Paths.get(root, "level"))
             logger.info('Set system level to [' + global.level + ']...');
         }
+        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "upgrade"))) {
+            logger.info('Found upgrade file starting upgrade...');
+            base.delete(java.nio.file.Paths.get(root, "node_modules"))
+            base.delete(java.nio.file.Paths.get(root, "upgrade"))
+        }
         // Check Class Loader, Sometimes Server will can't found plugin.yml file
         loader = checkClassLoader();
         // Async Loading MiaoScript Engine
