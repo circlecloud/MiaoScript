@@ -5,6 +5,18 @@ var global = this;
  */
 (function () {
     var loader;
+    global.engineDisable = function () {
+        global.engineDisableImpl && global.engineDisableImpl()
+        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "old_node_modules"))) {
+            logger.info('Found old_node_modules folder delete...');
+            base.delete(java.nio.file.Paths.get(root, "old_node_modules"))
+        }
+        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "upgrade"))) {
+            logger.info('Found upgrade file delete node_modules...');
+            base.delete(java.nio.file.Paths.get(root, "node_modules"))
+            base.delete(java.nio.file.Paths.get(root, "upgrade"))
+        }
+    };
     global.boot = function (root, logger) {
         global.scope = java.lang.System.getenv("MS_NODE_CORE_SCOPE") || "@ccms";
         global.log = logger;
@@ -24,16 +36,22 @@ var global = this;
         }
         if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "upgrade"))) {
             logger.info('Found upgrade file starting upgrade...');
-            base.delete(java.nio.file.Paths.get(root, "node_modules"))
+            base.move(java.nio.file.Paths.get(root, "node_modules"), java.nio.file.Paths.get(root, "old_node_modules"))
             base.delete(java.nio.file.Paths.get(root, "upgrade"))
         }
+        new java.lang.Thread(function () {
+            try {
+                base.delete(java.nio.file.Paths.get(root, "old_node_modules"))
+            } catch (ex) {
+            }
+        }, "MiaoScript node_modules clean thread").start()
         // Check Class Loader, Sometimes Server will can't found plugin.yml file
         loader = checkClassLoader();
         // Async Loading MiaoScript Engine
         new java.lang.Thread(function () {
             java.lang.Thread.currentThread().contextClassLoader = loader;
             load(java.lang.System.getenv("MS_NODE_CORE_PLOYFILL") || 'classpath:core/ployfill.js')(root, logger);
-            global.engineDisable = require(java.lang.System.getenv("MS_NODE_CORE_MODULE") || global.scope + '/core').default || function () {
+            global.engineDisableImpl = require(java.lang.System.getenv("MS_NODE_CORE_MODULE") || global.scope + '/core').default || function () {
                 logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...')
             };
         }, "MiaoScript thread").start()

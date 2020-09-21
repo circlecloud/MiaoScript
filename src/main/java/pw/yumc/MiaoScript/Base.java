@@ -2,9 +2,9 @@ package pw.yumc.MiaoScript;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
 
 /**
  * Created with IntelliJ IDEA
@@ -32,27 +32,51 @@ public class Base {
     }
 
     public String read(String path) throws IOException {
-        return new String(Files.readAllBytes(new File(path).toPath()), "UTF-8");
+        return new String(Files.readAllBytes(new File(path).toPath()), StandardCharsets.UTF_8);
     }
 
     public void save(String path, String content) throws IOException {
         File file = new File(path);
         file.getParentFile().mkdirs();
-        Files.write(file.toPath(), content.getBytes("UTF-8"));
+        Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
     }
 
-    public void delete(String path) throws IOException {
-        delete(new File(path).toPath());
+    public boolean move(String source, String target) {
+        File file = new File(source);
+        return file.renameTo(new File(target));
+    }
+
+    public boolean delete(String path) throws IOException {
+        return delete(new File(path));
     }
 
     public void delete(Path path) throws IOException {
-        File file = path.toFile();
-        if (!file.exists()) { return; }
-        if (file.isDirectory()) {
-            for (Path f : Files.list(file.toPath()).collect(Collectors.toList())) {
-                delete(f);
+        delete(path.toFile());
+    }
+
+    public boolean delete(File file) throws IOException {
+        if (!file.exists()) {
+            return false;
+        }
+        if (file.isFile()) {
+            return file.delete();
+        }
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isFile()) {
+                    if (!f.delete()) {
+                        f.deleteOnExit();
+                    }
+                } else {
+                    this.delete(f.getAbsolutePath());
+                }
             }
         }
-        Files.delete(path);
+        boolean result = file.delete();
+        if (!result) {
+            file.deleteOnExit();
+        }
+        return result;
     }
 }
