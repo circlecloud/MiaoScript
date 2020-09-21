@@ -129,7 +129,7 @@
             if (cacheModuleIds[name]) return cacheModuleIds[name]
             // 解析本地目录
             if (name.startsWith('./') || name.startsWith('../')) {
-                var moduleId = parent + '||' + name
+                var moduleId = parent + '/' + name
                 if (cacheModuleIds[moduleId]) return cacheModuleIds[moduleId]
                 return cacheModuleIds[moduleId] = resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined;
             } else {

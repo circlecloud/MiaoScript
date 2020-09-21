@@ -7,7 +7,7 @@
         // Init Global Value
         global.root = root;
         global.logger = logger;
-        global.NashornEngineStartTime = new Date().getTime()
+        global.ScriptEngineStartTime = new Date().getTime()
         global.engineLoad = load;
         global.noop = global.engineDisable = engineDisable = function () { };
         global.load = load = function __PreventGlobalLoadFunction__() { throw new Error('Internal engine system not allow use `load` function!'); }
