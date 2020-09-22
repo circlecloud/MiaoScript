@@ -9,7 +9,7 @@
         global.logger = logger;
         global.ScriptEngineStartTime = new Date().getTime()
         global.engineLoad = load;
-        global.noop = global.engineDisable = engineDisable = function () { };
+        global.noop = function () { };
         global.load = load = function __PreventGlobalLoadFunction__() { throw new Error('Internal engine system not allow use `load` function!'); }
         global.setGlobal = function (key, value, config) {
             if (config) {

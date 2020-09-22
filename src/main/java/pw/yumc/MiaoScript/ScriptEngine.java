@@ -17,18 +17,16 @@ public class ScriptEngine {
     private Object logger;
     private Base base;
     private MiaoScriptEngine engine;
-    private ScriptEngineManager manager;
 
     public ScriptEngine(String root, Object logger, Object instance) {
         this.root = root;
         this.logger = logger;
         this.base = new Base(instance);
-        this.manager = new ScriptEngineManager();
     }
 
     public synchronized MiaoScriptEngine createEngine() {
         if (this.engine == null) {
-            this.engine = new MiaoScriptEngine(manager, "nashorn");
+            this.engine = new MiaoScriptEngine(new ScriptEngineManager(), "nashorn");
             this.engine.put("base", this.base);
             this.engine.put("ScriptEngineContextHolder", this);
         }
