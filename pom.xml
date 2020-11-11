@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.9.4</version>
+    <version>0.9.5</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -54,6 +54,7 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §620-11-11 §afeat: 新增 package 版本锁定逻辑;
             §620-09-21 §afeat: 完善 upgrade 逻辑;
             §620-08-27 §afeat: 新增ProtocolLib依赖;
             §620-07-28 §afeat: 新增框架升级功能;

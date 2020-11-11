@@ -13,9 +13,9 @@ import java.nio.file.Paths;
  * @author 喵♂呜 Created on 2017/10/25 21:01.
  */
 public class ScriptEngine {
-    private String root;
-    private Object logger;
-    private Base base;
+    private final String root;
+    private final Object logger;
+    private final Base base;
     private MiaoScriptEngine engine;
 
     public ScriptEngine(String root, Object logger, Object instance) {
@@ -24,13 +24,15 @@ public class ScriptEngine {
         this.base = new Base(instance);
     }
 
-    public synchronized MiaoScriptEngine createEngine() {
-        if (this.engine == null) {
-            this.engine = new MiaoScriptEngine(new ScriptEngineManager(), "nashorn");
-            this.engine.put("base", this.base);
-            this.engine.put("ScriptEngineContextHolder", this);
+    public MiaoScriptEngine createEngine() {
+        synchronized (logger) {
+            if (this.engine == null) {
+                this.engine = new MiaoScriptEngine(new ScriptEngineManager(), "nashorn");
+                this.engine.put("base", this.base);
+                this.engine.put("ScriptEngineContextHolder", this);
+            }
+            return this.engine;
         }
-        return this.engine;
     }
 
     @SneakyThrows
@@ -47,10 +49,12 @@ public class ScriptEngine {
     }
 
     @SneakyThrows
-    public synchronized void disableEngine() {
-        if (this.engine != null) {
-            this.engine.invokeFunction("engineDisable");
-            this.engine = null;
+    public void disableEngine() {
+        synchronized (logger) {
+            if (this.engine != null) {
+                this.engine.invokeFunction("engineDisable");
+                this.engine = null;
+            }
         }
     }
 

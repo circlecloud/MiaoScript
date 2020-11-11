@@ -30,30 +30,30 @@
      * @param {string} parent
      */
     function (parent) {
-        'use strict';
+        'use strict'
         // @ts-ignore
-        var File = Java.type('java.io.File');
+        var File = Java.type('java.io.File')
         // @ts-ignore
-        var Paths = Java.type('java.nio.file.Paths');
+        var Paths = Java.type('java.nio.file.Paths')
         // @ts-ignore
-        var Files = Java.type('java.nio.file.Files');
+        var Files = Java.type('java.nio.file.Files')
         // @ts-ignore
-        var StandardCopyOption = Java.type('java.nio.file.StandardCopyOption');
+        var StandardCopyOption = Java.type('java.nio.file.StandardCopyOption')
         // @ts-ignore
-        var FileNotFoundException = Java.type('java.io.FileNotFoundException');
+        var FileNotFoundException = Java.type('java.io.FileNotFoundException')
 
         // @ts-ignore
-        var TarInputStream = Java.type('org.kamranzafar.jtar.TarInputStream');
+        var TarInputStream = Java.type('org.kamranzafar.jtar.TarInputStream')
         // @ts-ignore
-        var GZIPInputStream = Java.type('java.util.zip.GZIPInputStream');
+        var GZIPInputStream = Java.type('java.util.zip.GZIPInputStream')
         // @ts-ignore
-        var BufferedInputStream = Java.type('java.io.BufferedInputStream');
+        var BufferedInputStream = Java.type('java.io.BufferedInputStream')
 
         // @ts-ignore
         var URL = Java.type('java.net.URL')
         // @ts-ignore
         var JavaString = Java.type('java.lang.String')
-        var separatorChar = File.separatorChar;
+        var separatorChar = File.separatorChar
 
         // @ts-ignore
         var NODE_PATH = java.lang.System.getenv("NODE_PATH") || root + separatorChar + 'node_modules'
@@ -71,19 +71,21 @@
             "v8", "vm", "wasi", "worker_threads", "zlib"
         ]
 
+        var ModulesVersionLock = {}
+
         /**
          * @param {...object} t
          */
         function __assign(t) {
             for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
+                s = arguments[i]
                 if (s === undefined) {
-                    continue;
+                    continue
                 }
                 for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                    t[p] = s[p];
+                    t[p] = s[p]
             }
-            return t;
+            return t
         }
 
         // noinspection JSValidateJSDoc
@@ -93,7 +95,7 @@
          * @returns {*}
          */
         function _isFile(file) {
-            return file.isFile && file.isFile();
+            return file.isFile && file.isFile()
         }
 
         /**
@@ -102,7 +104,7 @@
          * @returns {*}
          */
         function _canonical(file) {
-            return file.canonicalPath;
+            return file.canonicalPath
         }
 
         /**
@@ -111,7 +113,7 @@
          * @returns {*}
          */
         function _absolute(file) {
-            return file.absolutePath;
+            return file.absolutePath
         }
 
         /**
@@ -125,20 +127,20 @@
          * @param {string} parent 父目录
          */
         function resolve(name, parent) {
-            name = _canonical(name) || name;
+            name = _canonical(name) || name
             if (cacheModuleIds[name]) return cacheModuleIds[name]
             // 解析本地目录
             if (name.startsWith('./') || name.startsWith('../')) {
                 var moduleId = parent + '/' + name
                 if (cacheModuleIds[moduleId]) return cacheModuleIds[moduleId]
-                return cacheModuleIds[moduleId] = resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined;
+                return cacheModuleIds[moduleId] = resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined
             } else {
                 // 解析Node目录
-                var dir = [parent, 'node_modules'].join(separatorChar);
+                var dir = [parent, 'node_modules'].join(separatorChar)
                 return cacheModuleIds[name] = resolveAsFile(name, dir) || resolveAsDirectory(name, dir) ||
                     // @ts-ignore
                     (parent && parent.toString().startsWith(root) ?
-                        resolve(name, new File(parent).getParent()) : resolveAsDirectory(name, NODE_PATH) || undefined);
+                        resolve(name, new File(parent).getParent()) : resolveAsDirectory(name, NODE_PATH) || undefined)
             }
         }
 
@@ -149,21 +151,21 @@
          * @returns {*}
          */
         function resolveAsFile(file, dir) {
-            file = dir !== undefined ? new File(dir, file) : new File(file);
+            file = dir !== undefined ? new File(dir, file) : new File(file)
             // 直接文件
             // @ts-ignore
             if (file.isFile()) {
-                return file;
+                return file
             }
             // JS文件
-            var js = new File(normalizeName(_absolute(file), '.js'));
+            var js = new File(normalizeName(_absolute(file), '.js'))
             if (js.isFile()) {
-                return js;
+                return js
             }
             // JSON文件
-            var json = new File(normalizeName(_absolute(file), '.json'));
+            var json = new File(normalizeName(_absolute(file), '.json'))
             if (json.isFile()) {
-                return json;
+                return json
             }
         }
 
@@ -174,17 +176,17 @@
          * @returns {*}
          */
         function resolveAsDirectory(file, dir) {
-            dir = dir !== undefined ? new File(dir, file) : new File(file);
-            var _package = new File(dir, 'package.json');
+            dir = dir !== undefined ? new File(dir, file) : new File(file)
+            var _package = new File(dir, 'package.json')
             if (_package.exists()) {
                 // @ts-ignore
-                var json = JSON.parse(base.read(_package));
+                var json = JSON.parse(base.read(_package))
                 if (json.main) {
-                    return resolveAsFile(json.main, dir);
+                    return resolveAsFile(json.main, dir)
                 }
             }
             // if no package or package.main exists, look for index.js
-            return resolveAsFile('index.js', dir);
+            return resolveAsFile('index.js', dir)
         }
 
         /**
@@ -194,11 +196,11 @@
          * @returns {*}
          */
         function normalizeName(fileName, ext) {
-            var extension = ext || '.js';
+            var extension = ext || '.js'
             if (fileName.endsWith(extension)) {
-                return fileName;
+                return fileName
             }
-            return fileName + extension;
+            return fileName + extension
         }
 
         /**
@@ -210,9 +212,9 @@
          * @returns {Object}
          */
         function getCacheModule(id, name, file, optional) {
-            var module = cacheModules[id];
+            var module = cacheModules[id]
             if (optional.cache && module) {
-                return module;
+                return module
             }
             return createModule(id, name, file, optional)
         }
@@ -226,25 +228,25 @@
          * @returns {Object}
          */
         function createModule(id, name, file, optional) {
-            console.trace('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional));
+            console.trace('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional))
             var module = {
                 id: id,
                 exports: {},
                 loaded: false,
                 require: getRequire(file.parentFile, id)
-            };
-            cacheModules[id] = module;
-            var cfile = _canonical(file);
-            if (cfile.endsWith('.js')) {
-                compileJs(module, file, __assign(optional, { id: id }));
-            } else if (cfile.endsWith('.json')) {
-                compileJson(module, file);
-            } else if (cfile.endsWith('.msm')) {
-                throw Error('Unsupported MiaoScript module!');
-            } else {
-                throw Error('Unknown file type ' + cfile);
             }
-            return module;
+            cacheModules[id] = module
+            var cfile = _canonical(file)
+            if (cfile.endsWith('.js')) {
+                compileJs(module, file, __assign(optional, { id: id }))
+            } else if (cfile.endsWith('.json')) {
+                compileJson(module, file)
+            } else if (cfile.endsWith('.msm')) {
+                throw Error('Unsupported MiaoScript module!')
+            } else {
+                throw Error('Unknown file type ' + cfile)
+            }
+            return module
         }
 
         /**
@@ -256,9 +258,9 @@
          */
         function compileJs(module, file, optional) {
             // @ts-ignore
-            var origin = base.read(file);
+            var origin = base.read(file)
             if (optional.hook) {
-                origin = optional.hook(origin);
+                origin = optional.hook(origin)
             }
             // 2019-09-19 使用 扩展函数直接 load 无需保存/删除文件
             // 2020-02-16 结尾新增换行 防止有注释导致加载失败
@@ -266,11 +268,11 @@
             var compiledWrapper = engineLoad({
                 script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '\n});',
                 name: optional.id
-            });
+            })
             compiledWrapper.apply(module.exports, [
                 module, module.exports, module.require, file.parentFile, file
-            ]);
-            module.loaded = true;
+            ])
+            module.loaded = true
         }
 
         /**
@@ -281,8 +283,8 @@
          */
         function compileJson(module, file) {
             // @ts-ignore
-            module.exports = JSON.parse(base.read(file));
-            module.loaded = true;
+            module.exports = JSON.parse(base.read(file))
+            module.loaded = true
         }
 
         /**
@@ -291,40 +293,46 @@
          */
         function download(name) {
             // handle name es6-map/implement => es6-map @ccms/common/dist/reflect => @ccms/common
-            var name_arr = name.split('/');
-            var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0];
+            var name_arr = name.split('/')
+            var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0]
             // @ts-ignore
-            var target = NODE_PATH + separatorChar + module_name;
-            var _package = new File(target, 'package.json');
+            var target = NODE_PATH + separatorChar + module_name
+            var _package = new File(target, 'package.json')
             if (_package.exists()) { return }
             // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
-            var info = fetchPackageInfo(module_name);
-            var url = info.versions[info['dist-tags']['latest']].dist.tarball;
+            var info = fetchPackageInfo(module_name)
+            var url = info.versions[ModulesVersionLock[module_name] || info['dist-tags']['latest']].dist.tarball
             console.log('fetch node_module ' + module_name + ' from ' + url + ' waiting...')
-            var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())));
+            var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())))
             // @ts-ignore
-            var entry;
+            var entry
             while ((entry = tis.getNextEntry()) != null) {
-                var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8));
-                targetPath.toFile().getParentFile().mkdirs();
-                Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8))
+                targetPath.toFile().getParentFile().mkdirs()
+                Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
             }
-            return name;
+            return name
         }
 
         /**
          * @param {string} module_name
          */
         function fetchPackageInfo(module_name) {
-            var tempFile = Files.createTempFile(module_name.replace('/', '_'), '.json');
+            var content = ''
             try {
-                Files.copy(new URL(NODE_REGISTRY + '/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+                content = fetchContent(NODE_REGISTRY + '/' + module_name, module_name)
             } catch (ex) {
                 console.debug('can\'t fetch package ' + module_name + ' from ' + NODE_REGISTRY + ' registry. try fetch from ' + MS_NODE_REGISTRY + ' registry...')
-                Files.copy(new URL(MS_NODE_REGISTRY + '/' + module_name).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+                content = fetchContent(MS_NODE_REGISTRY + '/' + module_name, module_name)
             }
-            tempFile.toFile().deleteOnExit();
-            return JSON.parse(new JavaString(Files.readAllBytes(tempFile), 'UTF-8'));
+            return JSON.parse(content)
+        }
+
+        function fetchContent(url, name) {
+            var tempFile = Files.createTempFile(name.replace('/', '_'), '.json')
+            Files.copy(new URL(url).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING)
+            tempFile.toFile().deleteOnExit()
+            return new JavaString(Files.readAllBytes(tempFile), 'UTF-8')
         }
 
         var lastModule = ''
@@ -337,7 +345,7 @@
             if (name.startsWith('@ms') && lastModule.endsWith('.js')) {
                 // @ts-ignore
                 console.warn(lastModule + ' load deprecated module ' + name + ' auto replace to ' + (name = name.replace('@ms', global.scope)) + '...')
-                return name;
+                return name
             } else {
                 lastModule = name
             }
@@ -345,12 +353,12 @@
                 // @ts-ignore
                 var newName = global.scope + '/nodejs/dist/' + name
                 if (resolve(newName, path) !== undefined) {
-                    return newName;
+                    return newName
                 }
                 // @ts-ignore
                 throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to " + global.scope + "/nodejs/" + name + ' to compatible...')
             }
-            return name;
+            return name
         }
 
         /**
@@ -361,10 +369,10 @@
          * @returns {*}
          */
         function _require(name, path, optional) {
-            name = checkCoreModule(name, path);
-            var file = new File(name);
-            file = _isFile(file) ? file : resolve(name, path);
-            optional = __assign({ cache: true }, optional);
+            name = checkCoreModule(name, path)
+            var file = new File(name)
+            file = _isFile(file) ? file : resolve(name, path)
+            optional = __assign({ cache: true }, optional)
             if (file === undefined) {
                 try {
                     // excloud local dir, prevent too many recursive call and cache not found module
@@ -372,15 +380,15 @@
                         console.log(name, path, optional, notFoundModules[name])
                         throw new Error("Can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
                     }
-                    optional.recursive = true;
-                    return _require(download(name), path, optional);
+                    optional.recursive = true
+                    return _require(download(name), path, optional)
                 } catch (ex) {
-                    notFoundModules[name] = true;
+                    notFoundModules[name] = true
                     throw new FileNotFoundException("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex)
                 }
             }
             // 重定向文件名称和类型
-            return getCacheModule(_canonical(file), file.name.split('.')[0], file, optional);
+            return getCacheModule(_canonical(file), file.name.split('.')[0], file, optional)
         }
 
         /**
@@ -395,7 +403,7 @@
              * @param {any} optional
              */
             return function __DynamicRequire__(path, optional) {
-                return _require(path, parent, __assign({ parentId: parentId }, optional)).exports;
+                return _require(path, parent, __assign({ parentId: parentId }, optional)).exports
             }
         }
 
@@ -422,12 +430,12 @@
             for (var cacheModule in cacheModules) {
                 delete cacheModules[cacheModule]
             }
-            cacheModules = undefined;
+            cacheModules = undefined
             for (var cacheModuleId in cacheModuleIds) {
                 delete cacheModuleIds[cacheModuleId]
             }
-            cacheModuleIds = undefined;
-            notFoundModules = undefined;
+            cacheModuleIds = undefined
+            notFoundModules = undefined
         }
 
         /**
@@ -447,24 +455,34 @@
         }
 
         if (typeof parent === 'string') {
-            parent = new File(parent);
+            parent = new File(parent)
         }
         /**
          * @type {{[key:string]:any}} cacheModules
          */
-        var cacheModules = {};
+        var cacheModules = {}
         /**
          * @type {{[key:string]:string}} cacheModuleIds
          */
-        var cacheModuleIds = {};
+        var cacheModuleIds = {}
         /**
          * @type {{[key:string]:boolean}} notFoundModules
          */
-        var notFoundModules = {};
-        console.info('Initialization require module. ParentDir:', _canonical(parent));
-        console.info('Require module env list:');
-        console.info('- NODE_PATH:', NODE_PATH);
-        console.info('- NODE_REGISTRY:', NODE_REGISTRY);
-        console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY);
-        return getRequire(parent, "null");
-    });
+        var notFoundModules = {}
+        console.info('Initialization require module. ParentDir:', _canonical(parent))
+        console.info('Require module env list:')
+        console.info('- NODE_PATH:', NODE_PATH)
+        console.info('- NODE_REGISTRY:', NODE_REGISTRY)
+        console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY)
+        try {
+            ModulesVersionLock = JSON.parse(fetchContent('http://ms.yumc.pw/api/plugin/download/name/version_lock', 'version_lock'))
+            console.info('Lock module version List:')
+            for (var key in ModulesVersionLock) {
+                console.info('- ' + key + ': ' + ModulesVersionLock[key])
+            }
+        } catch (error) {
+            console.debug(error)
+            ModulesVersionLock = {}
+        }
+        return getRequire(parent, "null")
+    })
