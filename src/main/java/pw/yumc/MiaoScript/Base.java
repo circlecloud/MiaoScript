@@ -31,6 +31,10 @@ public class Base {
         return ProxyClass.class;
     }
 
+    public Class<?> getJavaScriptTaskClass() {
+        return JavaScriptTask.class;
+    }
+
     public String read(String path) throws IOException {
         return new String(Files.readAllBytes(new File(path).toPath()), StandardCharsets.UTF_8);
     }
