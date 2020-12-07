@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.9.6</version>
+    <version>0.9.7</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -54,6 +54,7 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §620-12-07 §afix: 修复 Windows 环境 重载异常;
             §620-11-19 §afeat: 新增 JavaScriptTask 类;
             §620-11-11 §afeat: 新增 package 版本锁定逻辑;
             §620-09-21 §afeat: 完善 upgrade 逻辑;
