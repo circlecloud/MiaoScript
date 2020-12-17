@@ -125,22 +125,20 @@
          * 寻找 ${NODE_PATH}
          * @param {string} name 模块名称
          * @param {string} parent 父目录
+         * @param {any} optional 附加参数
          */
-        function resolve(name, parent) {
+        function resolve(name, parent, optional) {
             name = _canonical(name) || name
-            if (cacheModuleIds[name]) return cacheModuleIds[name]
             // 解析本地目录
-            if (name.startsWith('./') || name.startsWith('../')) {
-                var moduleId = parent + '/' + name
-                if (cacheModuleIds[moduleId]) return cacheModuleIds[moduleId]
-                return cacheModuleIds[moduleId] = resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined
+            if (optional.local) {
+                return resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined
             } else {
                 // 解析Node目录
                 var dir = [parent, 'node_modules'].join(separatorChar)
-                return cacheModuleIds[name] = resolveAsFile(name, dir) || resolveAsDirectory(name, dir) ||
+                return resolveAsFile(name, dir) || resolveAsDirectory(name, dir) ||
                     // @ts-ignore
                     (parent && parent.toString().startsWith(root) ?
-                        resolve(name, new File(parent).getParent()) : resolveAsDirectory(name, NODE_PATH) || undefined)
+                        resolve(name, new File(parent).getParent(), optional) : resolveAsDirectory(name, NODE_PATH) || undefined)
             }
         }
 
@@ -341,7 +339,7 @@
          * @param {string} name
          * @param {string} path
          */
-        function checkCoreModule(name, path) {
+        function checkCoreModule(name, path, optional) {
             if (name.startsWith('@ms') && lastModule.endsWith('.js')) {
                 // @ts-ignore
                 console.warn(lastModule + ' load deprecated module ' + name + ' auto replace to ' + (name = name.replace('@ms', global.scope)) + '...')
@@ -352,7 +350,7 @@
             if (CoreModules.indexOf(name) !== -1) {
                 // @ts-ignore
                 var newName = global.scope + '/nodejs/dist/' + name
-                if (resolve(newName, path) !== undefined) {
+                if (resolve(newName, path, optional) !== undefined) {
                     return newName
                 }
                 // @ts-ignore
@@ -360,7 +358,12 @@
             }
             return name
         }
-
+        /**
+         * 检查缓存模块
+         */
+        function checkCacheModule(optional) {
+            return !optional.path.startsWith('/') && cacheModuleIds[optional.parentId] && cacheModuleIds[optional.parentId][optional.path]
+        }
         /**
          * 加载模块
          * @param {string} name 模块名称
@@ -369,17 +372,18 @@
          * @returns {*}
          */
         function _require(name, path, optional) {
-            name = checkCoreModule(name, path)
+            var cachePath = checkCacheModule(optional)
+            if (cachePath) { return _requireFile(new File(cachePath), optional) }
+            name = checkCoreModule(name, path, optional)
             var file = new File(name)
-            file = _isFile(file) ? file : resolve(name, path)
-            optional = __assign({ cache: true }, optional)
+            file = _isFile(file) ? file : resolve(name, path, optional)
             if (file === undefined) {
+                // excloud local dir, prevent too many recursive call and cache not found module
+                if (optional.local || optional.recursive || notFoundModules[name]) {
+                    console.log(name, path, optional, notFoundModules[name])
+                    throw new Error("Can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
+                }
                 try {
-                    // excloud local dir, prevent too many recursive call and cache not found module
-                    if (name.startsWith('.') || name.startsWith('/') || optional.recursive || notFoundModules[name]) {
-                        console.log(name, path, optional, notFoundModules[name])
-                        throw new Error("Can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
-                    }
                     optional.recursive = true
                     return _require(download(name), path, optional)
                 } catch (ex) {
@@ -387,6 +391,13 @@
                     throw new FileNotFoundException("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex)
                 }
             }
+            var parent = cacheModuleIds[optional.parentId]
+            if (!parent) { cacheModuleIds[optional.parentId] = {} }
+            cacheModuleIds[optional.parentId][optional.path] = _canonical(file)
+            return _requireFile(file, optional)
+        }
+
+        function _requireFile(file, optional) {
             // 重定向文件名称和类型
             return getCacheModule(_canonical(file), file.name.split('.')[0], file, optional)
         }
@@ -403,15 +414,16 @@
              * @param {any} optional
              */
             return function __DynamicRequire__(path, optional) {
-                return _require(path, parent, __assign({ parentId: parentId }, optional)).exports
+                return _require(path, parent, __assign({ cache: true, parentId: parentId, parent: parent, path: path, local: path.startsWith('.') || path.startsWith('/') }, optional)).exports
             }
         }
 
         /**
          * @param {string} name
+         * @param {any} optional 附加选项
          */
-        function __DynamicResolve__(name) {
-            return _canonical(new File(resolve(name, parent)))
+        function __DynamicResolve__(name, optional) {
+            return _canonical(new File(resolve(name, parent, __assign({ cache: true, parent: parent, local: name.startsWith('.') || name.startsWith('/') }, optional))))
         }
 
         /**
@@ -427,6 +439,8 @@
         }
 
         function __DynamicDisable__() {
+            // @ts-ignore
+            base.save(cacheModuleIdsFile, JSON.stringify(cacheModuleIds))
             for (var cacheModule in cacheModules) {
                 delete cacheModules[cacheModule]
             }
@@ -461,8 +475,9 @@
          * @type {{[key:string]:any}} cacheModules
          */
         var cacheModules = {}
+        var cacheModuleIdsFile = _canonical(new File(NODE_PATH, 'cacheModuleIds.json'))
         /**
-         * @type {{[key:string]:string}} cacheModuleIds
+         * @type {{[key:string]:{[key:string]:string}}} cacheModuleIds
          */
         var cacheModuleIds = {}
         /**
@@ -475,6 +490,14 @@
         console.info('- NODE_REGISTRY:', NODE_REGISTRY)
         console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY)
         try {
+            // @ts-ignore
+            cacheModuleIds = JSON.parse(base.read(cacheModuleIdsFile))
+            console.log('Read cacheModuleIds from file ' + cacheModuleIdsFile)
+        } catch (error) {
+            cacheModuleIds = {}
+            console.log('Initialization new cacheModuleIds')
+        }
+        try {
             ModulesVersionLock = JSON.parse(fetchContent('http://ms.yumc.pw/api/plugin/download/name/version_lock', 'version_lock'))
             console.info('Lock module version List:')
             for (var key in ModulesVersionLock) {
@@ -484,5 +507,5 @@
             console.debug(error)
             ModulesVersionLock = {}
         }
-        return getRequire(parent, "null")
+        return getRequire(parent, "")
     })

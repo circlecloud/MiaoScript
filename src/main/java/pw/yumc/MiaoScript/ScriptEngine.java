@@ -39,9 +39,9 @@ public class ScriptEngine {
 
     @SneakyThrows
     public void enableEngine() {
-        createEngine();
         ClassLoader originLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(this.loader);
+        createEngine();
         Path bios = Paths.get(root, "bios.js");
         // 如果存在自定义bios就加载自定义的
         if (Files.exists(bios)) {
