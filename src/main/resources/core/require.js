@@ -95,7 +95,7 @@
          * @returns {*}
          */
         function _isFile(file) {
-            return file.isFile && file.isFile()
+            return file && file.isFile && file.isFile()
         }
 
         /**
@@ -362,7 +362,7 @@
          * 检查缓存模块
          */
         function checkCacheModule(optional) {
-            return !optional.path.startsWith('/') && cacheModuleIds[optional.parentId] && cacheModuleIds[optional.parentId][optional.path]
+            return optional.local ? cacheModuleIds[optional.parentId] && cacheModuleIds[optional.parentId][optional.path] : cacheModuleIds[optional.path]
         }
         /**
          * 加载模块
@@ -372,12 +372,16 @@
          * @returns {*}
          */
         function _require(name, path, optional) {
+            // require direct file
+            var file = _isFile(name) ? name : new File(name)
+            if (_isFile(file)) { return _requireFile(file, optional) }
+            // require cache module
             var cachePath = checkCacheModule(optional)
-            if (cachePath) { return _requireFile(new File(cachePath), optional) }
+            var cacheFile = new File(cachePath)
+            if (cachePath && cacheFile.exists()) { return _requireFile(cacheFile, optional) }
+            // search module
             name = checkCoreModule(name, path, optional)
-            var file = new File(name)
-            file = _isFile(file) ? file : resolve(name, path, optional)
-            if (file === undefined) {
+            if ((file = resolve(name, path, optional)) === undefined) {
                 // excloud local dir, prevent too many recursive call and cache not found module
                 if (optional.local || optional.recursive || notFoundModules[name]) {
                     console.log(name, path, optional, notFoundModules[name])
@@ -391,10 +395,22 @@
                     throw new FileNotFoundException("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex)
                 }
             }
-            var parent = cacheModuleIds[optional.parentId]
-            if (!parent) { cacheModuleIds[optional.parentId] = {} }
-            cacheModuleIds[optional.parentId][optional.path] = _canonical(file)
+            setCacheModule(file, optional)
             return _requireFile(file, optional)
+        }
+
+        /**
+         * 设置模块缓存
+         * @param {any} file 
+         * @param {any} optional 
+         */
+        function setCacheModule(file, optional) {
+            if (optional.local) {
+                var parent = cacheModuleIds[optional.parentId]
+                if (!parent) { cacheModuleIds[optional.parentId] = {} }
+                return cacheModuleIds[optional.parentId][optional.path] = _canonical(file)
+            }
+            return cacheModuleIds[optional.path] = _canonical(file)
         }
 
         function _requireFile(file, optional) {
@@ -440,7 +456,7 @@
 
         function __DynamicDisable__() {
             // @ts-ignore
-            base.save(cacheModuleIdsFile, JSON.stringify(cacheModuleIds))
+            base.save(cacheModuleIdsFile, JSON.stringify(upgradeMode ? {} : cacheModuleIds))
             for (var cacheModule in cacheModules) {
                 delete cacheModules[cacheModule]
             }
@@ -450,6 +466,10 @@
             }
             cacheModuleIds = undefined
             notFoundModules = undefined
+        }
+
+        function __setUpgradeMode__(status) {
+            upgradeMode = status
         }
 
         /**
@@ -464,6 +484,7 @@
             require.resolve = __DynamicResolve__
             require.clear = __DynamicClear__
             require.disable = __DynamicDisable__
+            require.setUpgradeMode = __setUpgradeMode__
             require.core_modules = CoreModules
             return require
         }
@@ -484,6 +505,7 @@
          * @type {{[key:string]:boolean}} notFoundModules
          */
         var notFoundModules = {}
+        var upgradeMode = false
         console.info('Initialization require module. ParentDir:', _canonical(parent))
         console.info('Require module env list:')
         console.info('- NODE_PATH:', NODE_PATH)
