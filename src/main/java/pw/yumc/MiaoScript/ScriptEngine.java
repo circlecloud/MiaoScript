@@ -6,6 +6,10 @@ import javax.script.ScriptEngineManager;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 /**
  * Created with IntelliJ IDEA
@@ -18,6 +22,7 @@ public class ScriptEngine {
     private final String root;
     private final Base base;
     private MiaoScriptEngine engine;
+    private Object future;
 
     public ScriptEngine(String root, Object logger, Object instance) {
         this.loader = Thread.currentThread().getContextClassLoader();
@@ -38,7 +43,7 @@ public class ScriptEngine {
     }
 
     @SneakyThrows
-    public void enableEngine() {
+    public void loadEngine() {
         ClassLoader originLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(this.loader);
         createEngine();
@@ -49,8 +54,13 @@ public class ScriptEngine {
         } else {
             this.engine.eval("load('classpath:bios.js')");
         }
-        engine.invokeFunction("boot", root, logger);
+        future = engine.invokeFunction("boot", root, logger);
         Thread.currentThread().setContextClassLoader(originLoader);
+    }
+
+    @SneakyThrows
+    public void enableEngine() {
+        engine.invokeFunction("start", future);
     }
 
     @SneakyThrows

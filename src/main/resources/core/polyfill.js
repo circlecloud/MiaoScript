@@ -23,6 +23,6 @@
         global.console = engineLoad(java.lang.System.getenv("MS_NODE_CORE_CONSOLE") || 'classpath:core/console.js')(logger);
         console.log("Loading Engine at Thread", java.lang.Thread.currentThread().name)
         global.require = engineLoad(java.lang.System.getenv("MS_NODE_CORE_REQUIRE") || 'classpath:core/require.js')(root);
-        require(global.scope + '/ployfill')
+        require(global.scope + '/polyfill')
     }
 )

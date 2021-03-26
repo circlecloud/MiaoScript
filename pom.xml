@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.10.1</version>
+    <version>0.11.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -54,20 +53,25 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
-            §620-12-17 §afeat: JavaScriptTask 新增任务ID 并通过ID比较优先级;
-            §620-12-16 §afeat: 优化 require 路径寻找速度;
+            §621-03-25 §afeat: 异步加载 polyfill 并且同步加载 @ccms/core;
+            §621-03-25 §cfix: 修改 ployfill 为 polyfill;
+            §620-12-22 §cfix: 增加 require 效验;
+            §620-12-17 §afeat: JavaScriptTask 新增任务ID 并通过 ID 比较优先级;
+            §620-12-16 §afeat: 新增 require 缓存 优化路径寻找速度;
             §620-12-15 §cfix: 修复 非主线程重载时发生的异常;
-            §620-12-07 §cfix: 修复 Windows 环境 重载异常;
+            §620-12-07 §cfix: 修复 Windows 环境 重载异常
+        </update.changes>
+        <update.changelog>
             §620-11-19 §afeat: 新增 JavaScriptTask 类;
             §620-11-11 §afeat: 新增 package 版本锁定逻辑;
             §620-09-21 §afeat: 完善 upgrade 逻辑;
-            §620-08-27 §afeat: 新增ProtocolLib依赖;
+            §620-08-27 §afeat: 新增 ProtocolLib 依赖;
             §620-07-28 §afeat: 新增框架升级功能;
             §620-06-23 §afeat: 支持自定义参数;
             §620-06-22 §afeat: 优化 require 加载逻辑;
             §620-05-28 §afeat: 新增 Spring 的支持;
             §620-05-02 §afeat: 调整 scope 为 @ccms;
-            §620-04-10 §afeat: 默认从 classpath 加载内建的js模块;
+            §620-04-10 §afeat: 默认从 classpath 加载内建的 js 模块;
             §620-04-07 §afeat: 默认初始化 内建 nodejs 模块;
             §620-04-03 §afeat: 优化 框架卸载逻辑;
             §620-03-31 §afeat: require 新增 内建 nodejs 模块;
@@ -77,9 +81,7 @@
             §620-02-16 §afeat: 新增 Source Map 支持;
             §620-02-02 §afeat: 迁移 ployfill 到 @ms/ployfill;
             §620-01-14 §afeat: 新增 Bungee 支持;
-            　　　　　　§afeat: 新增 instance 实例获取
-        </update.changes>
-        <update.changelog>
+            　　　　　　 §afeat: 新增 instance 实例获取;
             §619-09-24 §cremove: 移除 okhttp3 类库;
             　　　　　　§afeat: 新增require自动下载模块功能;
             §619-09-21 §afeat: 新增 okhttp3 类库;

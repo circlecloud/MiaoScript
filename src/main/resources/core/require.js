@@ -384,7 +384,6 @@
             if ((file = resolve(name, path, optional)) === undefined) {
                 // excloud local dir, prevent too many recursive call and cache not found module
                 if (optional.local || optional.recursive || notFoundModules[name]) {
-                    console.log(name, path, optional, notFoundModules[name])
                     throw new Error("Can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
                 }
                 try {
@@ -430,16 +429,17 @@
              * @param {any} optional
              */
             return function __DynamicRequire__(path, optional) {
+                if (!path) { throw new Error('require path can\'t be undefined or empty!') }
                 return _require(path, parent, __assign({ cache: true, parentId: parentId, parent: parent, path: path, local: path.startsWith('.') || path.startsWith('/') }, optional)).exports
             }
         }
 
         /**
-         * @param {string} name
+         * @param {string} path
          * @param {any} optional 附加选项
          */
-        function __DynamicResolve__(name, optional) {
-            return _canonical(new File(resolve(name, parent, __assign({ cache: true, parent: parent, local: name.startsWith('.') || name.startsWith('/') }, optional))))
+        function __DynamicResolve__(path, optional) {
+            return _canonical(new File(resolve(path, parent, __assign({ cache: true, parent: parent, local: path.startsWith('.') || path.startsWith('/') }, optional))))
         }
 
         /**

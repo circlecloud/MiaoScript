@@ -14,9 +14,14 @@ public class MiaoScriptBungee extends Plugin {
 
     @Override
     @SneakyThrows
-    public void onEnable() {
+    public void onLoad() {
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
+        engine.loadEngine();
+    }
+
+    @Override
+    public void onEnable() {
         engine.enableEngine();
     }
 

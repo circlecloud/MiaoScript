@@ -7,6 +7,7 @@ import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 
@@ -31,8 +32,14 @@ public class MiaoScriptSponge {
 
     @Listener
     @SneakyThrows
-    public void onStart(GameStartedServerEvent event) {
+    public void onStarting(GameStartingServerEvent event) {
         engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger, this);
+        engine.loadEngine();
+    }
+
+    @Listener
+    @SneakyThrows
+    public void onStart(GameStartedServerEvent event) {
         engine.enableEngine();
     }
 

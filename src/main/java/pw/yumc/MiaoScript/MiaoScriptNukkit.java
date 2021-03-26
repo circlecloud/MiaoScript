@@ -11,9 +11,14 @@ public class MiaoScriptNukkit extends PluginBase {
 
     @Override
     @SneakyThrows
-    public void onEnable() {
+    public void onLoad() {
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
+        engine.enableEngine();
+    }
+
+    @Override
+    public void onEnable() {
         engine.enableEngine();
     }
 
