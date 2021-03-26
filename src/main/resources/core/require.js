@@ -52,6 +52,10 @@
         // @ts-ignore
         var URL = Java.type('java.net.URL')
         // @ts-ignore
+        var Thread = Java.type('java.net.URL')
+        // @ts-ignore
+        var FutureTask = Java.type('java.util.concurrent.FutureTask')
+        // @ts-ignore
         var JavaString = Java.type('java.lang.String')
         var separatorChar = File.separatorChar
 
@@ -301,15 +305,19 @@
             var info = fetchPackageInfo(module_name)
             var url = info.versions[ModulesVersionLock[module_name] || info['dist-tags']['latest']].dist.tarball
             console.log('fetch node_module ' + module_name + ' from ' + url + ' waiting...')
-            var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())))
-            // @ts-ignore
-            var entry
-            while ((entry = tis.getNextEntry()) != null) {
-                var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8))
-                targetPath.toFile().getParentFile().mkdirs()
-                Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
-            }
-            return name
+            var future = new FutureTask(function () {
+                var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())))
+                // @ts-ignore
+                var entry
+                while ((entry = tis.getNextEntry()) != null) {
+                    var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8))
+                    targetPath.toFile().getParentFile().mkdirs()
+                    Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
+                }
+                return name
+            })
+            new Thread(future, "MiaoScript download thread").start()
+            return future.get()
         }
 
         /**
@@ -327,10 +335,14 @@
         }
 
         function fetchContent(url, name) {
-            var tempFile = Files.createTempFile(name.replace('/', '_'), '.json')
-            Files.copy(new URL(url).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING)
-            tempFile.toFile().deleteOnExit()
-            return new JavaString(Files.readAllBytes(tempFile), 'UTF-8')
+            var future = new FutureTask(function () {
+                var tempFile = Files.createTempFile(name.replace('/', '_'), '.json')
+                Files.copy(new URL(url).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING)
+                tempFile.toFile().deleteOnExit()
+                return new JavaString(Files.readAllBytes(tempFile), 'UTF-8')
+            })
+            new Thread(future, "MiaoScript require thread").start()
+            return future.get()
         }
 
         var lastModule = ''

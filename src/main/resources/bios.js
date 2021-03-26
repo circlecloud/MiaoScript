@@ -57,12 +57,12 @@ var global = this;
 
     global.start = function (future) {
         if (!future.isDone()) {
-            logger.info("Waiting MiaoScript booted...")
+            log.info("Waiting MiaoScript booted...")
             future.get()
         }
-        logger.info("MiaoScript booted starting...")
+        log.info("MiaoScript booted starting...")
         global.engineDisableImpl = require(java.lang.System.getenv("MS_NODE_CORE_MODULE") || (global.scope + '/core')).default || function () {
-            logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...')
+            log.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...')
         }
     }
 
