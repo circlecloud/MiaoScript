@@ -52,7 +52,7 @@
         // @ts-ignore
         var URL = Java.type('java.net.URL')
         // @ts-ignore
-        var Thread = Java.type('java.net.URL')
+        var Thread = Java.type('java.lang.Thread')
         // @ts-ignore
         var FutureTask = Java.type('java.util.concurrent.FutureTask')
         // @ts-ignore
@@ -403,7 +403,7 @@
                     return _require(download(name), path, optional)
                 } catch (ex) {
                     notFoundModules[name] = true
-                    throw new FileNotFoundException("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex)
+                    throw new FileNotFoundException("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex, ex)
                 }
             }
             setCacheModule(file, optional)
