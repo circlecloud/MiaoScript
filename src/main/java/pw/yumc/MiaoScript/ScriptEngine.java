@@ -2,14 +2,9 @@ package pw.yumc.MiaoScript;
 
 import lombok.SneakyThrows;
 
-import javax.script.ScriptEngineManager;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 /**
  * Created with IntelliJ IDEA
@@ -31,14 +26,13 @@ public class ScriptEngine {
         this.base = new Base(instance);
     }
 
-    public MiaoScriptEngine createEngine() {
+    public void createEngine() {
         synchronized (logger) {
             if (this.engine == null) {
-                this.engine = new MiaoScriptEngine(new ScriptEngineManager(), "nashorn");
+                this.engine = new MiaoScriptEngine("nashorn", root);
                 this.engine.put("base", this.base);
                 this.engine.put("ScriptEngineContextHolder", this);
             }
-            return this.engine;
         }
     }
 
@@ -60,14 +54,16 @@ public class ScriptEngine {
 
     @SneakyThrows
     public void enableEngine() {
-        engine.invokeFunction("start", future);
+        if (this.engine != null) {
+            engine.invokeFunction("enable", future);
+        }
     }
 
     @SneakyThrows
     public void disableEngine() {
         synchronized (logger) {
             if (this.engine != null) {
-                this.engine.invokeFunction("engineDisable");
+                this.engine.invokeFunction("disable");
                 this.engine = null;
             }
         }

@@ -1,8 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.11.2</version>
+    <version>0.13.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -53,15 +54,17 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §621-06-19 §afeat: 兼容JDK16 反射异常;
+            §621-05-15 §afeat: 兼容JDK15+ 自动下载Nashorn类库;
             §621-03-25 §afeat: 异步加载 polyfill 并且同步加载 @ccms/core;
-            §621-03-25 §cfix: 修改 ployfill 为 polyfill;
+            §621-03-25 §cfix: 修改 ployfill 为 polyfill
+        </update.changes>
+        <update.changelog>
             §620-12-22 §cfix: 增加 require 效验;
             §620-12-17 §afeat: JavaScriptTask 新增任务ID 并通过 ID 比较优先级;
             §620-12-16 §afeat: 新增 require 缓存 优化路径寻找速度;
             §620-12-15 §cfix: 修复 非主线程重载时发生的异常;
-            §620-12-07 §cfix: 修复 Windows 环境 重载异常
-        </update.changes>
-        <update.changelog>
+            §620-12-07 §cfix: 修复 Windows 环境 重载异常;
             §620-11-19 §afeat: 新增 JavaScriptTask 类;
             §620-11-11 §afeat: 新增 package 版本锁定逻辑;
             §620-09-21 §afeat: 完善 upgrade 逻辑;
@@ -184,7 +187,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.10</version>
+            <version>1.18.18</version>
         </dependency>
         <dependency>
             <groupId>org.kamranzafar</groupId>

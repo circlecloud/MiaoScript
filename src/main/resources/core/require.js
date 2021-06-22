@@ -39,8 +39,6 @@
         var Files = Java.type('java.nio.file.Files')
         // @ts-ignore
         var StandardCopyOption = Java.type('java.nio.file.StandardCopyOption')
-        // @ts-ignore
-        var FileNotFoundException = Java.type('java.io.FileNotFoundException')
 
         // @ts-ignore
         var TarInputStream = Java.type('org.kamranzafar.jtar.TarInputStream')
@@ -403,7 +401,7 @@
                     return _require(download(name), path, optional)
                 } catch (ex) {
                     notFoundModules[name] = true
-                    throw new FileNotFoundException("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex, ex)
+                    throw new Error("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex)
                 }
             }
             setCacheModule(file, optional)

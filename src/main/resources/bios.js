@@ -3,77 +3,88 @@ var global = this;
 /**
  * Init MiaoScriptEngine Runtime
  */
+/*global base */
 (function () {
-    global.engineDisable = function () {
-        global.engineDisableImpl && global.engineDisableImpl()
-        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "old_node_modules"))) {
-            logger.info('Found old_node_modules folder delete...')
-            base.delete(java.nio.file.Paths.get(root, "old_node_modules"))
-        }
-        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "upgrade"))) {
-            logger.info('Found upgrade file delete node_modules...')
-            base.delete(java.nio.file.Paths.get(root, "node_modules"))
-            base.delete(java.nio.file.Paths.get(root, "upgrade"))
-        }
-    }
+    var Files = Java.type('java.nio.file.Files')
+    var Paths = Java.type('java.nio.file.Paths')
+    var System = Java.type('java.lang.System')
+    var Thread = Java.type('java.lang.Thread')
+    var FutureTask = Java.type('java.util.concurrent.FutureTask')
+
     global.boot = function (root, logger) {
-        global.scope = java.lang.System.getenv("MS_NODE_CORE_SCOPE") || "@ccms"
-        global.log = logger
+        global.scope = System.getenv("MS_NODE_CORE_SCOPE") || "@ccms"
+        global.logger = logger
         // Development Env Detect
         global.root = root || "src/main/resources"
+        checkDebug()
+        checkUpgrade()
+        return bootEngineThread(checkClassLoader())
+    }
+
+    function bootEngineThread(loader) {
+        logger.info("ScriptEngine: " + ScriptEngineContextHolder.getEngine().getEngine().class.name)
+        var future = new FutureTask(function () {
+            Thread.currentThread().contextClassLoader = loader
+            load(System.getenv("MS_NODE_CORE_POLYFILL") || 'classpath:core/polyfill.js')(root, logger)
+        })
+        // Async Loading MiaoScript Engine
+        new Thread(future, "MiaoScript thread").start()
+        return future
+    }
+
+    global.enable = function (future) {
+        if (!future.isDone()) {
+            logger.info("Waiting MiaoScript booted...")
+            future.get()
+        }
+        logger.info("MiaoScript booted starting...")
+        global.engineDisableImpl = require(System.getenv("MS_NODE_CORE_MODULE") || (global.scope + '/core')).default || function () {
+            logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...')
+        }
+    }
+
+    global.disable = function () {
+        global.engineDisableImpl && global.engineDisableImpl()
+    }
+
+    function checkDebug() {
         if (__FILE__.indexOf('!') === -1) {
             logger.info('Loading custom BIOS file ' + __FILE__)
             global.debug = true
         }
-        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "debug"))) {
+        if (Files.exists(Paths.get(root, "debug"))) {
             logger.info('Running in debug mode...')
             global.debug = true
         }
-        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "level"))) {
-            global.level = base.read(java.nio.file.Paths.get(root, "level"))
+        if (Files.exists(Paths.get(root, "level"))) {
+            global.level = base.read(Paths.get(root, "level"))
             logger.info('Set system level to [' + global.level + ']...')
         }
-        if (java.nio.file.Files.exists(java.nio.file.Paths.get(root, "upgrade"))) {
+    }
+
+    function checkUpgrade() {
+        if (Files.exists(Paths.get(root, "upgrade"))) {
             logger.info('Found upgrade file starting upgrade...')
-            base.move(java.nio.file.Paths.get(root, "node_modules"), java.nio.file.Paths.get(root, "old_node_modules"))
-            base.delete(java.nio.file.Paths.get(root, "upgrade"))
+            base.move(Paths.get(root, "node_modules"), Paths.get(root, "old_node_modules"))
+            base.delete(Paths.get(root, "upgrade"))
         }
-        new java.lang.Thread(function () {
+        new Thread(function () {
             try {
-                base.delete(java.nio.file.Paths.get(root, "old_node_modules"))
+                base.delete(Paths.get(root, "old_node_modules"))
             } catch (ex) {
             }
         }, "MiaoScript node_modules clean thread").start()
-        // Check Class Loader, Sometimes Server will can't found plugin.yml file
-        var loader = checkClassLoader()
-        var future = new java.util.concurrent.FutureTask(function () {
-            java.lang.Thread.currentThread().contextClassLoader = loader
-            load(java.lang.System.getenv("MS_NODE_CORE_POLYFILL") || 'classpath:core/polyfill.js')(root, logger)
-        })
-        // Async Loading MiaoScript Engine
-        new java.lang.Thread(future, "MiaoScript thread").start()
-        return future
-    }
-
-    global.start = function (future) {
-        if (!future.isDone()) {
-            log.info("Waiting MiaoScript booted...")
-            future.get()
-        }
-        log.info("MiaoScript booted starting...")
-        global.engineDisableImpl = require(java.lang.System.getenv("MS_NODE_CORE_MODULE") || (global.scope + '/core')).default || function () {
-            log.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...')
-        }
     }
 
     function checkClassLoader() {
-        var classLoader = java.lang.Thread.currentThread().contextClassLoader
+        // Check Class Loader, Sometimes Server will can't found plugin.yml file
+        var classLoader = Thread.currentThread().contextClassLoader
         if (classLoader.getResource("bios.js") === null) {
             throw Error("Error class loader: " + classLoader.class.name + " Please contact the author MiaoWoo!")
         } else {
-            log.info("Class loader compatible: " + classLoader.class.name)
+            logger.info("Class loader compatible: " + classLoader.class.name)
             if (classLoader.parent) {
-                log.info("Parent class loader: " + classLoader.parent.class.name)
+                logger.info("Parent class loader: " + classLoader.parent.class.name)
             }
         }
         return classLoader
