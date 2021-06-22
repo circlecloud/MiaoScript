@@ -238,7 +238,7 @@
             cacheModules[id] = module
             var cfile = _canonical(file)
             if (cfile.endsWith('.js')) {
-                compileJs(module, file, __assign(optional, { id: id }))
+                compileJs(module, file, __assign(optional, {id: id}))
             } else if (cfile.endsWith('.json')) {
                 compileJson(module, file)
             } else if (cfile.endsWith('.msm')) {
@@ -298,7 +298,9 @@
             // @ts-ignore
             var target = NODE_PATH + separatorChar + module_name
             var _package = new File(target, 'package.json')
-            if (_package.exists()) { return }
+            if (_package.exists()) {
+                return
+            }
             // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
             var info = fetchPackageInfo(module_name)
             var url = info.versions[ModulesVersionLock[module_name] || info['dist-tags']['latest']].dist.tarball
@@ -344,6 +346,7 @@
         }
 
         var lastModule = ''
+
         /**
          * 检查核心模块
          * @param {string} name
@@ -368,12 +371,14 @@
             }
             return name
         }
+
         /**
          * 检查缓存模块
          */
         function checkCacheModule(optional) {
             return optional.local ? cacheModuleIds[optional.parentId] && cacheModuleIds[optional.parentId][optional.path] : cacheModuleIds[optional.path]
         }
+
         /**
          * 加载模块
          * @param {string} name 模块名称
@@ -384,11 +389,15 @@
         function _require(name, path, optional) {
             // require direct file
             var file = _isFile(name) ? name : new File(name)
-            if (_isFile(file)) { return _requireFile(file, optional) }
+            if (_isFile(file)) {
+                return _requireFile(file, optional)
+            }
             // require cache module
             var cachePath = checkCacheModule(optional)
             var cacheFile = new File(cachePath)
-            if (cachePath && cacheFile.exists()) { return _requireFile(cacheFile, optional) }
+            if (cachePath && cacheFile.exists()) {
+                return _requireFile(cacheFile, optional)
+            }
             // search module
             name = checkCoreModule(name, path, optional)
             if ((file = resolve(name, path, optional)) === undefined) {
@@ -410,13 +419,15 @@
 
         /**
          * 设置模块缓存
-         * @param {any} file 
-         * @param {any} optional 
+         * @param {any} file
+         * @param {any} optional
          */
         function setCacheModule(file, optional) {
             if (optional.local) {
                 var parent = cacheModuleIds[optional.parentId]
-                if (!parent) { cacheModuleIds[optional.parentId] = {} }
+                if (!parent) {
+                    cacheModuleIds[optional.parentId] = {}
+                }
                 return cacheModuleIds[optional.parentId][optional.path] = _canonical(file)
             }
             return cacheModuleIds[optional.path] = _canonical(file)
@@ -439,8 +450,16 @@
              * @param {any} optional
              */
             return function __DynamicRequire__(path, optional) {
-                if (!path) { throw new Error('require path can\'t be undefined or empty!') }
-                return _require(path, parent, __assign({ cache: true, parentId: parentId, parent: parent, path: path, local: path.startsWith('.') || path.startsWith('/') }, optional)).exports
+                if (!path) {
+                    throw new Error('require path can\'t be undefined or empty!')
+                }
+                return _require(path, parent, __assign({
+                    cache: true,
+                    parentId: parentId,
+                    parent: parent,
+                    path: path,
+                    local: path.startsWith('.') || path.startsWith('/')
+                }, optional)).exports
             }
         }
 
@@ -449,7 +468,11 @@
          * @param {any} optional 附加选项
          */
         function __DynamicResolve__(path, optional) {
-            return _canonical(new File(resolve(path, parent, __assign({ cache: true, parent: parent, local: path.startsWith('.') || path.startsWith('/') }, optional))))
+            return _canonical(new File(resolve(path, parent, __assign({
+                cache: true,
+                parent: parent,
+                local: path.startsWith('.') || path.startsWith('/')
+            }, optional))))
         }
 
         /**
@@ -507,6 +530,7 @@
          */
         var cacheModules = {}
         var cacheModuleIdsFile = _canonical(new File(NODE_PATH, 'cacheModuleIds.json'))
+        var localVersionLockFile = _canonical(new File(NODE_PATH, 'moduleVersionLock.json'))
         /**
          * @type {{[key:string]:{[key:string]:string}}} cacheModuleIds
          */
@@ -531,6 +555,11 @@
         }
         try {
             ModulesVersionLock = JSON.parse(fetchContent('http://ms.yumc.pw/api/plugin/download/name/version_lock', 'version_lock'))
+            try {
+                // @ts-ignore
+                ModulesVersionLock = __assign(ModulesVersionLock, JSON.parse(base.read(localVersionLockFile)))
+            } catch (e) {
+            }
             console.info('Lock module version List:')
             for (var key in ModulesVersionLock) {
                 console.info('- ' + key + ': ' + ModulesVersionLock[key])
