@@ -1,8 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.13.1</version>
+    <version>0.15.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -53,6 +54,7 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §621-06-25 §afeat: 调整启动逻辑 兼容 Arclight;
             §621-06-22 §afeat: 新增本地版本锁定功能;
             §621-06-19 §afeat: 兼容JDK16 反射异常;
             §621-05-15 §afeat: 兼容JDK15+ 自动下载Nashorn类库;

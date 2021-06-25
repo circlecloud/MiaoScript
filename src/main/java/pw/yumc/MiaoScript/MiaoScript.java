@@ -1,8 +1,7 @@
 package pw.yumc.MiaoScript;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
 import lombok.SneakyThrows;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * 喵式脚本
@@ -16,8 +15,10 @@ public class MiaoScript extends JavaPlugin {
     @Override
     @SneakyThrows
     public void onLoad() {
+        ClassLoader origin = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(getClassLoader());
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
+        Thread.currentThread().setContextClassLoader(origin);
         engine.loadEngine();
     }
 
