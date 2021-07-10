@@ -50,11 +50,15 @@
         // @ts-ignore
         var URL = Java.type('java.net.URL')
         // @ts-ignore
+        var ByteArrayOutputStream = Java.type("java.io.ByteArrayOutputStream")
+        // @ts-ignore
+        var ByteArray = Java.type("byte[]")
+        // @ts-ignore
         var Thread = Java.type('java.lang.Thread')
         // @ts-ignore
-        var FutureTask = Java.type('java.util.concurrent.FutureTask')
+        var Callable = Java.type('java.util.concurrent.Callable')
         // @ts-ignore
-        var JavaString = Java.type('java.lang.String')
+        var Executors = Java.type('java.util.concurrent.Executors')
         var separatorChar = File.separatorChar
 
         // @ts-ignore
@@ -238,7 +242,7 @@
             cacheModules[id] = module
             var cfile = _canonical(file)
             if (cfile.endsWith('.js')) {
-                compileJs(module, file, __assign(optional, {id: id}))
+                compileJs(module, file, __assign(optional, { id: id }))
             } else if (cfile.endsWith('.json')) {
                 compileJson(module, file)
             } else if (cfile.endsWith('.msm')) {
@@ -305,7 +309,7 @@
             var info = fetchPackageInfo(module_name)
             var url = info.versions[ModulesVersionLock[module_name] || info['dist-tags']['latest']].dist.tarball
             console.log('fetch node_module ' + module_name + ' from ' + url + ' waiting...')
-            var future = new FutureTask(function () {
+            return executor.submit(new Callable(function () {
                 var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())))
                 // @ts-ignore
                 var entry
@@ -315,9 +319,7 @@
                     Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
                 }
                 return name
-            })
-            new Thread(future, "MiaoScript download thread").start()
-            return future.get()
+            })).get()
         }
 
         /**
@@ -326,23 +328,29 @@
         function fetchPackageInfo(module_name) {
             var content = ''
             try {
-                content = fetchContent(NODE_REGISTRY + '/' + module_name, module_name)
+                content = fetchContent(NODE_REGISTRY + '/' + module_name)
             } catch (ex) {
                 console.debug('can\'t fetch package ' + module_name + ' from ' + NODE_REGISTRY + ' registry. try fetch from ' + MS_NODE_REGISTRY + ' registry...')
-                content = fetchContent(MS_NODE_REGISTRY + '/' + module_name, module_name)
+                content = fetchContent(MS_NODE_REGISTRY + '/' + module_name)
             }
             return JSON.parse(content)
         }
 
-        function fetchContent(url, name) {
-            var future = new FutureTask(function () {
-                var tempFile = Files.createTempFile(name.replace('/', '_'), '.json')
-                Files.copy(new URL(url).openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING)
-                tempFile.toFile().deleteOnExit()
-                return new JavaString(Files.readAllBytes(tempFile), 'UTF-8')
-            })
-            new Thread(future, "MiaoScript require thread").start()
-            return future.get()
+        function fetchContent(url) {
+            return executor.submit(new Callable(function () {
+                var input = new URL(url).openStream()
+                var output = new ByteArrayOutputStream()
+                var buffer = new ByteArray(1024)
+                try {
+                    var n
+                    while ((n = input.read(buffer)) !== -1) {
+                        output.write(buffer, 0, n)
+                    }
+                    return output.toString("UTF-8")
+                } finally {
+                    output.close()
+                }
+            })).get()
         }
 
         var lastModule = ''
@@ -540,6 +548,9 @@
          */
         var notFoundModules = {}
         var upgradeMode = false
+        var executor = Executors.newSingleThreadExecutor(function (r) {
+            return new Thread(r, "MiaoScript require thread")
+        })
         console.info('Initialization require module. ParentDir:', _canonical(parent))
         console.info('Require module env list:')
         console.info('- NODE_PATH:', NODE_PATH)
@@ -554,7 +565,7 @@
             console.log('Initialization new cacheModuleIds')
         }
         try {
-            ModulesVersionLock = JSON.parse(fetchContent('http://ms.yumc.pw/api/plugin/download/name/version_lock', 'version_lock'))
+            ModulesVersionLock = JSON.parse(fetchContent('http://ms.yumc.pw/api/plugin/download/name/version_lock'))
             try {
                 // @ts-ignore
                 ModulesVersionLock = __assign(ModulesVersionLock, JSON.parse(base.read(localVersionLockFile)))
