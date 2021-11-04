@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.16.0</version>
+    <version>0.17.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -53,6 +53,7 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §621-11-04 §afeat: 优化系统模块升级逻辑;
             §621-07-10 §afeat: 优化网络相关功能;
             §621-06-25 §afeat: 调整启动逻辑 兼容 Arclight;
             §621-06-22 §afeat: 新增本地版本锁定功能;

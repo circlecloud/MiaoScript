@@ -17,7 +17,9 @@ var global = this;
         // Development Env Detect
         global.root = root || "src/main/resources"
         checkDebug()
-        checkUpgrade()
+        if (!global.debug) {
+            checkUpgrade()
+        }
         return bootEngineThread(checkClassLoader())
     }
 
