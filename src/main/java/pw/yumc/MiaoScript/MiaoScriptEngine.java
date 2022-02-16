@@ -112,11 +112,11 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
         File libRootFile = new File(engineRoot, "lib");
         libRootFile.mkdirs();
         String libRoot = libRootFile.getCanonicalPath();
-        downloadJar(libRoot, "org.openjdk.nashorn", "nashorn-core", "15.2");
-        downloadJar(libRoot, "org.ow2.asm", "asm", "9.1");
-        downloadJar(libRoot, "org.ow2.asm", "asm-commons", "9.1");
-        downloadJar(libRoot, "org.ow2.asm", "asm-tree", "9.1");
-        downloadJar(libRoot, "org.ow2.asm", "asm-util", "9.1");
+        downloadJar(libRoot, "org.openjdk.nashorn", "nashorn-core", "15.3");
+        downloadJar(libRoot, "org.ow2.asm", "asm", "9.2");
+        downloadJar(libRoot, "org.ow2.asm", "asm-commons", "9.2");
+        downloadJar(libRoot, "org.ow2.asm", "asm-tree", "9.2");
+        downloadJar(libRoot, "org.ow2.asm", "asm-util", "9.2");
         this.createEngineByName("nashorn");
     }
 
@@ -127,7 +127,7 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
 
     @SneakyThrows
     private void downloadJar(String engineRoot, String groupId, String artifactId, String version) {
-        File lib = new File(engineRoot, artifactId + ".jar");
+        File lib = new File(engineRoot, String.format("%s-%s.jar", artifactId, version));
         if (!lib.exists()) {
             Files.copy(new URL(MavenRepo +
                             String.format("/%1$s/%2$s/%3$s/%2$s-%3$s.jar",

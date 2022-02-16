@@ -9,17 +9,20 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author 喵♂呜
  * @since 2016年8月29日 上午7:50:39
  */
-public class MiaoScript extends JavaPlugin {
+public class MiaoScriptBukkit extends JavaPlugin {
     private ScriptEngine engine;
 
-    @Override
     @SneakyThrows
-    public void onLoad() {
+    public MiaoScriptBukkit() {
         ClassLoader origin = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(getClassLoader());
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
         Thread.currentThread().setContextClassLoader(origin);
         engine.loadEngine();
+    }
+
+    @Override
+    public void onLoad() {
     }
 
     @Override
@@ -30,5 +33,6 @@ public class MiaoScript extends JavaPlugin {
     @Override
     public void onDisable() {
         engine.disableEngine();
+        engine = null;
     }
 }

@@ -3,7 +3,7 @@ var global = this;
 /**
  * Init MiaoScriptEngine Runtime
  */
-/*global base */
+/*global base ScriptEngineContextHolder*/
 (function () {
     var Files = Java.type('java.nio.file.Files')
     var Paths = Java.type('java.nio.file.Paths')

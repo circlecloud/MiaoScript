@@ -1,12 +1,22 @@
 name: ${project.artifactId}
 description: ${project.description}
-main: ${project.groupId}.${project.artifactId}.${project.artifactId}
+main: ${project.groupId}.${project.artifactId}.${project.artifactId}Bukkit
 version: ${project.version}
 api-version: 1.13
 author: MiaoWoo
 website: ${ciManagement.url}
-load: STARTUP
 softdepend:
-- PlaceholderAPI
-- ProtocolLib
-- Vault
+  - PlaceholderAPI
+  - AttributePlus
+  - PlayerPoints
+  - CrazyCrates
+  - ProtocolLib
+  - DragonCore
+  - MythicMobs
+  - WorldGuard
+  - Adyeshach
+  - WorldEdit
+  - SkillAPI
+  - TradeMe
+  - Chemdah
+  - Vault

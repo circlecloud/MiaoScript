@@ -526,7 +526,12 @@
             require.clear = __DynamicClear__
             require.disable = __DynamicDisable__
             require.setUpgradeMode = __setUpgradeMode__
-            require.core_modules = CoreModules
+            require.internal = {
+                coreModules: CoreModules,
+                cacheModules: cacheModules,
+                cacheModuleIds: cacheModuleIds,
+                notFoundModules: notFoundModules,
+            }
             return require
         }
 
@@ -540,7 +545,7 @@
         var cacheModuleIdsFile = _canonical(new File(NODE_PATH, 'cacheModuleIds.json'))
         var localVersionLockFile = _canonical(new File(NODE_PATH, 'moduleVersionLock.json'))
         /**
-         * @type {{[key:string]:{[key:string]:string}}} cacheModuleIds
+         * @type {{[key:string]:{[key:string]:string}|string}} cacheModuleIds
          */
         var cacheModuleIds = {}
         /**
@@ -559,10 +564,14 @@
         try {
             // @ts-ignore
             cacheModuleIds = JSON.parse(base.read(cacheModuleIdsFile))
+            if (cacheModuleIds['@ccms-cache-module-root'] != NODE_PATH) {
+                throw new Error('canonicalRoot Change ' + cacheModuleIds['@ccms-cache-module-root'] + ' to ' + NODE_PATH + ' Clear Cache!')
+            }
             console.log('Read cacheModuleIds from file ' + cacheModuleIdsFile)
         } catch (error) {
             cacheModuleIds = {}
-            console.log('Initialization new cacheModuleIds')
+            cacheModuleIds['@ccms-cache-module-root'] = NODE_PATH
+            console.log('Initialization new cacheModuleIds: ' + error)
         }
         try {
             ModulesVersionLock = JSON.parse(fetchContent('http://ms.yumc.pw/api/plugin/download/name/version_lock'))

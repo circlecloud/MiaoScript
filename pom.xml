@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -53,6 +53,10 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §622-02-16 §afeat: 优化 初始化逻辑 加快引擎加载速度;
+            　　　　　　§afeat: 新增 root 目录变更检测 变更后重新生成缓存;
+            　　　　　　§afeat: 添加常用库的软依赖;
+            §622-01-01 §afeat: 兼容JDK17 更新Nashorn;
             §621-11-04 §afeat: 优化系统模块升级逻辑;
             §621-07-10 §afeat: 优化网络相关功能;
             §621-06-25 §afeat: 调整启动逻辑 兼容 Arclight;
@@ -168,10 +172,6 @@
             <id>yumc-repo</id>
             <url>${repo.url}/repository/maven-public/</url>
         </repository>
-        <repository>
-            <id>sponge</id>
-            <url>https://repo.spongepowered.org/maven/</url>
-        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -190,7 +190,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.18</version>
+            <version>1.18.22</version>
         </dependency>
         <dependency>
             <groupId>org.kamranzafar</groupId>
@@ -212,18 +212,18 @@
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
-            <version>1.16-R0.4-SNAPSHOT</version>
+            <version>1.16-R0.4</version>
         </dependency>
         <dependency>
             <groupId>cn.nukkit</groupId>
             <artifactId>nukkit</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-websocket</artifactId>
-            <version>5.2.6.RELEASE</version>
+            <version>5.3.13</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

@@ -13,10 +13,15 @@ import java.nio.file.Path;
  * Created on 2017/10/9 12:40.
  */
 public class Base {
+    public static final String VERSION = "0.18.0";
     private Object instance;
 
     public Base(Object instance) {
         this.instance = instance;
+    }
+
+    public String getVersion() {
+        return Base.VERSION;
     }
 
     public Class<?> getClass(String name) throws ClassNotFoundException {
@@ -39,10 +44,10 @@ public class Base {
         return new String(Files.readAllBytes(new File(path).toPath()), StandardCharsets.UTF_8);
     }
 
-    public void save(String path, String content) throws IOException {
+    public Path save(String path, String content) throws IOException {
         File file = new File(path);
         file.getParentFile().mkdirs();
-        Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+        return Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
     }
 
     public boolean move(String source, String target) {
@@ -54,8 +59,8 @@ public class Base {
         return delete(new File(path));
     }
 
-    public void delete(Path path) throws IOException {
-        delete(path.toFile());
+    public boolean delete(Path path) throws IOException {
+        return delete(path.toFile());
     }
 
     public boolean delete(File file) throws IOException {

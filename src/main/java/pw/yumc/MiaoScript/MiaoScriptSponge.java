@@ -1,7 +1,7 @@
 package pw.yumc.MiaoScript;
 
-import java.io.File;
-
+import com.google.inject.Inject;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
@@ -11,8 +11,7 @@ import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 
-import com.google.inject.Inject;
-import lombok.SneakyThrows;
+import java.io.File;
 
 /**
  * Created with IntelliJ IDEA
@@ -20,7 +19,7 @@ import lombok.SneakyThrows;
  * @author 喵♂呜
  * Created on 2017/10/25 20:35.
  */
-@Plugin(id = "miaoscript", name = "MiaoScript", version = "1.0", authors = "MiaoWoo")
+@Plugin(id = "miaoscript", name = "MiaoScript", version = Base.VERSION, authors = "MiaoWoo")
 public class MiaoScriptSponge {
     private ScriptEngine engine;
     @Inject
@@ -55,6 +54,7 @@ public class MiaoScriptSponge {
     public void reload(GameReloadEvent event) {
         engine.disableEngine();
         engine = new ScriptEngine(pluginConfigDir.getCanonicalPath(), logger, this);
+        engine.loadEngine();
         engine.enableEngine();
     }
 }

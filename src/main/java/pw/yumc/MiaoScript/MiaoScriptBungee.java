@@ -12,12 +12,15 @@ import net.md_5.bungee.api.plugin.Plugin;
 public class MiaoScriptBungee extends Plugin {
     private ScriptEngine engine;
 
-    @Override
     @SneakyThrows
-    public void onLoad() {
+    public MiaoScriptBungee() {
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
         engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
         engine.loadEngine();
+    }
+
+    @Override
+    public void onLoad() {
     }
 
     @Override

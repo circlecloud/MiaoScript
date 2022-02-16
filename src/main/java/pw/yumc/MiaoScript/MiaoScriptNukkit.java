@@ -9,12 +9,15 @@ import lombok.SneakyThrows;
 public class MiaoScriptNukkit extends PluginBase {
     private ScriptEngine engine;
 
-    @Override
     @SneakyThrows
-    public void onLoad() {
+    public MiaoScriptNukkit() {
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
-        engine.enableEngine();
+        engine = new ScriptEngine(getDataFolder().getCanonicalPath(), super.getLogger(), this);
+        engine.loadEngine();
+    }
+
+    @Override
+    public void onLoad() {
     }
 
     @Override
