@@ -241,7 +241,7 @@
             }
             cacheModules[id] = module
             var cfile = _canonical(file)
-            if (cfile.endsWith('.js')) {
+            if (cfile.endsWith('.js') || cfile.endsWith('.mjs.json')) {
                 compileJs(module, file, __assign(optional, { id: id }))
             } else if (cfile.endsWith('.json')) {
                 compileJson(module, file)

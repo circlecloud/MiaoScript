@@ -60,6 +60,13 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
     }
 
     public MiaoScriptEngine(ScriptEngineManager engineManager, final String engineType, String engineRoot) {
+        // JDK11 Polyfill 存在类效验问题 直接用OpenJDK的Nashorn
+        if (System.getProperty("java.version").startsWith("11.") && engineRoot != null) {
+            this.loadNetworkNashorn(engineRoot);
+            if (engine == null)
+                throw new UnsupportedOperationException("当前环境 JDK11 不支持 Nashorn 脚本类型!");
+            return;
+        }
         try {
             engine = engineManager.getEngineByName(engineType);
         } catch (final NullPointerException ignored) {
@@ -67,20 +74,24 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
         if (engine == null) {
             val extDirs = System.getProperty("java.ext.dirs");
             if (extDirs != null) {
-                val dirs = extDirs.split(File.pathSeparator);
-                for (String dir : dirs) {
-                    File nashorn = new File(dir, "nashorn.jar");
-                    if (nashorn.exists()) {
-                        this.loadJar(nashorn);
-                        this.createEngineByName(engineType);
-                    }
-                }
+                this.loadLocalNashorn(extDirs, engineType);
             } else if (engineRoot != null) {
-                this.loadLocalNashorn(engineRoot);
+                this.loadNetworkNashorn(engineRoot);
             }
         }
         if (engine == null)
             throw new UnsupportedOperationException("当前环境不支持 " + engineType + " 脚本类型!");
+    }
+
+    private void loadLocalNashorn(String extDirs, String engineType) {
+        val dirs = extDirs.split(File.pathSeparator);
+        for (String dir : dirs) {
+            File nashorn = new File(dir, "nashorn.jar");
+            if (nashorn.exists()) {
+                this.loadJar(nashorn);
+                this.createEngineByName(engineType);
+            }
+        }
     }
 
     private void initReflect() {
@@ -107,7 +118,7 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
     }
 
     @SneakyThrows
-    private void loadLocalNashorn(String engineRoot) {
+    private void loadNetworkNashorn(String engineRoot) {
         initReflect();
         File libRootFile = new File(engineRoot, "lib");
         libRootFile.mkdirs();
@@ -117,7 +128,10 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
         downloadJar(libRoot, "org.ow2.asm", "asm-commons", "9.2");
         downloadJar(libRoot, "org.ow2.asm", "asm-tree", "9.2");
         downloadJar(libRoot, "org.ow2.asm", "asm-util", "9.2");
-        this.createEngineByName("nashorn");
+        Class<?> NashornScriptEngineFactory = Class.forName("org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory");
+        Method getScriptEngine = NashornScriptEngineFactory.getMethod("getScriptEngine");
+        Object factory = NashornScriptEngineFactory.newInstance();
+        engine = (ScriptEngine) getScriptEngine.invoke(factory);
     }
 
     @SneakyThrows

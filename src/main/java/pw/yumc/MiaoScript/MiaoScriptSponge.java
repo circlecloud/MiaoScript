@@ -10,6 +10,7 @@ import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
+import pw.yumc.MiaoScript.api.MiaoScriptAPI;
 
 import java.io.File;
 
@@ -19,7 +20,7 @@ import java.io.File;
  * @author 喵♂呜
  * Created on 2017/10/25 20:35.
  */
-@Plugin(id = "miaoscript", name = "MiaoScript", version = Base.VERSION, authors = "MiaoWoo")
+@Plugin(id = "miaoscript", name = "MiaoScript", version = MiaoScriptAPI.VERSION, authors = "MiaoWoo")
 public class MiaoScriptSponge {
     private ScriptEngine engine;
     @Inject

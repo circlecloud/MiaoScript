@@ -1,5 +1,7 @@
 package pw.yumc.MiaoScript;
 
+import pw.yumc.MiaoScript.api.MiaoScriptAPI;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,15 +15,14 @@ import java.nio.file.Path;
  * Created on 2017/10/9 12:40.
  */
 public class Base {
-    public static final String VERSION = "0.18.0";
     private Object instance;
 
-    public Base(Object instance) {
+    Base(Object instance) {
         this.instance = instance;
     }
 
     public String getVersion() {
-        return Base.VERSION;
+        return MiaoScriptAPI.VERSION;
     }
 
     public Class<?> getClass(String name) throws ClassNotFoundException {
