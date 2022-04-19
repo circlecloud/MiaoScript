@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.19.5</version>
+    <version>0.20.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -53,6 +53,13 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §622-04-09 §afeat: 优化 引擎初始化逻辑;
+            　　　　　　§afeat: 优化 require 网络加载;
+            　　　　　　§afeat: 新增 JS 类型定义文件;
+            　　　　　　§afeat: 新增 自定义类型加载逻辑;
+            §622-02-16 §afeat: 新增 MiaoScriptAPI;
+            　　　　　　§afeat: 新增 ScriptEvent;
+            　　　　　　§afeat: 新增 .mjs.json 类型加载;
             §622-02-16 §afeat: 优化 初始化逻辑 加快引擎加载速度;
             　　　　　　§afeat: 新增 root 目录变更检测 变更后重新生成缓存;
             　　　　　　§afeat: 添加常用库的软依赖;

@@ -129,9 +129,9 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
         downloadJar(libRoot, "org.ow2.asm", "asm-tree", "9.2");
         downloadJar(libRoot, "org.ow2.asm", "asm-util", "9.2");
         Class<?> NashornScriptEngineFactory = Class.forName("org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory");
-        Method getScriptEngine = NashornScriptEngineFactory.getMethod("getScriptEngine");
+        Method getScriptEngine = NashornScriptEngineFactory.getMethod("getScriptEngine", ClassLoader.class);
         Object factory = NashornScriptEngineFactory.newInstance();
-        engine = (ScriptEngine) getScriptEngine.invoke(factory);
+        engine = (ScriptEngine) getScriptEngine.invoke(factory, ClassLoader.getSystemClassLoader());
     }
 
     @SneakyThrows

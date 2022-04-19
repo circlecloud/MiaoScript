@@ -1,3 +1,4 @@
+/// <reference path="./index.d.ts" />
 // @ts-check
 (
     /**
@@ -19,11 +20,9 @@
             log: log,
             info: log,
             ex: log,
-            // @ts-ignore
             trace: global.level === "trace" ? _proxy('TRACE') : global.noop,
-            // @ts-ignore
             debug: global.debug ? _proxy('DEBUG') : global.noop,
             warn: _proxy('WARN'),
             error: _proxy('ERROR')
-        };
+        }
     })

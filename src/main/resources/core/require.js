@@ -24,6 +24,7 @@
  *     3. 如果 xx/index.json 存在 则使用 `xx/index.json` 解析为对象加载 并停止执行
  *     暂不支持 4. 如果 xx/index.msm 是一个文件 则使用MScript解析器解析 并停止执行
  */
+/// <reference path="./index.d.ts" />
 // @ts-check
 (
     /**
@@ -31,43 +32,29 @@
      */
     function (parent) {
         'use strict'
-        // @ts-ignore
+        var System = Java.type('java.lang.System')
+
         var File = Java.type('java.io.File')
-        // @ts-ignore
         var Paths = Java.type('java.nio.file.Paths')
-        // @ts-ignore
         var Files = Java.type('java.nio.file.Files')
-        // @ts-ignore
         var StandardCopyOption = Java.type('java.nio.file.StandardCopyOption')
 
-        // @ts-ignore
         var TarInputStream = Java.type('org.kamranzafar.jtar.TarInputStream')
-        // @ts-ignore
         var GZIPInputStream = Java.type('java.util.zip.GZIPInputStream')
-        // @ts-ignore
         var BufferedInputStream = Java.type('java.io.BufferedInputStream')
 
-        // @ts-ignore
         var URL = Java.type('java.net.URL')
-        // @ts-ignore
         var ByteArrayOutputStream = Java.type("java.io.ByteArrayOutputStream")
-        // @ts-ignore
         var ByteArray = Java.type("byte[]")
-        // @ts-ignore
         var Thread = Java.type('java.lang.Thread')
-        // @ts-ignore
         var Callable = Java.type('java.util.concurrent.Callable')
-        // @ts-ignore
         var Executors = Java.type('java.util.concurrent.Executors')
+        var TimeUnit = Java.type('java.util.concurrent.TimeUnit')
         var separatorChar = File.separatorChar
 
-        // @ts-ignore
-        var NODE_PATH = java.lang.System.getenv("NODE_PATH") || root + separatorChar + 'node_modules'
-        // @ts-ignore
-        var NODE_REGISTRY = java.lang.System.getenv("NODE_REGISTRY") || 'https://registry.npm.taobao.org'
-        // @ts-ignore
-        var MS_NODE_REGISTRY = java.lang.System.getenv("MS_NODE_REGISTRY") || 'https://repo.yumc.pw/repository/npm'
-
+        var MS_NODE_PATH = System.getenv("MS_NODE_PATH") || root + separatorChar + 'node_modules'
+        var MS_NODE_REGISTRY = System.getenv("MS_NODE_REGISTRY") || 'https://registry.npmmirror.com'
+        var FALLBACK_NODE_REGISTRY = System.getenv("FALLBACK_NODE_REGISTRY") || 'https://repo.yumc.pw/repository/npm'
         var CoreModules = [
             "assert", "async_hooks", "Buffer", "child_process", "cluster", "crypto",
             "dgram", "dns", "domain", "events", "fs", "http", "http2", "https",
@@ -142,22 +129,20 @@
                 // 解析Node目录
                 var dir = [parent, 'node_modules'].join(separatorChar)
                 return resolveAsFile(name, dir) || resolveAsDirectory(name, dir) ||
-                    // @ts-ignore
                     (parent && parent.toString().startsWith(root) ?
-                        resolve(name, new File(parent).getParent(), optional) : resolveAsDirectory(name, NODE_PATH) || undefined)
+                        resolve(name, new File(parent).getParent(), optional) : resolveAsDirectory(name, MS_NODE_PATH) || undefined)
             }
         }
 
         /**
          * 解析文件
-         * @param {string} file 文件
+         * @param {any} file 文件
          * @param {string | undefined} dir 目录
          * @returns {*}
          */
         function resolveAsFile(file, dir) {
             file = dir !== undefined ? new File(dir, file) : new File(file)
             // 直接文件
-            // @ts-ignore
             if (file.isFile()) {
                 return file
             }
@@ -183,7 +168,6 @@
             dir = dir !== undefined ? new File(dir, file) : new File(file)
             var _package = new File(dir, 'package.json')
             if (_package.exists()) {
-                // @ts-ignore
                 var json = JSON.parse(base.read(_package))
                 if (json.main) {
                     return resolveAsFile(json.main, dir)
@@ -210,47 +194,51 @@
         /**
          * 检查模块缓存
          * @param {string} id 模块ID
-         * @param {string} name 模块名称
          * @param {any} file 模块文件
          * @param {any} optional 附加选项
          * @returns {Object}
          */
-        function getCacheModule(id, name, file, optional) {
+        function getCacheModule(id, file, optional) {
             var module = cacheModules[id]
             if (optional.cache && module) {
                 return module
             }
-            return createModule(id, name, file, optional)
+            return createModule(id, file, optional)
         }
 
         /**
          * 编译模块
          * @param {string} id 模块ID
-         * @param {string} name 模块名称
          * @param {any} file 模块文件
          * @param {any} optional 附加选项
          * @returns {Object}
          */
-        function createModule(id, name, file, optional) {
+        function createModule(id, file, optional) {
+            var filename = file.name
+            var lastDotIndexOf = filename.lastIndexOf('.')
+            if (lastDotIndexOf == -1) {
+                throw Error('require module must include file ext.')
+            }
+            var name = filename.substring(0, lastDotIndexOf)
+            var ext = filename.substring(lastDotIndexOf + 1)
+            var loader = requireLoaders[ext]
+            if (!loader) {
+                throw Error('Unsupported module ' + filename + '. require loader not found.')
+            }
             console.trace('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional))
             var module = {
                 id: id,
+                name: name,
+                ext: ext,
                 exports: {},
                 loaded: false,
-                require: getRequire(file.parentFile, id)
+                loader: loader,
+                require: getRequire(file.parentFile, id),
+                __dirname: file.parentFile,
+                __filename: file
             }
             cacheModules[id] = module
-            var cfile = _canonical(file)
-            if (cfile.endsWith('.js') || cfile.endsWith('.mjs.json')) {
-                compileJs(module, file, __assign(optional, { id: id }))
-            } else if (cfile.endsWith('.json')) {
-                compileJson(module, file)
-            } else if (cfile.endsWith('.msm')) {
-                throw Error('Unsupported MiaoScript module!')
-            } else {
-                throw Error('Unknown file type ' + cfile)
-            }
-            return module
+            return loader(module, file, __assign(optional, { id: id }))
         }
 
         /**
@@ -258,37 +246,52 @@
          * @param {any} module JS模块
          * @param {any} file JS文件
          * @param {any} optional 附加选项
-         * @returns {void}
+         * @returns {any}
          */
-        function compileJs(module, file, optional) {
-            // @ts-ignore
-            var origin = base.read(file)
+        function compileJsFile(module, file, optional) {
+            return compileJs(module, base.read(file), optional)
+        }
+
+        /**
+         * 预编译JS
+         * @param {any} module JS模块
+         * @param {any} script JS脚本
+         * @param {any} optional 附加选项
+         * @returns {any}
+         */
+        function compileJs(module, script, optional) {
             if (optional.hook) {
-                origin = optional.hook(origin)
+                script = optional.hook(script)
+            }
+            if (optional.beforeCompile) {
+                script = optional.beforeCompile(script)
             }
             // 2019-09-19 使用 扩展函数直接 load 无需保存/删除文件
             // 2020-02-16 结尾新增换行 防止有注释导致加载失败
-            // @ts-ignore
             var compiledWrapper = engineLoad({
-                script: '(function $(module, exports, require, __dirname, __filename) {' + origin + '\n});',
+                script: '(function (module, exports, require, __dirname, __filename) {' + script + '\n});',
                 name: optional.id
             })
             compiledWrapper.apply(module.exports, [
-                module, module.exports, module.require, file.parentFile, file
+                module, module.exports, module.require, module.__dirname, module.__filename
             ])
             module.loaded = true
+            if (optional.afterCompile) {
+                module = optional.afterCompile(module) || module
+            }
+            return module
         }
 
         /**
          * 预编译Json
          * @param {{ id?: string | null; exports?: {}; loaded: any; require?: any; }} module Json模块
          * @param {any} file Json 文件
-         * @returns {void}
+         * @returns {any}
          */
         function compileJson(module, file) {
-            // @ts-ignore
             module.exports = JSON.parse(base.read(file))
             module.loaded = true
+            return module
         }
 
         /**
@@ -296,11 +299,12 @@
          * @param {string} name 包名称
          */
         function download(name) {
-            // handle name es6-map/implement => es6-map @ccms/common/dist/reflect => @ccms/common
+            // process package name
+            // es6-map/implement => es6-map 
+            // @ccms/common/dist/reflect => @ccms/common
             var name_arr = name.split('/')
             var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0]
-            // @ts-ignore
-            var target = NODE_PATH + separatorChar + module_name
+            var target = MS_NODE_PATH + separatorChar + module_name
             var _package = new File(target, 'package.json')
             if (_package.exists()) {
                 return
@@ -311,7 +315,6 @@
             console.log('fetch node_module ' + module_name + ' from ' + url + ' waiting...')
             return executor.submit(new Callable(function () {
                 var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())))
-                // @ts-ignore
                 var entry
                 while ((entry = tis.getNextEntry()) != null) {
                     var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8))
@@ -319,7 +322,9 @@
                     Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
                 }
                 return name
-            })).get()
+            }))
+                // default wait 45 seconds
+                .get(45, TimeUnit.SECONDS)
         }
 
         /**
@@ -328,16 +333,17 @@
         function fetchPackageInfo(module_name) {
             var content = ''
             try {
-                content = fetchContent(NODE_REGISTRY + '/' + module_name)
-            } catch (ex) {
-                console.debug('can\'t fetch package ' + module_name + ' from ' + NODE_REGISTRY + ' registry. try fetch from ' + MS_NODE_REGISTRY + ' registry...')
                 content = fetchContent(MS_NODE_REGISTRY + '/' + module_name)
+            } catch (ex) {
+                console.warn('can\'t fetch package ' + module_name + ' from ' + MS_NODE_REGISTRY + ' registry. try fetch from ' + FALLBACK_NODE_REGISTRY + ' registry...')
+                content = fetchContent(FALLBACK_NODE_REGISTRY + '/' + module_name)
             }
             return JSON.parse(content)
         }
 
-        function fetchContent(url) {
-            return executor.submit(new Callable(function () {
+        function fetchContent(url, timeout) {
+            timeout = timeout || 10
+            return executor.submit(new Callable(function fetchContent() {
                 var input = new URL(url).openStream()
                 var output = new ByteArrayOutputStream()
                 var buffer = new ByteArray(1024)
@@ -348,9 +354,10 @@
                     }
                     return output.toString("UTF-8")
                 } finally {
+                    input.close()
                     output.close()
                 }
-            })).get()
+            })).get(timeout, TimeUnit.SECONDS)
         }
 
         var lastModule = ''
@@ -362,19 +369,16 @@
          */
         function checkCoreModule(name, path, optional) {
             if (name.startsWith('@ms') && lastModule.endsWith('.js')) {
-                // @ts-ignore
                 console.warn(lastModule + ' load deprecated module ' + name + ' auto replace to ' + (name = name.replace('@ms', global.scope)) + '...')
                 return name
             } else {
                 lastModule = name
             }
             if (CoreModules.indexOf(name) !== -1) {
-                // @ts-ignore
                 var newName = global.scope + '/nodejs/dist/' + name
                 if (resolve(newName, path, optional) !== undefined) {
                     return newName
                 }
-                // @ts-ignore
                 throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to " + global.scope + "/nodejs/" + name + ' to compatible...')
             }
             return name
@@ -406,8 +410,9 @@
             if (cachePath && cacheFile.exists()) {
                 return _requireFile(cacheFile, optional)
             }
-            // search module
+            // check core module
             name = checkCoreModule(name, path, optional)
+            // search module
             if ((file = resolve(name, path, optional)) === undefined) {
                 // excloud local dir, prevent too many recursive call and cache not found module
                 if (optional.local || optional.recursive || notFoundModules[name]) {
@@ -443,7 +448,7 @@
 
         function _requireFile(file, optional) {
             // 重定向文件名称和类型
-            return getCacheModule(_canonical(file), file.name.split('.')[0], file, optional)
+            return getCacheModule(_canonical(file), file, optional)
         }
 
         /**
@@ -496,7 +501,6 @@
         }
 
         function __DynamicDisable__() {
-            // @ts-ignore
             base.save(cacheModuleIdsFile, JSON.stringify(upgradeMode ? {} : cacheModuleIds))
             for (var cacheModule in cacheModules) {
                 delete cacheModules[cacheModule]
@@ -526,11 +530,98 @@
             require.clear = __DynamicClear__
             require.disable = __DynamicDisable__
             require.setUpgradeMode = __setUpgradeMode__
+            require.loader = {
+                register: registerLoader,
+                get: getLoader,
+                unregister: unregisterLoader,
+            }
             require.internal = {
                 coreModules: CoreModules,
                 cacheModules: cacheModules,
                 cacheModuleIds: cacheModuleIds,
                 notFoundModules: notFoundModules,
+                requireLoaders: requireLoaders
+            }
+            return require
+        }
+
+        /**
+         * @param {string} ext 
+         * @param {any} loader 
+         */
+        function registerLoader(ext, loader) {
+            requireLoaders[ext] = loader
+            console.info('Register Require Loader ' + ext + ' => ' + (loader.name || '<anonymous>') + '.')
+        }
+        /**
+         * @param {*} ext 
+         */
+        function getLoader(ext) {
+            return requireLoaders[ext]
+        }
+        /**
+         * @param {*} ext 
+         */
+        function unregisterLoader(ext) {
+            delete requireLoaders[ext]
+            console.info('unregister Require Loader ' + ext + '.')
+        }
+
+        function printRequireInfo() {
+            console.info('Initialization require module.')
+            console.info('ParentDir:', _canonical(parent))
+            console.info('Require module env list:')
+            console.info('- MS_NODE_PATH:', MS_NODE_PATH.startsWith(root) ? MS_NODE_PATH.split(root)[1] : MS_NODE_PATH)
+            console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY)
+            console.info('- FALLBACK_NODE_REGISTRY:', FALLBACK_NODE_REGISTRY)
+        }
+
+        function initCacheModuleIds() {
+            try {
+                cacheModuleIds = JSON.parse(base.read(cacheModuleIdsFile))
+                if (cacheModuleIds['@ccms-cache-module-root'] != MS_NODE_PATH) {
+                    throw new Error('canonicalRoot Change ' + cacheModuleIds['@ccms-cache-module-root'] + ' to ' + MS_NODE_PATH + ' Clear Cache!')
+                }
+                console.log('Read cacheModuleIds from file', cacheModuleIdsFile.startsWith(root) ? cacheModuleIdsFile.split(root)[1] : cacheModuleIdsFile)
+            } catch (error) {
+                cacheModuleIds = {}
+                cacheModuleIds['@ccms-cache-module-root'] = MS_NODE_PATH
+                console.log('Initialization new cacheModuleIds: ' + error)
+            }
+        }
+
+        function initVersionLock() {
+            try {
+                ModulesVersionLock = JSON.parse(fetchContent('https://ms.yumc.pw/api/plugin/download/name/version_lock', 5))
+                try {
+                    ModulesVersionLock = __assign(ModulesVersionLock, JSON.parse(base.read(localVersionLockFile)))
+                } catch (e) {
+                }
+            } catch (error) {
+                console.warn("无法获取到最新的版本锁定信息 使用默认配置.")
+                console.warn("InitVersionLock Error:", error)
+                console.debug(error)
+                ModulesVersionLock = { "@babel/standalone": "7.12.18", "crypto-js": "3.3.0" }
+            }
+            console.info('Lock module version List:')
+            for (var key in ModulesVersionLock) {
+                console.info('- ' + key + ': ' + ModulesVersionLock[key])
+            }
+        }
+
+        function initRequireLoader(require) {
+            registerLoader('js', compileJsFile)
+            registerLoader('json', compileJson)
+            try {
+                engineLoad({
+                    script: fetchContent('https://ms.yumc.pw/api/plugin/download/name/require_loader', 5),
+                    name: 'core/require_loader.js'
+                })(require)
+            } catch (error) {
+                console.warn("无法获取到最新的加载器信息 使用默认配置.")
+                console.warn("InitRequireLoader Error:", error)
+                console.debug(error)
+                registerLoader('ms', compileJsFile)
             }
             return require
         }
@@ -539,11 +630,15 @@
             parent = new File(parent)
         }
         /**
+         * @type {{[key:string]:(module:any, file:string, optional?:any)=>any}} requireLoader
+         */
+        var requireLoaders = {}
+        /**
          * @type {{[key:string]:any}} cacheModules
          */
         var cacheModules = {}
-        var cacheModuleIdsFile = _canonical(new File(NODE_PATH, 'cacheModuleIds.json'))
-        var localVersionLockFile = _canonical(new File(NODE_PATH, 'moduleVersionLock.json'))
+        var cacheModuleIdsFile = _canonical(new File(MS_NODE_PATH, 'cacheModuleIds.json'))
+        var localVersionLockFile = _canonical(new File(MS_NODE_PATH, 'moduleVersionLock.json'))
         /**
          * @type {{[key:string]:{[key:string]:string}|string}} cacheModuleIds
          */
@@ -556,37 +651,10 @@
         var executor = Executors.newSingleThreadExecutor(function (r) {
             return new Thread(r, "MiaoScript require thread")
         })
-        console.info('Initialization require module. ParentDir:', _canonical(parent))
-        console.info('Require module env list:')
-        console.info('- NODE_PATH:', NODE_PATH)
-        console.info('- NODE_REGISTRY:', NODE_REGISTRY)
-        console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY)
-        try {
-            // @ts-ignore
-            cacheModuleIds = JSON.parse(base.read(cacheModuleIdsFile))
-            if (cacheModuleIds['@ccms-cache-module-root'] != NODE_PATH) {
-                throw new Error('canonicalRoot Change ' + cacheModuleIds['@ccms-cache-module-root'] + ' to ' + NODE_PATH + ' Clear Cache!')
-            }
-            console.log('Read cacheModuleIds from file ' + cacheModuleIdsFile)
-        } catch (error) {
-            cacheModuleIds = {}
-            cacheModuleIds['@ccms-cache-module-root'] = NODE_PATH
-            console.log('Initialization new cacheModuleIds: ' + error)
-        }
-        try {
-            ModulesVersionLock = JSON.parse(fetchContent('http://ms.yumc.pw/api/plugin/download/name/version_lock'))
-            try {
-                // @ts-ignore
-                ModulesVersionLock = __assign(ModulesVersionLock, JSON.parse(base.read(localVersionLockFile)))
-            } catch (e) {
-            }
-            console.info('Lock module version List:')
-            for (var key in ModulesVersionLock) {
-                console.info('- ' + key + ': ' + ModulesVersionLock[key])
-            }
-        } catch (error) {
-            console.debug(error)
-            ModulesVersionLock = {}
-        }
-        return getRequire(parent, "")
+
+        printRequireInfo()
+        initCacheModuleIds()
+        initVersionLock()
+
+        return initRequireLoader(getRequire(parent, ""))
     })

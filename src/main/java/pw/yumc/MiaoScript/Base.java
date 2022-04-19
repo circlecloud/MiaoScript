@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Created with IntelliJ IDEA
@@ -42,18 +43,36 @@ public class Base {
     }
 
     public String read(String path) throws IOException {
-        return new String(Files.readAllBytes(new File(path).toPath()), StandardCharsets.UTF_8);
+        return read(Paths.get(path));
+    }
+
+    public String read(File file) throws IOException {
+        return read(file.toPath());
+    }
+
+    public String read(Path path) throws IOException {
+        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     }
 
     public Path save(String path, String content) throws IOException {
-        File file = new File(path);
-        file.getParentFile().mkdirs();
-        return Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+        return save(Paths.get(path), content);
+    }
+
+    public Path save(File file, String content) throws IOException {
+        return save(file.toPath(), content);
+    }
+
+    public Path save(Path path, String content) throws IOException {
+        path.getParent().toFile().mkdirs();
+        return Files.write(path, content.getBytes(StandardCharsets.UTF_8));
     }
 
     public boolean move(String source, String target) {
-        File file = new File(source);
-        return file.renameTo(new File(target));
+        return move(new File(source), new File(target));
+    }
+
+    public boolean move(File source, File target) {
+        return source.renameTo(target);
     }
 
     public boolean delete(String path) throws IOException {
@@ -79,7 +98,7 @@ public class Base {
                         f.deleteOnExit();
                     }
                 } else {
-                    this.delete(f.getAbsolutePath());
+                    this.delete(f);
                 }
             }
         }

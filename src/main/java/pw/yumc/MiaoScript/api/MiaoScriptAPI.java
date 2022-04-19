@@ -4,7 +4,7 @@ import pw.yumc.MiaoScript.MiaoScriptEngine;
 import pw.yumc.MiaoScript.ScriptEngine;
 
 public class MiaoScriptAPI {
-    public static final String VERSION = "0.19.5";
+    public static final String VERSION = "0.20.0";
     private static ScriptEngine scriptEngine;
 
     public static void setEngine(ScriptEngine scriptEngine) {

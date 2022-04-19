@@ -37,8 +37,9 @@ var global = this;
     global.enable = function (future) {
         if (!future.isDone()) {
             logger.info("Waiting MiaoScript booted...")
-            future.get()
         }
+        // await polyfill loading
+        future.get()
         logger.info("MiaoScript booted starting...")
         global.engineDisableImpl = require(System.getenv("MS_NODE_CORE_MODULE") || (global.scope + '/core')).default || function () {
             logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...')
