@@ -1,4 +1,4 @@
-package pw.yumc.MiaoScript;
+package pw.yumc.MiaoScript.api;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;

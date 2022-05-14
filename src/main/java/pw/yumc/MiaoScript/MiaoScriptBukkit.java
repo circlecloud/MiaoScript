@@ -2,6 +2,7 @@ package pw.yumc.MiaoScript;
 
 import lombok.SneakyThrows;
 import org.bukkit.plugin.java.JavaPlugin;
+import pw.yumc.MiaoScript.api.ScriptEngine;
 
 /**
  * 喵式脚本

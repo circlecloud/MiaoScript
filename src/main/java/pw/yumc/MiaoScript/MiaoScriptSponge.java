@@ -11,6 +11,7 @@ import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import pw.yumc.MiaoScript.api.MiaoScriptAPI;
+import pw.yumc.MiaoScript.api.ScriptEngine;
 
 import java.io.File;
 

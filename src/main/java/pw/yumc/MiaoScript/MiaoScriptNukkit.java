@@ -2,6 +2,7 @@ package pw.yumc.MiaoScript;
 
 import cn.nukkit.plugin.PluginBase;
 import lombok.SneakyThrows;
+import pw.yumc.MiaoScript.api.ScriptEngine;
 
 /**
  * @author MiaoWoo

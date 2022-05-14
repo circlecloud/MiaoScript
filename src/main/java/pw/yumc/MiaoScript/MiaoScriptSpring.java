@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+import pw.yumc.MiaoScript.api.ScriptEngine;
 
 import java.io.File;
 

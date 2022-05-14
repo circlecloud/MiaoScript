@@ -16,7 +16,7 @@ var global = this;
         global.logger = logger
         // Development Env Detect
         global.root = root || "src/main/resources"
-        checkDebug()
+        readEnvironment()
         if (!global.debug) {
             checkUpgrade()
         }
@@ -50,24 +50,24 @@ var global = this;
         global.engineDisableImpl && global.engineDisableImpl()
     }
 
-    function checkDebug() {
+    function readEnvironment() {
         if (__FILE__.indexOf('!') === -1) {
-            logger.info('Loading custom BIOS file ' + __FILE__)
+            logger.info('loading custom BIOS file ' + __FILE__)
             global.debug = true
         }
         if (Files.exists(Paths.get(root, "debug"))) {
-            logger.info('Running in debug mode...')
+            logger.info('running in debug mode...')
             global.debug = true
         }
         if (Files.exists(Paths.get(root, "level"))) {
             global.level = base.read(Paths.get(root, "level"))
-            logger.info('Set system level to [' + global.level + ']...')
+            logger.info('set system level to [' + global.level + ']...')
         }
     }
 
     function checkUpgrade() {
         if (Files.exists(Paths.get(root, "upgrade"))) {
-            logger.info('Found upgrade file starting upgrade...')
+            logger.info('found upgrade file starting upgrade...')
             base.move(Paths.get(root, "node_modules"), Paths.get(root, "old_node_modules"))
             base.delete(Paths.get(root, "upgrade"))
         }

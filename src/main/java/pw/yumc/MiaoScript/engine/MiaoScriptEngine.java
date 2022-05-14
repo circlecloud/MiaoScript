@@ -1,19 +1,15 @@
-package pw.yumc.MiaoScript;
+package pw.yumc.MiaoScript.engine;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import pw.yumc.MiaoScript.api.loader.JarLoader;
+import pw.yumc.MiaoScript.api.loader.MavenDependLoader;
 
 import javax.script.ScriptEngine;
 import javax.script.*;
 import java.io.File;
 import java.io.Reader;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 
 /**
@@ -23,12 +19,9 @@ import java.util.HashMap;
  * @since 2016年8月29日 上午7:51:43
  */
 public class MiaoScriptEngine implements ScriptEngine, Invocable {
-    private static String MavenRepo = "https://maven.aliyun.com/repository/public";
     private static MiaoScriptEngine DEFAULT;
     private static final ScriptEngineManager manager;
 
-    private Object ucp;
-    private MethodHandle addURLMethodHandle;
     private ScriptEngine engine;
 
     static {
@@ -88,71 +81,26 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
         for (String dir : dirs) {
             File nashorn = new File(dir, "nashorn.jar");
             if (nashorn.exists()) {
-                this.loadJar(nashorn);
+                JarLoader.load(nashorn);
                 this.createEngineByName(engineType);
             }
         }
     }
 
-    private void initReflect() {
-        try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Field theUnsafe = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-            theUnsafe.setAccessible(true);
-            sun.misc.Unsafe unsafe = (sun.misc.Unsafe) theUnsafe.get(null);
-            Field field = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
-            MethodHandles.Lookup lookup = (MethodHandles.Lookup) unsafe.getObject(unsafe.staticFieldBase(field), unsafe.staticFieldOffset(field));
-            Field ucpField;
-            try {
-                ucpField = loader.getClass().getDeclaredField("ucp");
-            } catch (NoSuchFieldException e) {
-                ucpField = loader.getClass().getSuperclass().getDeclaredField("ucp");
-            }
-            long offset = unsafe.objectFieldOffset(ucpField);
-            ucp = unsafe.getObject(loader, offset);
-            Method method = ucp.getClass().getDeclaredMethod("addURL", URL.class);
-            addURLMethodHandle = lookup.unreflect(method);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @SneakyThrows
     private void loadNetworkNashorn(String engineRoot) {
-        initReflect();
-        File libRootFile = new File(engineRoot, "lib");
+        File libRootFile = new File(engineRoot, "libs");
         libRootFile.mkdirs();
         String libRoot = libRootFile.getCanonicalPath();
-        downloadJar(libRoot, "org.openjdk.nashorn", "nashorn-core", "15.3");
-        downloadJar(libRoot, "org.ow2.asm", "asm", "9.2");
-        downloadJar(libRoot, "org.ow2.asm", "asm-commons", "9.2");
-        downloadJar(libRoot, "org.ow2.asm", "asm-tree", "9.2");
-        downloadJar(libRoot, "org.ow2.asm", "asm-util", "9.2");
+        MavenDependLoader.load(libRoot, "org.openjdk.nashorn", "nashorn-core", "15.3");
+        MavenDependLoader.load(libRoot, "org.ow2.asm", "asm", "9.2");
+        MavenDependLoader.load(libRoot, "org.ow2.asm", "asm-commons", "9.2");
+        MavenDependLoader.load(libRoot, "org.ow2.asm", "asm-tree", "9.2");
+        MavenDependLoader.load(libRoot, "org.ow2.asm", "asm-util", "9.2");
         Class<?> NashornScriptEngineFactory = Class.forName("org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory");
-        Method getScriptEngine = NashornScriptEngineFactory.getMethod("getScriptEngine", ClassLoader.class);
+        Method getScriptEngine = NashornScriptEngineFactory.getMethod("getScriptEngine");
         Object factory = NashornScriptEngineFactory.newInstance();
-        engine = (ScriptEngine) getScriptEngine.invoke(factory, ClassLoader.getSystemClassLoader());
-    }
-
-    @SneakyThrows
-    private void loadJar(File file) {
-        addURLMethodHandle.invoke(ucp, file.toURI().toURL());
-    }
-
-    @SneakyThrows
-    private void downloadJar(String engineRoot, String groupId, String artifactId, String version) {
-        File lib = new File(engineRoot, String.format("%s-%s.jar", artifactId, version));
-        if (!lib.exists()) {
-            Files.copy(new URL(MavenRepo +
-                            String.format("/%1$s/%2$s/%3$s/%2$s-%3$s.jar",
-                                    groupId.replace(".", "/"),
-                                    artifactId,
-                                    version)
-                    ).openStream(),
-                    lib.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
-        }
-        this.loadJar(lib);
+        engine = (ScriptEngine) getScriptEngine.invoke(factory);
     }
 
     private void createEngineByName(String engineType) {

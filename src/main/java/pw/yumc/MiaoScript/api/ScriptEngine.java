@@ -1,7 +1,7 @@
-package pw.yumc.MiaoScript;
+package pw.yumc.MiaoScript.api;
 
 import lombok.SneakyThrows;
-import pw.yumc.MiaoScript.api.MiaoScriptAPI;
+import pw.yumc.MiaoScript.engine.MiaoScriptEngine;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +25,7 @@ public class ScriptEngine {
         this.root = root;
         this.logger = logger;
         this.base = new Base(instance);
+        MiaoScriptAPI.setRoot(root);
         MiaoScriptAPI.setEngine(this);
     }
 

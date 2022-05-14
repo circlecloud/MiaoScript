@@ -1,4 +1,4 @@
-package pw.yumc.MiaoScript;
+package pw.yumc.MiaoScript.api;
 
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;

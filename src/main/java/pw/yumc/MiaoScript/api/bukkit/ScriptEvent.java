@@ -7,12 +7,12 @@ import org.bukkit.event.HandlerList;
 import javax.script.Bindings;
 
 public class ScriptEvent extends Event implements Cancellable {
-    private final String plugin;
+    private final Bindings plugin;
     private final String event;
     private final Bindings data;
     private boolean cancelled = false;
 
-    public ScriptEvent(String plugin, String event, Bindings data) {
+    public ScriptEvent(Bindings plugin, String event, Bindings data) {
         this.plugin = plugin;
         this.event = event;
         this.data = data;
@@ -23,7 +23,7 @@ public class ScriptEvent extends Event implements Cancellable {
      *
      * @return PluginName
      */
-    public String getPlugin() {
+    public Bindings getPlugin() {
         return plugin;
     }
 

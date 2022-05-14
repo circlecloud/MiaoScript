@@ -1,6 +1,4 @@
-package pw.yumc.MiaoScript;
-
-import pw.yumc.MiaoScript.api.MiaoScriptAPI;
+package pw.yumc.MiaoScript.api;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +14,7 @@ import java.nio.file.Paths;
  * Created on 2017/10/9 12:40.
  */
 public class Base {
-    private Object instance;
+    private final Object instance;
 
     Base(Object instance) {
         this.instance = instance;
@@ -40,6 +38,10 @@ public class Base {
 
     public Class<?> getJavaScriptTaskClass() {
         return JavaScriptTask.class;
+    }
+
+    public File[] loadMavenDepend(String groupId, String artifactId, String version) {
+        return MiaoScriptAPI.loadMavenDepend(groupId, artifactId, version);
     }
 
     public String read(String path) throws IOException {

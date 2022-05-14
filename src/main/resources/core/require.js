@@ -217,7 +217,7 @@
             var filename = file.name
             var lastDotIndexOf = filename.lastIndexOf('.')
             if (lastDotIndexOf == -1) {
-                throw Error('require module must include file ext.')
+                throw Error('require ' + file + ' error: module must include file ext.')
             }
             var name = filename.substring(0, lastDotIndexOf)
             var ext = filename.substring(lastDotIndexOf + 1)
@@ -268,8 +268,9 @@
             }
             // 2019-09-19 使用 扩展函数直接 load 无需保存/删除文件
             // 2020-02-16 结尾新增换行 防止有注释导致加载失败
+            var wrapperScript = '(function (module, exports, require, __dirname, __filename) {' + script + '\n});'
             var compiledWrapper = engineLoad({
-                script: '(function (module, exports, require, __dirname, __filename) {' + script + '\n});',
+                script: wrapperScript,
                 name: optional.id
             })
             compiledWrapper.apply(module.exports, [
@@ -306,19 +307,24 @@
             var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0]
             var target = MS_NODE_PATH + separatorChar + module_name
             var _package = new File(target, 'package.json')
-            if (_package.exists()) {
-                return
-            }
+            if (_package.exists()) { return name }
             // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
             var info = fetchPackageInfo(module_name)
-            var url = info.versions[ModulesVersionLock[module_name] || info['dist-tags']['latest']].dist.tarball
-            console.log('fetch node_module ' + module_name + ' from ' + url + ' waiting...')
+            var latest_version = info['dist-tags']['latest']
+            var version = ModulesVersionLock[module_name] || latest_version
+            var _version = info.versions[version] || info.versions[latest_version]
+            var url = _version.dist.tarball
+            console.log('fetch node_module ' + module_name + ' version ' + version + ' waiting...')
             return executor.submit(new Callable(function () {
                 var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())))
                 var entry
                 while ((entry = tis.getNextEntry()) != null) {
                     var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8))
-                    targetPath.toFile().getParentFile().mkdirs()
+                    var parentFile = targetPath.toFile().getParentFile()
+                    if (!parentFile.isDirectory()) {
+                        parentFile.delete()
+                        parentFile.mkdirs()
+                    }
                     Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
                 }
                 return name
@@ -418,13 +424,8 @@
                 if (optional.local || optional.recursive || notFoundModules[name]) {
                     throw new Error("Can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
                 }
-                try {
-                    optional.recursive = true
-                    return _require(download(name), path, optional)
-                } catch (ex) {
-                    notFoundModules[name] = true
-                    throw new Error("Can't found module " + name + ' in directory ' + path + ' ERROR: ' + ex)
-                }
+                optional.recursive = true
+                return _require(download(name), path, optional)
             }
             setCacheModule(file, optional)
             return _requireFile(file, optional)
@@ -592,7 +593,8 @@
 
         function initVersionLock() {
             try {
-                ModulesVersionLock = JSON.parse(fetchContent('https://ms.yumc.pw/api/plugin/download/name/version_lock', 5))
+                var version_lock_url = 'https://ms.yumc.pw/api/plugin/download/name/version_lock' + (global.debug ? '-debug' : '')
+                ModulesVersionLock = JSON.parse(fetchContent(version_lock_url, 5))
                 try {
                     ModulesVersionLock = __assign(ModulesVersionLock, JSON.parse(base.read(localVersionLockFile)))
                 } catch (e) {
