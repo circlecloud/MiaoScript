@@ -25,7 +25,7 @@ public class JarLoader {
 
     private static void initReflect() {
         try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            ClassLoader loader = ClassLoader.getSystemClassLoader();
             Field theUnsafe = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
             theUnsafe.setAccessible(true);
             sun.misc.Unsafe unsafe = (sun.misc.Unsafe) theUnsafe.get(null);
