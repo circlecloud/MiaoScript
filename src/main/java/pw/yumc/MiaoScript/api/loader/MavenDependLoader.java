@@ -55,7 +55,7 @@ public class MavenDependLoader {
                         ext)
         ).openConnection();
         connection.setConnectTimeout(5000);
-        connection.setReadTimeout(30000);
+        connection.setReadTimeout(120000);
         connection.setUseCaches(true);
         Files.copy(connection.getInputStream(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }

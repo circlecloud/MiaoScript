@@ -27,7 +27,8 @@ var global = this;
         logger.info("ScriptEngine: " + ScriptEngineContextHolder.getEngine().getEngine().class.name)
         var future = new FutureTask(function () {
             Thread.currentThread().contextClassLoader = loader
-            load(System.getenv("MS_NODE_CORE_POLYFILL") || 'classpath:core/polyfill.js')(root, logger)
+            var faster = load(System.getenv("MS_NODE_CORE_POLYFILL") || 'classpath:core/polyfill.js')(root, logger)
+            return faster.default ? require(System.getenv("MS_NODE_CORE_MODULE") || (global.scope + '/core')).default : false
         })
         // Async Loading MiaoScript Engine
         new Thread(future, "MiaoScript thread").start()
@@ -39,9 +40,11 @@ var global = this;
             logger.info("Waiting MiaoScript booted...")
         }
         // await polyfill loading
-        future.get()
+        // faster load core
+        var core = future.get()
         logger.info("MiaoScript booted starting...")
-        global.engineDisableImpl = require(System.getenv("MS_NODE_CORE_MODULE") || (global.scope + '/core')).default || function () {
+        var disable = core ? core.enable() : require(System.getenv("MS_NODE_CORE_MODULE") || (global.scope + '/core')).default
+        global.engineDisableImpl = disable || function () {
             logger.info('Error: abnormal Initialization MiaoScript Engine. Skip disable step...')
         }
     }
@@ -60,8 +63,12 @@ var global = this;
             global.debug = true
         }
         if (Files.exists(Paths.get(root, "level"))) {
-            global.level = base.read(Paths.get(root, "level"))
-            logger.info('set system level to [' + global.level + ']...')
+            global.ScriptEngineLoggerLevel = base.read(Paths.get(root, "level"))
+            logger.info('found level set ScriptEngineLoggerLevel to ' + global.ScriptEngineLoggerLevel + '.')
+        }
+        if (Files.exists(Paths.get(root, "channel"))) {
+            global.ScriptEngineChannel = base.read(Paths.get(root, "channel"))
+            logger.info('found channel set ScriptEngineChannel to ' + global.ScriptEngineChannel + '.')
         }
     }
 

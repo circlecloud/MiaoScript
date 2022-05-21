@@ -5,6 +5,9 @@
      * @param {any} logger
      */
     function (root, logger) {
+        var System = Java.type('java.lang.System')
+        var Thread = Java.type('java.lang.Thread')
+
         // Init Global Value
         global.root = root
         global.logger = logger
@@ -21,9 +24,9 @@
             }
         }
         // Init console and require
-        global.console = engineLoad(java.lang.System.getenv("MS_NODE_CORE_CONSOLE") || 'classpath:core/console.js')(logger)
-        console.log("Loading Engine at Thread", java.lang.Thread.currentThread().name)
-        global.require = engineLoad(java.lang.System.getenv("MS_NODE_CORE_REQUIRE") || 'classpath:core/require.js')(root)
-        require(global.scope + '/polyfill')
+        global.console = engineLoad(System.getenv("MS_NODE_CORE_CONSOLE") || 'classpath:core/console.js')(logger)
+        console.log("Loading Engine at Thread", Thread.currentThread().name)
+        global.require = engineLoad(System.getenv("MS_NODE_CORE_REQUIRE") || 'classpath:core/require.js')(root)
+        return require(global.scope + '/polyfill')
     }
 )

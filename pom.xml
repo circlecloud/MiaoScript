@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.21.2</version>
+    <version>0.22.0</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -50,6 +50,8 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §622-05-21 §afeat: 优化 框架加载逻辑;
+            §622-05-20 §afeat: 调整 require 主包逻辑;
             §622-04-09 §afeat: 优化 引擎初始化逻辑;
             　　　　　　§afeat: 优化 require 网络加载;
             　　　　　　§afeat: 新增 JS 类型定义文件;
@@ -204,7 +206,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.17.1-R0.1-SNAPSHOT</version>
+            <version>1.18.2-R0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

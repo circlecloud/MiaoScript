@@ -38,7 +38,7 @@
             log: log,
             info: log,
             ex: log,
-            trace: global.level === "trace" ? _proxy('TRACE') : global.noop,
+            trace: global.ScriptEngineLoggerLevel === "trace" ? _proxy('TRACE') : global.noop,
             debug: global.debug ? logger.debug ? debug : _proxy('DEBUG') : global.noop,
             warn: _proxy('WARN'),
             error: _proxy('ERROR')

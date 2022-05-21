@@ -54,7 +54,12 @@
 
         var MS_NODE_PATH = System.getenv("MS_NODE_PATH") || root + separatorChar + 'node_modules'
         var MS_NODE_REGISTRY = System.getenv("MS_NODE_REGISTRY") || 'https://registry.npmmirror.com'
-        var FALLBACK_NODE_REGISTRY = System.getenv("FALLBACK_NODE_REGISTRY") || 'https://repo.yumc.pw/repository/npm'
+        var MS_FALLBACK_NODE_REGISTRY = System.getenv("MS_FALLBACK_NODE_REGISTRY") || 'https://repo.yumc.pw/repository/npm'
+        var MS_NETWORK_CONNECT_TIMEOUT = System.getenv("MS_NETWORK_CONNECT_TIMEOUT") || 5000
+        var MS_NETWORK_READ_TIMEOUT = System.getenv("MS_NETWORK_TIMEOUT") || 45000
+        var MS_NETWORK_DOWNLOAD_TIMEOUT = System.getenv("MS_NETWORK_DOWNLOAD_TIMEOUT") || 60000
+        var MS_NETWORK_USE_CACHES = System.getenv("MS_NETWORK_USE_CACHES") || true
+
         var CoreModules = [
             "assert", "async_hooks", "Buffer", "child_process", "cluster", "crypto",
             "dgram", "dns", "domain", "events", "fs", "http", "http2", "https",
@@ -107,6 +112,11 @@
          */
         function _absolute(file) {
             return file.absolutePath
+        }
+
+        function __error(message) {
+            console.error(message)
+            return new Error(message)
         }
 
         /**
@@ -168,9 +178,13 @@
             dir = dir !== undefined ? new File(dir, file) : new File(file)
             var _package = new File(dir, 'package.json')
             if (_package.exists()) {
-                var json = JSON.parse(base.read(_package))
-                if (json.main) {
-                    return resolveAsFile(json.main, dir)
+                try {
+                    var json = JSON.parse(base.read(_package))
+                    if (json.main) {
+                        return resolveAsFile(json.main, dir)
+                    }
+                } catch (error) {
+                    throw __error('resolveAsDirectory ' + dir + ' package.json error ' + error)
                 }
             }
             // if no package or package.main exists, look for index.js
@@ -217,13 +231,13 @@
             var filename = file.name
             var lastDotIndexOf = filename.lastIndexOf('.')
             if (lastDotIndexOf == -1) {
-                throw Error('require ' + file + ' error: module must include file ext.')
+                throw __error('require ' + file + ' error: module must include file ext.')
             }
             var name = filename.substring(0, lastDotIndexOf)
             var ext = filename.substring(lastDotIndexOf + 1)
             var loader = requireLoaders[ext]
             if (!loader) {
-                throw Error('Unsupported module ' + filename + '. require loader not found.')
+                throw __error('Unsupported module ' + filename + '. require loader not found.')
             }
             console.trace('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional))
             var module = {
@@ -296,41 +310,97 @@
         }
 
         /**
+         * 获得网络链接
+         * @param {string} url 网址
+         */
+        function getConnection(url) {
+            var connection = new URL(url).openConnection()
+            connection.setConnectTimeout(MS_NETWORK_CONNECT_TIMEOUT)
+            connection.setReadTimeout(MS_NETWORK_READ_TIMEOUT)
+            connection.setUseCaches(MS_NETWORK_USE_CACHES)
+            return connection
+        }
+
+        /**
+         * 获得网络流
+         * @param {string} url 网址
+         */
+        function getConnectionStream(url) {
+            var connection = getConnection(url)
+            return connection.getInputStream()
+        }
+
+        function splitVersionFromName(name) {
+            // process package name
+            // es6-map/implement => [es6-map/implement, undefined]
+            // @ccms/common/dist/reflect => [@ccms/common, undefined]
+            var name_arr = name.split('/')
+            var module_name = ''
+            var module_version = ''
+            if (name.startsWith('@')) {
+                var module_version_arr = name_arr[1].split('@')
+                module_name = name_arr[0] + '/' + module_version_arr[0]
+            } else {
+                var module_version_arr = name_arr[0].split('@')
+                module_name = module_version_arr[0]
+            }
+            // handle internal package version
+            if (name.startsWith(global.scope) && global.ScriptEngineChannel) {
+                module_version = global.ScriptEngineChannel
+            } else {
+                module_version = module_version_arr[1]
+            }
+            return [module_name, module_version]
+        }
+
+        /**
          * 尝试从网络下载依赖包
          * @param {string} name 包名称
          */
-        function download(name) {
-            // process package name
-            // es6-map/implement => es6-map 
-            // @ccms/common/dist/reflect => @ccms/common
-            var name_arr = name.split('/')
-            var module_name = name.startsWith('@') ? name_arr[0] + '/' + name_arr[1] : name_arr[0]
-            var target = MS_NODE_PATH + separatorChar + module_name
-            var _package = new File(target, 'package.json')
-            if (_package.exists()) { return name }
-            // at windows need replace file name java.lang.IllegalArgumentException: Invalid prefix or suffix
-            var info = fetchPackageInfo(module_name)
-            var latest_version = info['dist-tags']['latest']
-            var version = ModulesVersionLock[module_name] || latest_version
-            var _version = info.versions[version] || info.versions[latest_version]
-            var url = _version.dist.tarball
-            console.log('fetch node_module ' + module_name + ' version ' + version + ' waiting...')
-            return executor.submit(new Callable(function () {
-                var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new URL(url).openStream())))
-                var entry
-                while ((entry = tis.getNextEntry()) != null) {
-                    var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8))
-                    var parentFile = targetPath.toFile().getParentFile()
-                    if (!parentFile.isDirectory()) {
-                        parentFile.delete()
-                        parentFile.mkdirs()
-                    }
-                    Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
+        function download(name, optional, retry) {
+            var name_arr = splitVersionFromName(name)
+            var module_name = name_arr[0]
+            var module_version = name_arr[1]
+            try {
+                var target = MS_NODE_PATH + separatorChar + module_name
+                var _package = new File(target, 'package.json')
+                if (_package.exists()) { return name }
+                var info = fetchPackageInfo(module_name)
+                if (!module_version) {
+                    // if not special version get from lock or tag
+                    module_version = ModulesVersionLock[module_name] || info['dist-tags']['latest']
+                } else if (!/\d+\.\d+\.\w+/.test(module_version)) {
+                    // maybe module_version = latest
+                    module_version = info['dist-tags'][module_version]
                 }
-                return name
-            }))
-                // default wait 45 seconds
-                .get(45, TimeUnit.SECONDS)
+                var _version = info.versions[module_version]
+                if (!_version) {
+                    throw __error('fetch node_module ' + module_name + ' version ' + module_version + ' failed. can\t found tarball from versions.')
+                }
+                var url = _version.dist.tarball
+                console.log('fetch node_module ' + module_name + ' version ' + module_version + ' waiting...')
+                return executor.submit(new Callable(function () {
+                    var tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(getConnectionStream(url))))
+                    var entry
+                    while ((entry = tis.getNextEntry()) != null) {
+                        var targetPath = Paths.get(target + separatorChar + entry.getName().substring(8))
+                        var parentFile = targetPath.toFile().getParentFile()
+                        if (!parentFile.isDirectory()) {
+                            parentFile.delete()
+                            parentFile.mkdirs()
+                        }
+                        Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
+                    }
+                    return name
+                })).get(MS_NETWORK_DOWNLOAD_TIMEOUT, TimeUnit.SECONDS)
+            } catch (error) {
+                retry = retry || 1
+                if (retry > 3) {
+                    throw __error('fetch node_module ' + module_name + ' version ' + module_version + ' failed. greater than 3 times stop retry.')
+                }
+                console.log('fetch node_module ' + module_name + ' version ' + module_version + ' failed retrying...')
+                return download(name, optional, ++retry)
+            }
         }
 
         /**
@@ -341,16 +411,19 @@
             try {
                 content = fetchContent(MS_NODE_REGISTRY + '/' + module_name)
             } catch (ex) {
-                console.warn('can\'t fetch package ' + module_name + ' from ' + MS_NODE_REGISTRY + ' registry. try fetch from ' + FALLBACK_NODE_REGISTRY + ' registry...')
-                content = fetchContent(FALLBACK_NODE_REGISTRY + '/' + module_name)
+                console.warn('can\'t fetch package ' + module_name + ' from ' + MS_NODE_REGISTRY + ' registry. try fetch from ' + MS_FALLBACK_NODE_REGISTRY + ' registry...')
+                content = fetchContent(MS_FALLBACK_NODE_REGISTRY + '/' + module_name)
             }
             return JSON.parse(content)
         }
 
+        /**
+         * 获取网络内容
+         * @param {string} url 网址
+         */
         function fetchContent(url, timeout) {
-            timeout = timeout || 10
             return executor.submit(new Callable(function fetchContent() {
-                var input = new URL(url).openStream()
+                var input = getConnectionStream(url)
                 var output = new ByteArrayOutputStream()
                 var buffer = new ByteArray(1024)
                 try {
@@ -363,7 +436,7 @@
                     input.close()
                     output.close()
                 }
-            })).get(timeout, TimeUnit.SECONDS)
+            })).get(timeout || MS_NETWORK_READ_TIMEOUT, TimeUnit.SECONDS)
         }
 
         var lastModule = ''
@@ -385,7 +458,7 @@
                 if (resolve(newName, path, optional) !== undefined) {
                     return newName
                 }
-                throw new Error("Can't load nodejs core module " + name + " . maybe later will auto replace to " + global.scope + "/nodejs/" + name + ' to compatible...')
+                throw __error("Can't load nodejs core module " + name + " . maybe later will auto replace to " + global.scope + "/nodejs/" + name + ' to compatible...')
             }
             return name
         }
@@ -422,10 +495,10 @@
             if ((file = resolve(name, path, optional)) === undefined) {
                 // excloud local dir, prevent too many recursive call and cache not found module
                 if (optional.local || optional.recursive || notFoundModules[name]) {
-                    throw new Error("Can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
+                    throw __error("Can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
                 }
                 optional.recursive = true
-                return _require(download(name), path, optional)
+                return _require(download(name, optional), path, optional)
             }
             setCacheModule(file, optional)
             return _requireFile(file, optional)
@@ -465,7 +538,7 @@
              */
             return function __DynamicRequire__(path, optional) {
                 if (!path) {
-                    throw new Error('require path can\'t be undefined or empty!')
+                    throw __error('require path can\'t be undefined or empty!')
                 }
                 return _require(path, parent, __assign({
                     cache: true,
@@ -574,14 +647,14 @@
             console.info('Require module env list:')
             console.info('- MS_NODE_PATH:', MS_NODE_PATH.startsWith(root) ? MS_NODE_PATH.split(root)[1] : MS_NODE_PATH)
             console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY)
-            console.info('- FALLBACK_NODE_REGISTRY:', FALLBACK_NODE_REGISTRY)
+            console.info('- MS_FALLBACK_NODE_REGISTRY:', MS_FALLBACK_NODE_REGISTRY)
         }
 
         function initCacheModuleIds() {
             try {
                 cacheModuleIds = JSON.parse(base.read(cacheModuleIdsFile))
                 if (cacheModuleIds['@ccms-cache-module-root'] != MS_NODE_PATH) {
-                    throw new Error('canonicalRoot Change ' + cacheModuleIds['@ccms-cache-module-root'] + ' to ' + MS_NODE_PATH + ' Clear Cache!')
+                    throw __error('canonicalRoot Change ' + cacheModuleIds['@ccms-cache-module-root'] + ' to ' + MS_NODE_PATH + ' Clear Cache!')
                 }
                 console.log('Read cacheModuleIds from file', cacheModuleIdsFile.startsWith(root) ? cacheModuleIdsFile.split(root)[1] : cacheModuleIdsFile)
             } catch (error) {
@@ -594,7 +667,7 @@
         function initVersionLock() {
             try {
                 var version_lock_url = 'https://ms.yumc.pw/api/plugin/download/name/version_lock' + (global.debug ? '-debug' : '')
-                ModulesVersionLock = JSON.parse(fetchContent(version_lock_url, 5))
+                ModulesVersionLock = JSON.parse(fetchContent(version_lock_url, 5000))
                 try {
                     ModulesVersionLock = __assign(ModulesVersionLock, JSON.parse(base.read(localVersionLockFile)))
                 } catch (e) {
@@ -616,7 +689,7 @@
             registerLoader('json', compileJson)
             try {
                 engineLoad({
-                    script: fetchContent('https://ms.yumc.pw/api/plugin/download/name/require_loader', 5),
+                    script: fetchContent('https://ms.yumc.pw/api/plugin/download/name/require_loader', 5000),
                     name: 'core/require_loader.js'
                 })(require)
             } catch (error) {
