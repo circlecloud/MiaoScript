@@ -2,6 +2,7 @@ package pw.yumc.MiaoScript;
 
 import lombok.SneakyThrows;
 import net.md_5.bungee.api.plugin.Plugin;
+import pw.yumc.MiaoScript.api.MiaoScriptAPI;
 import pw.yumc.MiaoScript.api.ScriptEngine;
 
 /**
@@ -16,7 +17,7 @@ public class MiaoScriptBungee extends Plugin {
     @SneakyThrows
     public MiaoScriptBungee() {
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        engine = new ScriptEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
+        engine = MiaoScriptAPI.createEngine(getDataFolder().getCanonicalPath(), getLogger(), this);
         engine.loadEngine();
     }
 

@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.22.0</version>
+    <version>0.22.3</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -50,6 +50,7 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §622-05-25 §afeat: 兼容 1.7.10-1.18.2 版本;
             §622-05-21 §afeat: 优化 框架加载逻辑;
             §622-05-20 §afeat: 调整 require 主包逻辑;
             §622-04-09 §afeat: 优化 引擎初始化逻辑;
@@ -196,7 +197,8 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
+            <version>1.18.24</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.kamranzafar</groupId>
@@ -219,6 +221,7 @@
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
             <version>1.16-R0.4</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>cn.nukkit</groupId>
@@ -229,7 +232,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-websocket</artifactId>
-            <version>5.3.18</version>
+            <version>5.3.19</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -237,11 +240,6 @@
             <artifactId>tomcat-websocket</artifactId>
             <version>9.0.35</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>4.0.3</version>
         </dependency>
     </dependencies>
 </project>

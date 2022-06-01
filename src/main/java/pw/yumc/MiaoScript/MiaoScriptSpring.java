@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+import pw.yumc.MiaoScript.api.MiaoScriptAPI;
 import pw.yumc.MiaoScript.api.ScriptEngine;
 
 import java.io.File;
@@ -16,7 +17,7 @@ public class MiaoScriptSpring {
     @Bean
     @SneakyThrows
     public ScriptEngine buildScriptEngine(ApplicationContext applicationContext) {
-        return new ScriptEngine(new File("MiaoScript").getCanonicalPath(), log, applicationContext);
+        return MiaoScriptAPI.createEngine(new File("MiaoScript").getCanonicalPath(), log, applicationContext);
     }
 
     @Bean

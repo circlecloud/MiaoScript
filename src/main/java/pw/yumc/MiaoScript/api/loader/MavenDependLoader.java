@@ -14,12 +14,26 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 
 public class MavenDependLoader {
-    private static final String MavenRepo = "https://maven.aliyun.com/repository/public";
+    public static final String MavenRepo = "https://maven.aliyun.com/repository/public";
 
     public static File[] load(String libPath, String groupId, String artifactId, String version) {
         return new File[]{
                 downloadAndCheckSha1(libPath, groupId, artifactId, version, "pom"),
                 JarLoader.load(downloadAndCheckSha1(libPath, groupId, artifactId, version, "jar"))
+        };
+    }
+
+    public static File[] parentLoad(String libPath, String groupId, String artifactId, String version) {
+        return new File[]{
+                downloadAndCheckSha1(libPath, groupId, artifactId, version, "pom"),
+                JarLoader.parentLoad(downloadAndCheckSha1(libPath, groupId, artifactId, version, "jar"))
+        };
+    }
+
+    public static File[] load(String libPath, String groupId, String artifactId, String version, ClassLoader loader) {
+        return new File[]{
+                downloadAndCheckSha1(libPath, groupId, artifactId, version, "pom"),
+                JarLoader.load(downloadAndCheckSha1(libPath, groupId, artifactId, version, "jar"), loader)
         };
     }
 

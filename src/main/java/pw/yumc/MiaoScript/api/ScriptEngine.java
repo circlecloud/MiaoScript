@@ -20,7 +20,7 @@ public class ScriptEngine {
     private MiaoScriptEngine engine;
     private Object future;
 
-    public ScriptEngine(String root, Object logger, Object instance) {
+    ScriptEngine(String root, Object logger, Object instance) {
         this.loader = Thread.currentThread().getContextClassLoader();
         this.root = root;
         this.logger = logger;
@@ -32,7 +32,7 @@ public class ScriptEngine {
     public void createEngine() {
         synchronized (logger) {
             if (this.engine == null) {
-                this.engine = new MiaoScriptEngine("nashorn", root);
+                this.engine = new MiaoScriptEngine(root);
                 this.engine.put("base", this.base);
                 this.engine.put("ScriptEngineContextHolder", this);
             }

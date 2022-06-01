@@ -28,9 +28,9 @@
 // @ts-check
 (
     /**
-     * @param {string} parent
+     * @param {string} root
      */
-    function (parent) {
+    function (root) {
         'use strict'
         var System = Java.type('java.lang.System')
 
@@ -181,7 +181,7 @@
                 try {
                     var json = JSON.parse(base.read(_package))
                     if (json.main) {
-                        return resolveAsFile(json.main, dir)
+                        return resolveAsFile(json.main, dir) || resolveAsFile('index.js', new File(dir, json.main))
                     }
                 } catch (error) {
                     throw __error('resolveAsDirectory ' + dir + ' package.json error ' + error)
@@ -239,18 +239,26 @@
             if (!loader) {
                 throw __error('Unsupported module ' + filename + '. require loader not found.')
             }
-            console.trace('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(optional))
+            /**
+             * @type any
+             */
             var module = {
                 id: id,
                 name: name,
                 ext: ext,
+                parent: optional.parent,
                 exports: {},
                 loaded: false,
                 loader: loader,
-                require: getRequire(file.parentFile, id),
-                __dirname: file.parentFile,
-                __filename: file
+                path: _absolute(file.parentFile),
+                filename: _absolute(file),
+                children: []
             }
+            module.require = getRequire(module)
+            if (module.parent && module.parent.children) {
+                module.parent.children.push(module)
+            }
+            console.trace('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(__assign(optional, { parent: undefined })))
             cacheModules[id] = module
             return loader(module, file, __assign(optional, { id: id }))
         }
@@ -288,7 +296,7 @@
                 name: optional.id
             })
             compiledWrapper.apply(module.exports, [
-                module, module.exports, module.require, module.__dirname, module.__filename
+                module, module.exports, module.require, module.path, module.filename
             ])
             module.loaded = true
             if (optional.afterCompile) {
@@ -467,7 +475,7 @@
          * 检查缓存模块
          */
         function checkCacheModule(optional) {
-            return optional.local ? cacheModuleIds[optional.parentId] && cacheModuleIds[optional.parentId][optional.path] : cacheModuleIds[optional.path]
+            return optional.local ? cacheModuleIds[optional.parent.id] && cacheModuleIds[optional.parent.id][optional.path] : cacheModuleIds[optional.path]
         }
 
         /**
@@ -511,11 +519,11 @@
          */
         function setCacheModule(file, optional) {
             if (optional.local) {
-                var parent = cacheModuleIds[optional.parentId]
+                var parent = cacheModuleIds[optional.parent.id]
                 if (!parent) {
-                    cacheModuleIds[optional.parentId] = {}
+                    cacheModuleIds[optional.parent.id] = {}
                 }
-                return cacheModuleIds[optional.parentId][optional.path] = _canonical(file)
+                return cacheModuleIds[optional.parent.id][optional.path] = _canonical(file)
             }
             return cacheModuleIds[optional.path] = _canonical(file)
         }
@@ -527,11 +535,10 @@
 
         /**
          * 闭包方法
-         * @param {string} parent 父目录
-         * @param {string} parentId
+         * @param {any} parent 父模块
          * @returns {Function}
          */
-        function exports(parent, parentId) {
+        function exports(parent) {
             /**
              * @param {string} path
              * @param {any} optional
@@ -540,13 +547,13 @@
                 if (!path) {
                     throw __error('require path can\'t be undefined or empty!')
                 }
-                return _require(path, parent, __assign({
+                var optional = __assign({
                     cache: true,
-                    parentId: parentId,
                     parent: parent,
                     path: path,
                     local: path.startsWith('.') || path.startsWith('/')
-                }, optional)).exports
+                }, optional)
+                return _require(path, parent.path, optional).exports
             }
         }
 
@@ -555,9 +562,8 @@
          * @param {any} optional 附加选项
          */
         function __DynamicResolve__(path, optional) {
-            return _canonical(new File(resolve(path, parent, __assign({
+            return _canonical(new File(resolve(path, root, __assign({
                 cache: true,
-                parent: parent,
                 local: path.startsWith('.') || path.startsWith('/')
             }, optional))))
         }
@@ -592,14 +598,13 @@
         }
 
         /**
-         * @param {string} parent
-         * @param {string} parentId
+         * @param {any} parent
          */
-        function getRequire(parent, parentId) {
+        function getRequire(parent) {
             /**
              * @type {any} require
              */
-            var require = exports(parent, parentId)
+            var require = exports(parent)
             require.resolve = __DynamicResolve__
             require.clear = __DynamicClear__
             require.disable = __DynamicDisable__
@@ -643,8 +648,9 @@
 
         function printRequireInfo() {
             console.info('Initialization require module.')
-            console.info('ParentDir:', _canonical(parent))
+            console.info('ParentDir:', root)
             console.info('Require module env list:')
+            console.info('- JAVA_VERSION: ', System.getProperty("java.version"))
             console.info('- MS_NODE_PATH:', MS_NODE_PATH.startsWith(root) ? MS_NODE_PATH.split(root)[1] : MS_NODE_PATH)
             console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY)
             console.info('- MS_FALLBACK_NODE_REGISTRY:', MS_FALLBACK_NODE_REGISTRY)
@@ -676,7 +682,11 @@
                 console.warn("无法获取到最新的版本锁定信息 使用默认配置.")
                 console.warn("InitVersionLock Error:", error)
                 console.debug(error)
-                ModulesVersionLock = { "@babel/standalone": "7.12.18", "crypto-js": "3.3.0" }
+                ModulesVersionLock = {
+                    "@babel/standalone": "7.12.18",
+                    "crypto-js": "3.3.0",
+                    "core-js": "3.19.3"
+                }
             }
             console.info('Lock module version List:')
             for (var key in ModulesVersionLock) {
@@ -731,5 +741,8 @@
         initCacheModuleIds()
         initVersionLock()
 
-        return initRequireLoader(getRequire(parent, ""))
+        return initRequireLoader(getRequire({
+            id: 'main',
+            path: root
+        }))
     })

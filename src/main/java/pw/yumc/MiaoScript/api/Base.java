@@ -25,7 +25,15 @@ public class Base {
     }
 
     public Class<?> getClass(String name) throws ClassNotFoundException {
-        return Class.forName(name);
+        try {
+            return Class.forName(name);
+        } catch (Throwable ignored) {
+        }
+        try {
+            return Class.forName(name, true, instance.getClass().getClassLoader());
+        } catch (Throwable ex) {
+            return Class.forName(name, true, instance.getClass().getClassLoader().getParent());
+        }
     }
 
     public Object getInstance() {
@@ -42,6 +50,14 @@ public class Base {
 
     public File[] loadMavenDepend(String groupId, String artifactId, String version) {
         return MiaoScriptAPI.loadMavenDepend(groupId, artifactId, version);
+    }
+
+    public File[] loadMavenDepend(String groupId, String artifactId, String version, ClassLoader classLoader) {
+        return MiaoScriptAPI.loadMavenDepend(groupId, artifactId, version, classLoader);
+    }
+
+    public File[] parentLoadMavenDepend(String groupId, String artifactId, String version) {
+        return MiaoScriptAPI.parentLoadMavenDepend(groupId, artifactId, version);
     }
 
     public String read(String path) throws IOException {

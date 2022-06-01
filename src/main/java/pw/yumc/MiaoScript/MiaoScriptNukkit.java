@@ -2,6 +2,7 @@ package pw.yumc.MiaoScript;
 
 import cn.nukkit.plugin.PluginBase;
 import lombok.SneakyThrows;
+import pw.yumc.MiaoScript.api.MiaoScriptAPI;
 import pw.yumc.MiaoScript.api.ScriptEngine;
 
 /**
@@ -13,7 +14,7 @@ public class MiaoScriptNukkit extends PluginBase {
     @SneakyThrows
     public MiaoScriptNukkit() {
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        engine = new ScriptEngine(getDataFolder().getCanonicalPath(), super.getLogger(), this);
+        engine = MiaoScriptAPI.createEngine(getDataFolder().getCanonicalPath(), super.getLogger(), this);
         engine.loadEngine();
     }
 

@@ -14,6 +14,11 @@ public class MiaoScriptAPI {
     private static ScriptEngine scriptEngine;
     private static PluginManager pluginManager;
 
+    public static ScriptEngine createEngine(String root, Object logger, Object instance) {
+        MiaoScriptAPI.scriptEngine = new ScriptEngine(root, logger, instance);
+        return MiaoScriptAPI.scriptEngine;
+    }
+
     public static String getRoot() {
         return root;
     }
@@ -44,5 +49,19 @@ public class MiaoScriptAPI {
             throw new IllegalStateException("root can't be null before loadMavenDepend.");
         }
         return MavenDependLoader.load(MiaoScriptAPI.libPath, groupId, artifactId, version);
+    }
+
+    public static File[] loadMavenDepend(String groupId, String artifactId, String version, ClassLoader classLoader) {
+        if (root == null || scriptEngine == null) {
+            throw new IllegalStateException("root can't be null before loadMavenDepend.");
+        }
+        return MavenDependLoader.load(MiaoScriptAPI.libPath, groupId, artifactId, version, classLoader);
+    }
+
+    public static File[] parentLoadMavenDepend(String groupId, String artifactId, String version) {
+        if (root == null || scriptEngine == null) {
+            throw new IllegalStateException("root can't be null before loadMavenDepend.");
+        }
+        return MavenDependLoader.parentLoad(MiaoScriptAPI.libPath, groupId, artifactId, version);
     }
 }
