@@ -8,7 +8,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 public class MiaoScriptAPI {
-    public static final String VERSION = "0.23.0";
+    public static final String VERSION = "0.23.1";
     private static String root;
     private static String libPath;
     private static ScriptEngine scriptEngine;

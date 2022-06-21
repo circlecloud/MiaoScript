@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.23.0</version>
+    <version>0.23.1</version>
     <developers>
         <developer>
             <id>502647092</id>
@@ -50,6 +50,8 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §622-06-21 §afeat: 兼容 1.7.10-1.19 版本;
+            　　　　　　§afeat: 兼容 JDK17 BungeeCord;
             §622-05-25 §afeat: 兼容 1.7.10-1.18.2 版本;
             §622-05-21 §afeat: 优化 框架加载逻辑;
             §622-05-20 §afeat: 调整 require 主包逻辑;

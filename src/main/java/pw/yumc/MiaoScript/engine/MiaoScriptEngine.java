@@ -35,7 +35,11 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
     }
 
     private void loadGraalJS(String engineRoot) {
-        this.engine = this.parentLoadNetworkNashorn(engineRoot);
+        try {
+            this.engine = this.parentLoadNetworkNashorn(engineRoot);
+        } catch (Throwable ex) {
+            this.engine = this.loadNetworkNashorn(engineRoot);
+        }
         if (this.engine == null) {
             this.engine = this.loadNetworkGraalJS(engineRoot);
         }
@@ -56,7 +60,7 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
             ex.printStackTrace();
         }
         try {
-            if (this.engine == null && engineRoot != null) {
+            if (this.engine == null) {
                 this.engine = this.loadNetworkNashorn(engineRoot);
             }
         } catch (final Throwable ex) {
