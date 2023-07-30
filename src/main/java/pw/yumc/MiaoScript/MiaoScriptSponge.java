@@ -21,7 +21,7 @@ import java.io.File;
  * @author 喵♂呜
  * Created on 2017/10/25 20:35.
  */
-@Plugin(id = "miaoscript", name = "MiaoScript", version = MiaoScriptAPI.VERSION, authors = "MiaoWoo")
+@Plugin(id = "miaoscript", name = "MiaoScript", description = "MiaoScript runtime in Sponge", version = MiaoScriptAPI.VERSION, authors = "MiaoWoo")
 public class MiaoScriptSponge {
     private ScriptEngine engine;
     @Inject

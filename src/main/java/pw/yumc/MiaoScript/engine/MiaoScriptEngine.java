@@ -1,5 +1,6 @@
 package pw.yumc.MiaoScript.engine;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
 import pw.yumc.MiaoScript.api.loader.JarLoader;
@@ -19,33 +20,41 @@ import java.util.List;
  * @since 2016年8月29日 上午7:51:43
  */
 public class MiaoScriptEngine implements ScriptEngine, Invocable {
+    private final String libsRoot;
+
+    @Getter
     private ScriptEngine engine;
 
+    @SneakyThrows
     public MiaoScriptEngine(String engineRoot) {
+        File libRootFile = new File(engineRoot, "libs");
+        libRootFile.mkdirs();
+        this.libsRoot = libRootFile.getCanonicalPath();
         if (new File(engineRoot, "debug").exists()) {
             System.setProperty("nashorn.debug", "true");
         }
+        MavenDependLoader.load(this.libsRoot, "org.kamranzafar", "jtar", "2.3");
         if (getJavaVersion() > 15) {
-            this.loadGraalJS(engineRoot);
+            this.loadGraalJS();
         } else {
-            this.loadNashorn(engineRoot);
+            this.loadNashorn();
         }
         if (engine == null)
             throw new UnsupportedOperationException("当前环境不支持 Nashorn 或 GraalJS 脚本引擎.");
     }
 
-    private void loadGraalJS(String engineRoot) {
+    private void loadGraalJS() {
         try {
-            this.engine = this.parentLoadNetworkNashorn(engineRoot);
+            this.engine = this.parentLoadNetworkNashorn();
         } catch (Throwable ex) {
-            this.engine = this.loadNetworkNashorn(engineRoot);
+            this.engine = this.loadNetworkNashorn();
         }
         if (this.engine == null) {
-            this.engine = this.loadNetworkGraalJS(engineRoot);
+            this.engine = this.loadNetworkGraalJS();
         }
     }
 
-    private void loadNashorn(String engineRoot) {
+    private void loadNashorn() {
         try {
             this.createEngineByName();
         } catch (final Throwable ex) {
@@ -61,7 +70,7 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
         }
         try {
             if (this.engine == null) {
-                this.engine = this.loadNetworkNashorn(engineRoot);
+                this.engine = this.loadNetworkNashorn();
             }
         } catch (final Throwable ex) {
             ex.printStackTrace();
@@ -95,43 +104,52 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
         return null;
     }
 
-    @SneakyThrows
-    private ScriptEngine loadNetworkNashorn(String engineRoot) {
-        File libRootFile = new File(engineRoot, "libs");
-        libRootFile.mkdirs();
-        String libRoot = libRootFile.getCanonicalPath();
-        MavenDependLoader.load(libRoot, "org.openjdk.nashorn", "nashorn-core", "15.4");
-        MavenDependLoader.load(libRoot, "org.ow2.asm", "asm", "9.3");
-        MavenDependLoader.load(libRoot, "org.ow2.asm", "asm-commons", "9.3");
-        MavenDependLoader.load(libRoot, "org.ow2.asm", "asm-tree", "9.3");
-        MavenDependLoader.load(libRoot, "org.ow2.asm", "asm-util", "9.3");
+    private ScriptEngine loadNetworkNashorn() {
+        MavenDependLoader.load(this.libsRoot, "org.openjdk.nashorn", "nashorn-core", "15.4");
+        MavenDependLoader.load(this.libsRoot, "org.ow2.asm", "asm", "9.5");
+        MavenDependLoader.load(this.libsRoot, "org.ow2.asm", "asm-commons", "9.5");
+        MavenDependLoader.load(this.libsRoot, "org.ow2.asm", "asm-tree", "9.5");
+        MavenDependLoader.load(this.libsRoot, "org.ow2.asm", "asm-util", "9.5");
+        return createEngineByFactoryClassName("org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory", false);
+    }
+
+    private ScriptEngine parentLoadNetworkNashorn() {
+        MavenDependLoader.parentLoad(this.libsRoot, "org.openjdk.nashorn", "nashorn-core", "15.4");
+        MavenDependLoader.parentLoad(this.libsRoot, "org.ow2.asm", "asm", "9.5");
+        MavenDependLoader.parentLoad(this.libsRoot, "org.ow2.asm", "asm-commons", "9.5");
+        MavenDependLoader.parentLoad(this.libsRoot, "org.ow2.asm", "asm-tree", "9.5");
+        MavenDependLoader.parentLoad(this.libsRoot, "org.ow2.asm", "asm-util", "9.5");
         return createEngineByFactoryClassName("org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory", false);
     }
 
     @SneakyThrows
-    private ScriptEngine parentLoadNetworkNashorn(String engineRoot) {
-        File libRootFile = new File(engineRoot, "libs");
-        libRootFile.mkdirs();
-        String libRoot = libRootFile.getCanonicalPath();
-        MavenDependLoader.parentLoad(libRoot, "org.openjdk.nashorn", "nashorn-core", "15.4");
-        MavenDependLoader.parentLoad(libRoot, "org.ow2.asm", "asm", "9.3");
-        MavenDependLoader.parentLoad(libRoot, "org.ow2.asm", "asm-commons", "9.3");
-        MavenDependLoader.parentLoad(libRoot, "org.ow2.asm", "asm-tree", "9.3");
-        MavenDependLoader.parentLoad(libRoot, "org.ow2.asm", "asm-util", "9.3");
-        return createEngineByFactoryClassName("org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory", false);
-    }
-
-    @SneakyThrows
-    private ScriptEngine loadNetworkGraalJS(String engineRoot) {
-        File libRootFile = new File(engineRoot, "libs");
-        libRootFile.mkdirs();
-        String libRoot = libRootFile.getCanonicalPath();
-        MavenDependLoader.load(libRoot, "org.graalvm.js", "js", "22.1.0.1");
-        MavenDependLoader.load(libRoot, "org.graalvm.js", "js-scriptengine", "22.1.0.1");
-        MavenDependLoader.load(libRoot, "org.graalvm.regex", "regex", "22.1.0.1");
-        MavenDependLoader.load(libRoot, "org.graalvm.sdk", "graal-sdk", "22.1.0.1");
-        MavenDependLoader.load(libRoot, "org.graalvm.truffle", "truffle-api", "22.1.0.1");
-        return createEngineByFactoryClassName("org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory", false);
+    private ScriptEngine loadNetworkGraalJS() {
+        MavenDependLoader.load(this.libsRoot, "org.graalvm.js", "js", "23.0.1");
+        MavenDependLoader.load(this.libsRoot, "org.graalvm.js", "js-scriptengine", "23.0.1");
+        MavenDependLoader.load(this.libsRoot, "org.graalvm.regex", "regex", "23.0.1");
+        MavenDependLoader.load(this.libsRoot, "org.graalvm.sdk", "graal-sdk", "23.0.1");
+        MavenDependLoader.load(this.libsRoot, "org.graalvm.truffle", "truffle-api", "23.0.1");
+        System.setProperty("polyglot.js.nashorn-compat", "true");
+        System.setProperty("polyglot.js.scripting", "true");
+        System.setProperty("polyglot.js.ecmascript-version", "5");
+        System.setProperty("polyglot.js.allowAllAccess", "true");
+        Class<?> NashornScriptEngineFactory = Class.forName("com.oracle.truffle.js.scriptengine.GraalJSEngineFactory");
+        Method getScriptEngine = NashornScriptEngineFactory.getMethod("getScriptEngine");
+        Object factory = NashornScriptEngineFactory.newInstance();
+        return (ScriptEngine) getScriptEngine.invoke(factory);
+//        Class<?> GraalJSScriptEngine = Class.forName("com.oracle.truffle.js.scriptengine.GraalJSScriptEngine");
+//        Method createScriptEngine = GraalJSScriptEngine.getMethod("create", Class.forName("org.graalvm.polyglot.Engine"), Class.forName("org.graalvm.polyglot.Context"));
+//        Class<?> Context = Class.forName("org.graalvm.polyglot.Context");
+//        Method newBuilder = Context.getMethod("newBuilder", String[].class);
+//        Class<?> Builder = Class.forName("org.graalvm.polyglot.Context.Builder");
+//        Method allowExperimentalOptions = Builder.getMethod("allowExperimentalOptions", boolean.class);
+//        Method allowAllAccess = Builder.getMethod("allowAllAccess", boolean.class);
+//        Method option = Builder.getMethod("option", String.class, String.class);
+//        Object context = newBuilder.invoke(null, (Object) new String[]{"js"});
+//        allowExperimentalOptions.invoke(context, true);
+//        allowAllAccess.invoke(context, true);
+//        option.invoke(context, "js.nashorn-compat", "true");
+//        return (ScriptEngine) createScriptEngine.invoke(null, null, context);
     }
 
     @SneakyThrows
@@ -151,10 +169,6 @@ public class MiaoScriptEngine implements ScriptEngine, Invocable {
             engineArgs.add("--no-deprecation-warning");
         }
         return (ScriptEngine) getScriptEngine.invoke(factory, (Object) engineArgs.toArray(new String[]{}));
-    }
-
-    public ScriptEngine getEngine() {
-        return this.engine;
     }
 
     @Override

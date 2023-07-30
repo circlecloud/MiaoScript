@@ -2,13 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pw.yumc</groupId>
     <artifactId>MiaoScript</artifactId>
-    <version>0.23.1</version>
+    <version>0.28.0</version>
     <developers>
         <developer>
             <id>502647092</id>
             <name>MiaoWoo</name>
             <email>admin@yumc.pw</email>
-            <url>http://www.yumc.pw</url>
+            <url>https://www.yumc.pw</url>
         </developer>
     </developers>
     <build>
@@ -19,29 +19,6 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
-                <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                    <artifactSet>
-                        <includes>
-                            <include>org.kamranzafar:jtar</include>
-                        </includes>
-                    </artifactSet>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
     <ciManagement>
         <system>Jenkins</system>
@@ -50,6 +27,16 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §623-07-30 §afeat: 优化 require 性能;
+            　　　　　　§cfix: 修复 require 加载特殊文件异常;
+            §623-07-22 §afeat: 网络加载 jtar 优化包大小;
+            　　　　　　§afeat: 移除 Spring 相关支持;
+            　　　　　　§aremove: 移除 Spring 相关支持;
+            　　　　　　§adeps: 更新 Nashorn 和 GraalvmJS 引擎版本
+        </update.changes>
+        <update.changelog>
+            §622-11-22 §afeat: 兼容 1.7.10-1.19.2 版本;
+            　　　　　　§afeat: 新增 MiaoScriptAPI 相关方法;
             §622-06-21 §afeat: 兼容 1.7.10-1.19 版本;
             　　　　　　§afeat: 兼容 JDK17 BungeeCord;
             §622-05-25 §afeat: 兼容 1.7.10-1.18.2 版本;
@@ -61,7 +48,7 @@
             　　　　　　§afeat: 新增 自定义类型加载逻辑;
             §622-02-16 §afeat: 新增 MiaoScriptAPI;
             　　　　　　§afeat: 新增 ScriptEvent;
-            　　　　　　§afeat: 新增 .mjs.json 类型加载;
+            　　　　　　§afeat: 新增 .mjs .json 类型加载;
             §622-02-16 §afeat: 优化 初始化逻辑 加快引擎加载速度;
             　　　　　　§afeat: 新增 root 目录变更检测 变更后重新生成缓存;
             　　　　　　§afeat: 添加常用库的软依赖;
@@ -71,9 +58,7 @@
             §621-06-25 §afeat: 调整启动逻辑 兼容 Arclight;
             §621-06-22 §afeat: 新增本地版本锁定功能;
             §621-06-19 §afeat: 兼容JDK16 反射异常;
-            §621-05-15 §afeat: 兼容JDK15+ 自动下载Nashorn类库
-        </update.changes>
-        <update.changelog>
+            §621-05-15 §afeat: 兼容JDK15+ 自动下载Nashorn类库;
             §621-03-25 §afeat: 异步加载 polyfill 并且同步加载 @ccms/core;
             §621-03-25 §cfix: 修改 ployfill 为 polyfill;
             §620-12-22 §cfix: 增加 require 效验;
@@ -203,11 +188,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.kamranzafar</groupId>
-            <artifactId>jtar</artifactId>
-            <version>2.3</version>
-        </dependency>
-        <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.18.2-R0.1-SNAPSHOT</version>
@@ -229,18 +209,6 @@
             <groupId>cn.nukkit</groupId>
             <artifactId>nukkit</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-websocket</artifactId>
-            <version>5.3.19</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-websocket</artifactId>
-            <version>9.0.35</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

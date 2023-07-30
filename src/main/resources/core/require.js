@@ -55,6 +55,7 @@
         var MS_NODE_PATH = System.getenv("MS_NODE_PATH") || root + separatorChar + 'node_modules'
         var MS_NODE_REGISTRY = System.getenv("MS_NODE_REGISTRY") || 'https://registry.npmmirror.com'
         var MS_FALLBACK_NODE_REGISTRY = System.getenv("MS_FALLBACK_NODE_REGISTRY") || 'https://repo.yumc.pw/repository/npm'
+        var MS_SCRIPT_PACKAGE_CENTER = System.getenv("MS_SCRIPT_PACKAGE_CENTER") || 'https://mscript.yumc.pw/api/plugin/download'
         var MS_NETWORK_CONNECT_TIMEOUT = System.getenv("MS_NETWORK_CONNECT_TIMEOUT") || 5000
         var MS_NETWORK_READ_TIMEOUT = System.getenv("MS_NETWORK_TIMEOUT") || 45000
         var MS_NETWORK_DOWNLOAD_TIMEOUT = System.getenv("MS_NETWORK_DOWNLOAD_TIMEOUT") || 60000
@@ -114,9 +115,11 @@
             return file.absolutePath
         }
 
-        function __error(message) {
+        function __error(message, name) {
+            var error = new Error(message)
+            if (name) { error.name = name }
             console.error(message)
-            return new Error(message)
+            return error
         }
 
         /**
@@ -153,7 +156,8 @@
         function resolveAsFile(file, dir) {
             file = dir !== undefined ? new File(dir, file) : new File(file)
             // 直接文件
-            if (file.isFile()) {
+            // 只解析带后缀的文件 其他文件视为非法文件
+            if (file.isFile() && file.name.lastIndexOf('.') != -1) {
                 return file
             }
             // JS文件
@@ -364,6 +368,8 @@
         /**
          * 尝试从网络下载依赖包
          * @param {string} name 包名称
+         * @param {string} optional 附加选项
+         * @param {number} retry 重试次数
          */
         function download(name, optional, retry) {
             var name_arr = splitVersionFromName(name)
@@ -376,15 +382,19 @@
                 var info = fetchPackageInfo(module_name)
                 if (!module_version) {
                     // if not special version get from lock or tag
-                    module_version = ModulesVersionLock[module_name] || info['dist-tags']['latest']
+                    module_version = ModulesVersionLock[module_name]
                 } else if (!/\d+\.\d+\.\w+/.test(module_version)) {
-                    // maybe module_version = latest
+                    // maybe module_version = latest if special version not exist then fallback latest
+                    console.log('try get node_module ' + module_name + ' version from ' + module_version + ' tag waiting...')
                     module_version = info['dist-tags'][module_version]
                 }
-                var _version = info.versions[module_version]
-                if (!_version) {
-                    throw __error('fetch node_module ' + module_name + ' version ' + module_version + ' failed. can\t found tarball from versions.')
+                if (!module_version) {
+                    console.log('try get node_module ' + module_name + ' version from latest tag waiting...')
+                    module_version = info['dist-tags']['latest']
                 }
+                if (!module_version) { throw __error('fetch node_module ' + module_name + " failed. can't found version from " + name + ".", 'ModuleNotFoundError') }
+                var _version = info.versions[module_version]
+                if (!_version) { throw __error('fetch node_module ' + module_name + ' version ' + module_version + " failed. can't found tarball from versions.", 'ModuleNotFoundError') }
                 var url = _version.dist.tarball
                 console.log('fetch node_module ' + module_name + ' version ' + module_version + ' waiting...')
                 return executor.submit(new Callable(function () {
@@ -400,18 +410,17 @@
                         Files.copy(tis, targetPath, StandardCopyOption.REPLACE_EXISTING)
                     }
                     return name
-                })).get(MS_NETWORK_DOWNLOAD_TIMEOUT, TimeUnit.SECONDS)
+                })).get(MS_NETWORK_DOWNLOAD_TIMEOUT, TimeUnit.MILLISECONDS)
             } catch (error) {
-                retry = retry || 1
-                if (retry > 3) {
-                    throw __error('fetch node_module ' + module_name + ' version ' + module_version + ' failed. greater than 3 times stop retry.')
-                }
+                if (error.name == 'ModuleNotFoundError') { throw error }
+                if (retry > 3) { throw __error('fetch node_module ' + module_name + ' version ' + module_version + ' failed. greater than 3 times stop retry.') }
                 console.log('fetch node_module ' + module_name + ' version ' + module_version + ' failed retrying...')
                 return download(name, optional, ++retry)
             }
         }
 
         /**
+         * 获取包信息
          * @param {string} module_name
          */
         function fetchPackageInfo(module_name) {
@@ -419,7 +428,7 @@
             try {
                 content = fetchContent(MS_NODE_REGISTRY + '/' + module_name)
             } catch (ex) {
-                console.warn('can\'t fetch package ' + module_name + ' from ' + MS_NODE_REGISTRY + ' registry. try fetch from ' + MS_FALLBACK_NODE_REGISTRY + ' registry...')
+                console.warn("can't fetch package " + module_name + ' from ' + MS_NODE_REGISTRY + ' registry. try fetch from ' + MS_FALLBACK_NODE_REGISTRY + ' registry...')
                 content = fetchContent(MS_FALLBACK_NODE_REGISTRY + '/' + module_name)
             }
             return JSON.parse(content)
@@ -428,6 +437,7 @@
         /**
          * 获取网络内容
          * @param {string} url 网址
+         * @param {number} [timeout] 超时时间
          */
         function fetchContent(url, timeout) {
             return executor.submit(new Callable(function fetchContent() {
@@ -444,7 +454,7 @@
                     input.close()
                     output.close()
                 }
-            })).get(timeout || MS_NETWORK_READ_TIMEOUT, TimeUnit.SECONDS)
+            })).get(timeout || MS_NETWORK_READ_TIMEOUT, TimeUnit.MILLISECONDS)
         }
 
         var lastModule = ''
@@ -466,7 +476,7 @@
                 if (resolve(newName, path, optional) !== undefined) {
                     return newName
                 }
-                throw __error("Can't load nodejs core module " + name + " . maybe later will auto replace to " + global.scope + "/nodejs/" + name + ' to compatible...')
+                throw __error("can't load nodejs core module " + name + " . maybe later will auto replace to " + global.scope + "/nodejs/" + name + ' to compatible...')
             }
             return name
         }
@@ -488,7 +498,7 @@
         function _require(name, path, optional) {
             // require direct file
             var file = _isFile(name) ? name : new File(name)
-            if (_isFile(file)) {
+            if (_isFile(file) && file.name.lastIndexOf('.') != -1) {
                 return _requireFile(file, optional)
             }
             // require cache module
@@ -499,14 +509,16 @@
             }
             // check core module
             name = checkCoreModule(name, path, optional)
+            var file = resolve(name, path, optional)
             // search module
-            if ((file = resolve(name, path, optional)) === undefined) {
+            if (file === undefined) {
                 // excloud local dir, prevent too many recursive call and cache not found module
                 if (optional.local || optional.recursive || notFoundModules[name]) {
-                    throw __error("Can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
+                    delete optional.parent
+                    throw __error("can't found module " + name + '(' + JSON.stringify(optional) + ') at local ' + path + ' or network!')
                 }
                 optional.recursive = true
-                return _require(download(name, optional), path, optional)
+                return _require(download(name, optional, 1), path, optional)
             }
             setCacheModule(file, optional)
             return _requireFile(file, optional)
@@ -545,7 +557,7 @@
              */
             return function __DynamicRequire__(path, optional) {
                 if (!path) {
-                    throw __error('require path can\'t be undefined or empty!')
+                    throw __error("require path can't be undefined or empty!")
                 }
                 var optional = __assign({
                     cache: true,
@@ -574,7 +586,7 @@
         function __DynamicClear__(name) {
             for (var cacheModule in cacheModules) {
                 if (cacheModule.indexOf(name) !== -1) {
-                    console.trace('Clear module ' + cacheModule + ' ...')
+                    console.trace('clear module ' + cacheModule + ' ...')
                     delete cacheModules[cacheModule]
                 }
             }
@@ -585,12 +597,12 @@
             for (var cacheModule in cacheModules) {
                 delete cacheModules[cacheModule]
             }
-            cacheModules = undefined
+            cacheModules = {}
             for (var cacheModuleId in cacheModuleIds) {
                 delete cacheModuleIds[cacheModuleId]
             }
-            cacheModuleIds = undefined
-            notFoundModules = undefined
+            cacheModuleIds = {}
+            notFoundModules = {}
         }
 
         function __setUpgradeMode__(status) {
@@ -605,6 +617,7 @@
              * @type {any} require
              */
             var require = exports(parent)
+            require.cache = cacheModules
             require.resolve = __DynamicResolve__
             require.clear = __DynamicClear__
             require.disable = __DynamicDisable__
@@ -621,6 +634,7 @@
                 notFoundModules: notFoundModules,
                 requireLoaders: requireLoaders
             }
+            require.loadCoreScript = loadCoreScript
             return require
         }
 
@@ -629,8 +643,12 @@
          * @param {any} loader 
          */
         function registerLoader(ext, loader) {
+            if (requireLoaders[ext]) {
+                return console.error('require loader ' + ext + ' already register ignore. if you want override loader please unregister before register.')
+            }
+            requireExts.push(ext)
             requireLoaders[ext] = loader
-            console.info('Register Require Loader ' + ext + ' => ' + (loader.name || '<anonymous>') + '.')
+            console.info('register require loader ' + ext + ' => ' + (loader.name || '<anonymous>') + '.')
         }
         /**
          * @param {*} ext 
@@ -642,15 +660,17 @@
          * @param {*} ext 
          */
         function unregisterLoader(ext) {
+            requireExts.splice(requireExts.indexOf(ext), 1);
             delete requireLoaders[ext]
-            console.info('unregister Require Loader ' + ext + '.')
+            console.info('unregister require loader ' + ext + '.')
         }
 
         function printRequireInfo() {
             console.info('Initialization require module.')
             console.info('ParentDir:', root)
             console.info('Require module env list:')
-            console.info('- JAVA_VERSION: ', System.getProperty("java.version"))
+            console.info('- JAVA_VERSION:', System.getProperty("java.version"))
+            console.info('- PLUGIN_VERSION:', base.version)
             console.info('- MS_NODE_PATH:', MS_NODE_PATH.startsWith(root) ? MS_NODE_PATH.split(root)[1] : MS_NODE_PATH)
             console.info('- MS_NODE_REGISTRY:', MS_NODE_REGISTRY)
             console.info('- MS_FALLBACK_NODE_REGISTRY:', MS_FALLBACK_NODE_REGISTRY)
@@ -672,7 +692,7 @@
 
         function initVersionLock() {
             try {
-                var version_lock_url = 'https://ms.yumc.pw/api/plugin/download/name/version_lock' + (global.debug ? '-debug' : '')
+                var version_lock_url = MS_SCRIPT_PACKAGE_CENTER + '?name=version_lock' + (global.debug ? '-debug' : '')
                 ModulesVersionLock = JSON.parse(fetchContent(version_lock_url, 5000))
                 try {
                     ModulesVersionLock = __assign(ModulesVersionLock, JSON.parse(base.read(localVersionLockFile)))
@@ -698,10 +718,7 @@
             registerLoader('js', compileJsFile)
             registerLoader('json', compileJson)
             try {
-                engineLoad({
-                    script: fetchContent('https://ms.yumc.pw/api/plugin/download/name/require_loader', 5000),
-                    name: 'core/require_loader.js'
-                })(require)
+                loadCoreScript('require_loader')(require)
             } catch (error) {
                 console.warn("无法获取到最新的加载器信息 使用默认配置.")
                 console.warn("InitRequireLoader Error:", error)
@@ -711,25 +728,41 @@
             return require
         }
 
+        function loadCoreScript(name) {
+            return engineLoad({
+                script: fetchContent(MS_SCRIPT_PACKAGE_CENTER + '?name=' + name, 5000),
+                name: 'core/' + name + '.js'
+            })
+        }
+
         if (typeof parent === 'string') {
             parent = new File(parent)
         }
         /**
+         * require 支持的后缀
+         * @type {string[]} requireExts
+         */
+        var requireExts = []
+        /**
+         * require加载器
          * @type {{[key:string]:(module:any, file:string, optional?:any)=>any}} requireLoader
          */
         var requireLoaders = {}
         /**
-         * @type {{[key:string]:any}} cacheModules
+         * 已缓存的模块
+         * @type {{[key:string]:any}} [cacheModules]
          */
         var cacheModules = {}
         var cacheModuleIdsFile = _canonical(new File(MS_NODE_PATH, 'cacheModuleIds.json'))
         var localVersionLockFile = _canonical(new File(MS_NODE_PATH, 'moduleVersionLock.json'))
         /**
-         * @type {{[key:string]:{[key:string]:string}|string}} cacheModuleIds
+         * 已缓存的模块ID
+         * @type {{[key:string]:{[key:string]:string}|string}} [cacheModuleIds]
          */
         var cacheModuleIds = {}
         /**
-         * @type {{[key:string]:boolean}} notFoundModules
+         * 未找到的模块
+         * @type {{[key:string]:boolean}}
          */
         var notFoundModules = {}
         var upgradeMode = false

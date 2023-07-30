@@ -53,3 +53,6 @@ vendor/
 # Minecraft Data
 /world
 **/node_modules/
+
+# Gradle
+.gradle

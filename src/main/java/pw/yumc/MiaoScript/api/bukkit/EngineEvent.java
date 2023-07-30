@@ -8,15 +8,13 @@ import org.bukkit.event.HandlerList;
 import javax.script.Bindings;
 
 @Getter
-public class ScriptEvent extends Event implements Cancellable {
-    private final Bindings plugin;
+public class EngineEvent extends Event implements Cancellable {
     private final String event;
     private final Bindings data;
 
     private boolean cancelled = false;
 
-    public ScriptEvent(Bindings plugin, String event, Bindings data) {
-        this.plugin = plugin;
+    public EngineEvent(String event, Bindings data) {
         this.event = event;
         this.data = data;
     }

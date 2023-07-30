@@ -1,5 +1,6 @@
 package pw.yumc.MiaoScript.api;
 
+import lombok.Getter;
 import pw.yumc.MiaoScript.api.loader.MavenDependLoader;
 import pw.yumc.MiaoScript.api.plugin.PluginManager;
 import pw.yumc.MiaoScript.engine.MiaoScriptEngine;
@@ -8,10 +9,12 @@ import java.io.File;
 import java.nio.file.Paths;
 
 public class MiaoScriptAPI {
-    public static final String VERSION = "0.23.1";
+    public static final String VERSION = "0.28.0";
+    @Getter
     private static String root;
     private static String libPath;
     private static ScriptEngine scriptEngine;
+    @Getter
     private static PluginManager pluginManager;
 
     public static ScriptEngine createEngine(String root, Object logger, Object instance) {
@@ -19,11 +22,7 @@ public class MiaoScriptAPI {
         return MiaoScriptAPI.scriptEngine;
     }
 
-    public static String getRoot() {
-        return root;
-    }
-
-    public static void setRoot(String root) {
+    static void setRoot(String root) {
         MiaoScriptAPI.root = root;
         MiaoScriptAPI.libPath = Paths.get(root, "libs").toString();
     }
@@ -32,12 +31,8 @@ public class MiaoScriptAPI {
         return MiaoScriptAPI.scriptEngine.getEngine();
     }
 
-    public static void setEngine(ScriptEngine scriptEngine) {
+    static void setEngine(ScriptEngine scriptEngine) {
         MiaoScriptAPI.scriptEngine = scriptEngine;
-    }
-
-    public static PluginManager getPluginManager() {
-        return pluginManager;
     }
 
     public static void setPluginManager(Object pluginManager) {

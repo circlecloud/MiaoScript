@@ -1,8 +1,11 @@
 package pw.yumc.MiaoScript.api;
 
+import lombok.Getter;
+
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
+@Getter
 public class JavaScriptTask implements Delayed {
     private final long id;
     private final Object task;
@@ -34,21 +37,5 @@ public class JavaScriptTask implements Delayed {
         } else {
             return (int) (this.id - task.getId());
         }
-    }
-
-    public long getId() {
-        return this.id;
-    }
-
-    public Object getTask() {
-        return this.task;
-    }
-
-    public long getStartTime() {
-        return this.startTime;
-    }
-
-    public long getExecuteTime() {
-        return this.executeTime;
     }
 }

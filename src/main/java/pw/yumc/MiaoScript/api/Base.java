@@ -1,5 +1,7 @@
 package pw.yumc.MiaoScript.api;
 
+import lombok.Getter;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,6 +15,7 @@ import java.nio.file.Paths;
  * @author 喵♂呜
  * Created on 2017/10/9 12:40.
  */
+@Getter
 public class Base {
     private final Object instance;
 
@@ -34,10 +37,6 @@ public class Base {
         } catch (Throwable ex) {
             return Class.forName(name, true, instance.getClass().getClassLoader().getParent());
         }
-    }
-
-    public Object getInstance() {
-        return this.instance;
     }
 
     public Class<?> getProxyClass() {

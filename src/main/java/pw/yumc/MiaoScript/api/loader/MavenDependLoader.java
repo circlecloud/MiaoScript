@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.MappedByteBuffer;
@@ -12,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class MavenDependLoader {
     public static final String MavenRepo = "https://maven.aliyun.com/repository/public";
@@ -48,6 +51,7 @@ public class MavenDependLoader {
             downloadFile(file, groupId, artifactId, version, ext);
         }
         if (!new String(Files.readAllBytes(sha1.toPath())).equals(getSha1(file))) {
+            sha1.delete();
             file.delete();
             throw new IllegalStateException("file " + file.getName() + " sha1 not match.");
         }
@@ -71,17 +75,19 @@ public class MavenDependLoader {
         connection.setConnectTimeout(5000);
         connection.setReadTimeout(120000);
         connection.setUseCaches(true);
-        Files.copy(connection.getInputStream(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        try (InputStream inputStream = connection.getInputStream()) {
+            Files.copy(inputStream, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     @SneakyThrows
     private static String getSha1(File file) {
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        FileInputStream in = new FileInputStream(file);
-        FileChannel ch = in.getChannel();
-        MappedByteBuffer byteBuffer = ch.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
-        digest.update(byteBuffer);
-        return getHash(digest.digest());
+        try (FileInputStream in = new FileInputStream(file)) {
+            MappedByteBuffer byteBuffer = in.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+            digest.update(byteBuffer);
+            return getHash(digest.digest());
+        }
     }
 
     private static String getHash(byte[] bytes) {
