@@ -1,5 +1,6 @@
 package pw.yumc.MiaoScript.api;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import pw.yumc.MiaoScript.engine.MiaoScriptEngine;
 
@@ -17,6 +18,7 @@ public class ScriptEngine {
     private final Object logger;
     private final String root;
     private final Base base;
+    @Getter
     private MiaoScriptEngine engine;
     private Object future;
 
@@ -70,9 +72,5 @@ public class ScriptEngine {
                 this.engine = null;
             }
         }
-    }
-
-    public MiaoScriptEngine getEngine() {
-        return engine;
     }
 }

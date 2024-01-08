@@ -13,8 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class MavenDependLoader {
     public static final String MavenRepo = "https://maven.aliyun.com/repository/public";

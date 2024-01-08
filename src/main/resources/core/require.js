@@ -70,7 +70,7 @@
             "v8", "vm", "wasi", "worker_threads", "zlib"
         ]
 
-        var ModulesVersionLock = {}
+        var VersionLockModules = {}
 
         /**
          * @param {...object} t
@@ -106,15 +106,6 @@
             return file.canonicalPath
         }
 
-        /**
-         * 获得文件绝对路径
-         * @param {any} file
-         * @returns {*}
-         */
-        function _absolute(file) {
-            return file.absolutePath
-        }
-
         function __error(message, name) {
             var error = new Error(message)
             if (name) { error.name = name }
@@ -139,11 +130,14 @@
             if (optional.local) {
                 return resolveAsFile(name, parent) || resolveAsDirectory(name, parent) || undefined
             } else {
+                // 解析 root 模块目录
+                var rootModule = resolveAsFile(name, MS_NODE_PATH) || resolveAsDirectory(name, MS_NODE_PATH)
+                if (rootModule) { return rootModule }
                 // 解析Node目录
                 var dir = [parent, 'node_modules'].join(separatorChar)
                 return resolveAsFile(name, dir) || resolveAsDirectory(name, dir) ||
                     (parent && parent.toString().startsWith(root) ?
-                        resolve(name, new File(parent).getParent(), optional) : resolveAsDirectory(name, MS_NODE_PATH) || undefined)
+                        resolve(name, new File(parent).getParent(), optional) : undefined)
             }
         }
 
@@ -161,12 +155,12 @@
                 return file
             }
             // JS文件
-            var js = new File(normalizeName(_absolute(file), '.js'))
+            var js = new File(normalizeName(_canonical(file), '.js'))
             if (js.isFile()) {
                 return js
             }
             // JSON文件
-            var json = new File(normalizeName(_absolute(file), '.json'))
+            var json = new File(normalizeName(_canonical(file), '.json'))
             if (json.isFile()) {
                 return json
             }
@@ -235,7 +229,7 @@
             var filename = file.name
             var lastDotIndexOf = filename.lastIndexOf('.')
             if (lastDotIndexOf == -1) {
-                throw __error('require ' + file + ' error: module must include file ext.')
+                throw __error("can't require file " + file + '. error: module must include file ext.')
             }
             var name = filename.substring(0, lastDotIndexOf)
             var ext = filename.substring(lastDotIndexOf + 1)
@@ -254,12 +248,12 @@
                 exports: {},
                 loaded: false,
                 loader: loader,
-                path: _absolute(file.parentFile),
-                filename: _absolute(file),
+                path: _canonical(file.parentFile),
+                filename: _canonical(file),
                 children: []
             }
             module.require = getRequire(module)
-            if (module.parent && module.parent.children) {
+            if (module.parent && module.parent.children && module.parent.children.indexOf(module) == -1) {
                 module.parent.children.push(module)
             }
             console.trace('Loading module', name + '(' + id + ')', 'Optional', JSON.stringify(__assign(optional, { parent: undefined })))
@@ -286,9 +280,6 @@
          * @returns {any}
          */
         function compileJs(module, script, optional) {
-            if (optional.hook) {
-                script = optional.hook(script)
-            }
             if (optional.beforeCompile) {
                 script = optional.beforeCompile(script)
             }
@@ -377,12 +368,11 @@
             var module_version = name_arr[1]
             try {
                 var target = MS_NODE_PATH + separatorChar + module_name
-                var _package = new File(target, 'package.json')
-                if (_package.exists()) { return name }
+                if (new File(target, 'package.json').exists()) { return name }
                 var info = fetchPackageInfo(module_name)
                 if (!module_version) {
                     // if not special version get from lock or tag
-                    module_version = ModulesVersionLock[module_name]
+                    module_version = VersionLockModules[module_name]
                 } else if (!/\d+\.\d+\.\w+/.test(module_version)) {
                     // maybe module_version = latest if special version not exist then fallback latest
                     console.log('try get node_module ' + module_name + ' version from ' + module_version + ' tag waiting...')
@@ -555,7 +545,7 @@
              * @param {string} path
              * @param {any} optional
              */
-            return function __DynamicRequire__(path, optional) {
+            var require = function __DynamicRequire__(path, optional) {
                 if (!path) {
                     throw __error("require path can't be undefined or empty!")
                 }
@@ -567,17 +557,14 @@
                 }, optional)
                 return _require(path, parent.path, optional).exports
             }
-        }
-
-        /**
-         * @param {string} path
-         * @param {any} optional 附加选项
-         */
-        function __DynamicResolve__(path, optional) {
-            return _canonical(new File(resolve(path, root, __assign({
-                cache: true,
-                local: path.startsWith('.') || path.startsWith('/')
-            }, optional))))
+            require.resolve = function __DynamicResolve__(path, optional) {
+                return _canonical(new File(resolve(path, root, __assign({
+                    parent: parent,
+                    cache: true,
+                    local: path.startsWith('.') || path.startsWith('/')
+                }, optional))))
+            }
+            return require
         }
 
         /**
@@ -617,8 +604,8 @@
              * @type {any} require
              */
             var require = exports(parent)
+            require.main = mainRequire
             require.cache = cacheModules
-            require.resolve = __DynamicResolve__
             require.clear = __DynamicClear__
             require.disable = __DynamicDisable__
             require.setUpgradeMode = __setUpgradeMode__
@@ -627,12 +614,13 @@
                 get: getLoader,
                 unregister: unregisterLoader,
             }
+            require.loaders = requireLoaders
             require.internal = {
                 coreModules: CoreModules,
                 cacheModules: cacheModules,
                 cacheModuleIds: cacheModuleIds,
                 notFoundModules: notFoundModules,
-                requireLoaders: requireLoaders
+                versionLockModules: VersionLockModules
             }
             require.loadCoreScript = loadCoreScript
             return require
@@ -693,24 +681,24 @@
         function initVersionLock() {
             try {
                 var version_lock_url = MS_SCRIPT_PACKAGE_CENTER + '?name=version_lock' + (global.debug ? '-debug' : '')
-                ModulesVersionLock = JSON.parse(fetchContent(version_lock_url, 5000))
+                VersionLockModules = JSON.parse(fetchContent(version_lock_url, 5000))
                 try {
-                    ModulesVersionLock = __assign(ModulesVersionLock, JSON.parse(base.read(localVersionLockFile)))
+                    VersionLockModules = __assign(VersionLockModules, JSON.parse(base.read(localVersionLockFile)))
                 } catch (e) {
                 }
             } catch (error) {
                 console.warn("无法获取到最新的版本锁定信息 使用默认配置.")
                 console.warn("InitVersionLock Error:", error)
                 console.debug(error)
-                ModulesVersionLock = {
+                VersionLockModules = {
                     "@babel/standalone": "7.12.18",
                     "crypto-js": "3.3.0",
-                    "core-js": "3.19.3"
+                    "core-js": "3.33.1"
                 }
             }
             console.info('Lock module version List:')
-            for (var key in ModulesVersionLock) {
-                console.info('- ' + key + ': ' + ModulesVersionLock[key])
+            for (var key in VersionLockModules) {
+                console.info('- ' + key + ': ' + VersionLockModules[key])
             }
         }
 
@@ -725,6 +713,7 @@
                 console.debug(error)
                 registerLoader('ms', compileJsFile)
             }
+            require.main = mainRequire = require
             return require
         }
 
@@ -738,6 +727,7 @@
         if (typeof parent === 'string') {
             parent = new File(parent)
         }
+        var mainRequire = undefined
         /**
          * require 支持的后缀
          * @type {string[]} requireExts

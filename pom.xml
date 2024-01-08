@@ -27,10 +27,10 @@
     <properties>
         <env.GIT_COMMIT>DEV</env.GIT_COMMIT>
         <update.changes>
+            §623-10-25 §afeat: 升级 asm 版本;
             §623-07-30 §afeat: 优化 require 性能;
             　　　　　　§cfix: 修复 require 加载特殊文件异常;
             §623-07-22 §afeat: 网络加载 jtar 优化包大小;
-            　　　　　　§afeat: 移除 Spring 相关支持;
             　　　　　　§aremove: 移除 Spring 相关支持;
             　　　　　　§adeps: 更新 Nashorn 和 GraalvmJS 引擎版本
         </update.changes>
